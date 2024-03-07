@@ -1,5 +1,7 @@
 import logging as log
 import math
+import serial
+import time
 
 log.basicConfig(format='%(process)d-%(levelname)s-%(message)s', level=log.INFO)
 
@@ -13,8 +15,12 @@ class GCodeManager:
         self.overlap_percentage = overlap_percentage
         self.start_point = start_point
         self.max_z = 100 # mm
+        self.g_code = self.generate_serpentine()
+        self.__n_line = 0 # current line of g_code 
+
 
     def generate_serpentine(self) -> list[str]:
+        # See TreeRings/docs/diagrams/G_code_serpentine_logic.png for graphical representation of code
         g_code = []
 
         start_x = self.start_point[0]
@@ -72,8 +78,34 @@ class GCodeManager:
 
         return g_code
     
-if __name__ == "__main__":
-    GCG = GCodeManager(50, 40, 5, 4, 500, 20, (0, 0))
-    g_code = GCG.generate_serpentine()
+    def serial_connect(self):
+        log.info("Connecting to GRBL via serial")
+        self.s = serial.Serial('/dev/tty.usbmodem1811',115200)
+        self.s.write("\r\n\r\n")
+        time.sleep(2)   # Wait for grbl to initialize 
+        # Wake up grbl
+        self.s.flushInput()  # Flush startup text in serial input
+
+    def serial_disconnect(self):
+        self.s.close()
+
+    def send_line_serial(self):
+        line = self.g_code[self.__n_line]
+        log.info("Sending {}".format(line))
+        self.s.write(line + '\n') # Send g-code block to grbl
+        grbl_out = self.s.readline() # Wait for grbl response with carriage return
+        log.info(' : ' + grbl_out.strip())
     
-    print(len(g_code))
+if __name__ == "__main__":
+
+    COOKIE_WIDTH_MM = 40
+    COOKIE_HEIGHT_MM = 50
+    IMAGE_WIDTH_MM = 4
+    IMAGE_HEIGHT_MM = 5
+    FEED_RATE = 500 # mm / min
+    PERCENT_OVERLAP = 20
+    START_POINT = (0, 0)
+
+    GCM = GCodeManager(COOKIE_WIDTH_MM, COOKIE_HEIGHT_MM, IMAGE_WIDTH_MM, IMAGE_HEIGHT_MM, FEED_RATE, PERCENT_OVERLAP, START_POINT)
+    
+    print(len(GCM.g_code))
