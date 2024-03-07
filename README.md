@@ -8,3 +8,5 @@ The Temporal Ecology Lab is endeavoring to build an automated system for imagini
 * Be flexible enough to quantify samples from a few centimeters in diameter to 50 cm
 * Produce images that can be used to count cells and other cellular-level traits
 
+## Serpentine G-Code Control Logic
+![Control Logic]("./docs/diagrams/G_code_serpentine_logic.png")
