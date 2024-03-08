@@ -16,7 +16,8 @@ class GCodeManager:
         self.start_point = start_point
         self.max_z = 100 # mm
         self.g_code = self.generate_serpentine()
-        self.__n_line = 0 # current line of g_code 
+        self._n_line = 0 # current line of g_code 
+        self.serial_connect()
 
 
     def generate_serpentine(self) -> list[str]:
@@ -33,8 +34,9 @@ class GCodeManager:
         # Move to the specified starting point, raise z to max value to avoid lens collision
 
         #TODO: verify that this is updates position when endstops are hit
-        g_code.append(f"G28 X Y") # home first to get reference system, 
-        g_code.append(f"G0 X{start_x} Y{start_y} Z{self.max_z}") 
+        g_code.append(f"$H") # home first to get reference system, 
+        # g_code.append(f"G0 X{start_x} Y{start_y} Z{self.max_z}") 
+        g_code.append(f"G0 X{start_x} Y{start_y}") 
 
         # More than 0.00 precision is unrealistic with the machinery
         overlap_x = round(self.image_width_mm * self.overlap_percentage / 100, 2)
@@ -80,8 +82,8 @@ class GCodeManager:
     
     def serial_connect(self):
         log.info("Connecting to GRBL via serial")
-        self.s = serial.Serial('/dev/tty.usbmodem1811',115200)
-        self.s.write("\r\n\r\n")
+        self.s = serial.Serial('COM4',115200) # WILL NEED TO CHANGE THIS PER DEVICE / OS
+        self.s.write(b"\r\n\r\n")
         time.sleep(2)   # Wait for grbl to initialize 
         # Wake up grbl
         self.s.flushInput()  # Flush startup text in serial input
@@ -90,11 +92,12 @@ class GCodeManager:
         self.s.close()
 
     def send_line_serial(self):
-        line = self.g_code[self.__n_line]
+        line = self.g_code[self._n_line]
         log.info("Sending {}".format(line))
-        self.s.write(line + '\n') # Send g-code block to grbl
+        self.s.write(str.encode("{}\n".format(line))) # Send g-code block to grbl
         grbl_out = self.s.readline() # Wait for grbl response with carriage return
-        log.info(' : ' + grbl_out.strip())
+        log.info(' : ' + str(grbl_out.strip()))
+        self._n_line += 1
     
 if __name__ == "__main__":
 
@@ -104,8 +107,13 @@ if __name__ == "__main__":
     IMAGE_HEIGHT_MM = 5
     FEED_RATE = 500 # mm / min
     PERCENT_OVERLAP = 20
-    START_POINT = (0, 0)
+    START_POINT = (20, 20)
 
     GCM = GCodeManager(COOKIE_WIDTH_MM, COOKIE_HEIGHT_MM, IMAGE_WIDTH_MM, IMAGE_HEIGHT_MM, FEED_RATE, PERCENT_OVERLAP, START_POINT)
     
+    for line in GCM.g_code:
+        log.info("Waiting for user input")
+        input()
+        GCM.send_line_serial()
+
     print(len(GCM.g_code))
