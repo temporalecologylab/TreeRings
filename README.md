@@ -10,3 +10,4 @@ The Temporal Ecology Lab is endeavoring to build an automated system for imagini
 
 ## Serpentine G-Code Control Logic
 ![Control Logic](./docs/diagrams/G_code_serpentine_logic.png)
+![Live Demo](./docs/content/serpentine_example.gif)

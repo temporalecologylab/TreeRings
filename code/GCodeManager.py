@@ -36,7 +36,8 @@ class GCodeManager:
         #TODO: verify that this is updates position when endstops are hit
         g_code.append(f"$H") # home first to get reference system, 
         # g_code.append(f"G0 X{start_x} Y{start_y} Z{self.max_z}") 
-        g_code.append(f"G0 X{start_x} Y{start_y}") 
+        # g_code.append(f"G0 X{start_x} Y{start_y}") 
+        g_code.append("G21") # Units are in mm
 
         # More than 0.00 precision is unrealistic with the machinery
         overlap_x = round(self.image_width_mm * self.overlap_percentage / 100, 2)
@@ -101,8 +102,8 @@ class GCodeManager:
     
 if __name__ == "__main__":
 
-    COOKIE_WIDTH_MM = 40
-    COOKIE_HEIGHT_MM = 50
+    COOKIE_WIDTH_MM = 200
+    COOKIE_HEIGHT_MM = 200
     IMAGE_WIDTH_MM = 4
     IMAGE_HEIGHT_MM = 5
     FEED_RATE = 500 # mm / min
@@ -112,8 +113,8 @@ if __name__ == "__main__":
     GCM = GCodeManager(COOKIE_WIDTH_MM, COOKIE_HEIGHT_MM, IMAGE_WIDTH_MM, IMAGE_HEIGHT_MM, FEED_RATE, PERCENT_OVERLAP, START_POINT)
     
     for line in GCM.g_code:
-        log.info("Waiting for user input")
-        input()
+        # log.info("Waiting for user input")
+        # input()
         GCM.send_line_serial()
 
     print(len(GCM.g_code))
