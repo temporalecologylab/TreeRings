@@ -17,7 +17,7 @@ class GCodeManager:
         self.max_z = 100 # mm
         self.g_code = self.generate_serpentine()
         self._n_line = 0 # current line of g_code 
-        self.serial_connect()
+        # self.serial_connect()
 
 
     def generate_serpentine(self) -> list[str]:
@@ -89,6 +89,14 @@ class GCodeManager:
         # Wake up grbl
         self.s.flushInput()  # Flush startup text in serial input
 
+    def serial_connect_port(self, port = "ttyS0"):
+        log.info("Connecting to GRBL via serial")
+        self.s = serial.Serial(port, 115200) # WILL NEED TO CHANGE THIS PER DEVICE / OS
+        self.s.write(b"\r\n\r\n")
+        time.sleep(2)   # Wait for grbl to initialize 
+        # Wake up grbl
+        self.s.flushInput()  # Flush startup t
+
     def serial_disconnect(self):
         self.s.close()
 
@@ -111,10 +119,11 @@ if __name__ == "__main__":
     START_POINT = (20, 20)
 
     GCM = GCodeManager(COOKIE_WIDTH_MM, COOKIE_HEIGHT_MM, IMAGE_WIDTH_MM, IMAGE_HEIGHT_MM, FEED_RATE, PERCENT_OVERLAP, START_POINT)
-    
+    GCM.serial_connect()
+
     for line in GCM.g_code:
         # log.info("Waiting for user input")
         # input()
         GCM.send_line_serial()
 
-    print(len(GCM.g_code))
+    log.info(len(GCM.g_code))
