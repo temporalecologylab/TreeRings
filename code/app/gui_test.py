@@ -214,7 +214,7 @@ class App(Frame):
 
     def print_cookie_height_entry(self, event):
         try:
-            log.info("Hi. The current entry content is:",
+            log.info("Hi. The current entry content is: %d",
                 self.contents_height_cookie.get())
         except TclError:
             self.entry_height_cookie.delete(0, END)

@@ -1,0 +1,1 @@
+jetson-containers build --package-dirs=$(pwd) camera_action $(autotag dustynv/opencv)
