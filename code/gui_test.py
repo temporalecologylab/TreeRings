@@ -73,7 +73,7 @@ class App(Frame):
         ## Define a callback for when the user hits return.
         ## It prints the current value of the variable.
         self.entry_width_cookie.bind('<Key-Return>',
-                             self.print_cookie_height_entry)
+                             self.print_cookie_width_entry)
 
     def create_img_height_entry(self):
         # Entry for Image height
@@ -92,7 +92,7 @@ class App(Frame):
         ## Define a callback for when the user hits return.
         ## It prints the current value of the variable.
         self.entry_height_img.bind('<Key-Return>',
-                             self.print_cookie_height_entry)
+                             self.print_img_height_entry)
         
     def create_img_width_entry(self):
         # Entry for Image width
@@ -111,7 +111,7 @@ class App(Frame):
         ## Define a callback for when the user hits return.
         ## It prints the current value of the variable.
         self.entry_width_img.bind('<Key-Return>',
-                             self.print_cookie_height_entry)
+                             self.print_img_width_entry)
 
     def create_percent_overlap_entry(self):
         # Entry for percent overlap between images
@@ -128,7 +128,7 @@ class App(Frame):
         self.entry_overlap["textvariable"] = self.contents_overlap
 
         self.entry_overlap.bind('<Key-Return>',
-                             self.print_int)
+                             self.print_overlap)
         
     def create_calculate_grid_button(self):
          # Calculate button
@@ -214,16 +214,36 @@ class App(Frame):
 
     def print_cookie_height_entry(self, event):
         try:
-            log.info("Hi. The current entry content is:",
-                self.contents_height_cookie.get())
+            log.info("Cookie Height: {} mm".format(self.contents_height_cookie.get()))
         except TclError:
             self.entry_height_cookie.delete(0, END)
             log.info("Enter a double")
-    
-    def print_int(self, event):
+
+    def print_cookie_width_entry(self, event):
         try:
-            log.info("Hi. The current entry content is:",
-                self.contents_overlap.get())
+            log.info("Cookie Width: {} mm".format(self.contents_width_cookie.get()))
+        except TclError:
+            self.entry_width_cookie.delete(0, END)
+            log.info("Enter a double")
+    
+    def print_img_height_entry(self, event):
+        try:
+            log.info("Image Height: {} mm".format(self.contents_height_img.get()))
+        except TclError:
+            self.entry_height_img.delete(0, END)
+            log.info("Enter a double")
+    
+    def print_img_width_entry(self, event):
+        try:
+            log.info("Image Width: {} mm".format(self.contents_width_img.get()))
+        except TclError:
+            self.entry_width_img.delete(0, END)
+            log.info("Enter a double")
+    
+    
+    def print_overlap(self, event):
+        try:
+            log.info("Image Overlap: {} %".format(self.contents_overlap.get()))
         except TclError:
             self.entry_overlap.delete(0, END)
             log.info("Enter an integer")

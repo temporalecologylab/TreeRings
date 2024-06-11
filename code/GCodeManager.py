@@ -42,8 +42,8 @@ class GCodeManager:
         # More than 0.00 precision is unrealistic with the machinery
         overlap_x = round(self.image_width_mm * self.overlap_percentage / 100, 2)
         overlap_y = round(self.image_height_mm * self.overlap_percentage / 100, 2)
-        log.info(overlap_x)
-        log.info(overlap_y)
+        # log.info(overlap_x)
+        # log.info(overlap_y)
 
         # TODO: add logic / user input / something to move z to be in focus
         x_step_size = self.image_width_mm - overlap_x
@@ -53,8 +53,8 @@ class GCodeManager:
         y_steps = math.ceil(self.cookie_height_mm / y_step_size)
         total_images = x_steps * y_steps
         
-        log.info(x_steps)
-        log.info(y_steps)
+        # log.info(x_steps)
+        # log.info(y_steps)
         log.info("Creating G-Code for {} serpentine images".format(total_images))
         
         # begin serpentine logic
