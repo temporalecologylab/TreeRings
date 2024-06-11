@@ -1,22 +1,27 @@
 from tkinter import *
 from tkinter import ttk
 from tkinter import filedialog
+import logging as log
 
 import GCodeManager
 import time
 
+log.basicConfig(format='%(process)d-%(levelname)s-%(message)s', level=log.INFO)
+
+
 class App(Frame):
     def __init__(self, master):
         super().__init__(master)
-        self.grid()
+        # self.grid()
         self.master = master
         self.master.geometry("600x600")
         self.master.title("Cookie Capture")
 
         # Frame for entries
         self.frame_entry = ttk.Frame(self.master)
-        self.frame_entry.grid()
-        
+        self.frame_entry.grid(column=0, row=0, sticky="")
+        self.frame_entry.grid_rowconfigure(0, weight=1)
+        self.frame_entry.grid_columnconfigure(0, weight=1)
         # must instantiate GCM first
 
         self.create_cookie_height_entry()
@@ -28,6 +33,7 @@ class App(Frame):
         self.create_directory_button()
         self.calculate_grid() # must run before create_serial_connect_button()
         self.create_serial_connect_button()
+        self.create_g_code_sender_button()
         self.create_arrow_buttons()
 
 
@@ -140,6 +146,10 @@ class App(Frame):
         self.button_serial_connect = ttk.Button(self.frame_buttons, text="Serial Connect", command=self.GCM.serial_connect_port)
         self.button_serial_connect.grid(column = 2, row = 0)
 
+    def create_g_code_sender_button(self):
+        self.button_g_code_send = ttk.Button(self.frame_buttons, text="Send G Code", command=self.bulk_send_g_code)
+        self.button_g_code_send.grid(column = 3, row = 0)
+
     def create_arrow_buttons(self):
         self.frame_jogging = ttk.Frame(self.master, padding = 50)
         self.frame_jogging.grid()
@@ -178,22 +188,22 @@ class App(Frame):
         self.button_z_minus.grid(column = 4, row = 3)
 
     def jog_y_plus(self):
-        print("jog +{} mm y".format(self.jog_distance))
+        log.info("jog +{} mm y".format(self.jog_distance))
         
     def jog_y_minus(self):
-        print("jog -{} mm y".format(self.jog_distance))
+        log.info("jog -{} mm y".format(self.jog_distance))
     
     def jog_x_plus(self):
-        print("jog +{} mm x".format(self.jog_distance))
+        log.info("jog +{} mm x".format(self.jog_distance))
 
     def jog_x_minus(self):
-        print("jog -{} mm x".format(self.jog_distance))
+        log.info("jog -{} mm x".format(self.jog_distance))
     
     def jog_z_plus(self):
-        print("jog +{} mm z".format(self.jog_distance))
+        log.info("jog +{} mm z".format(self.jog_distance))
 
     def jog_z_minus(self):
-        print("jog -{} mm z".format(self.jog_distance))
+        log.info("jog -{} mm z".format(self.jog_distance))
 
     def cb_jog_distance(self, event):
         self.jog_distance = self.entry_jog_distance.get()
@@ -204,19 +214,19 @@ class App(Frame):
 
     def print_cookie_height_entry(self, event):
         try:
-            print("Hi. The current entry content is:",
+            log.info("Hi. The current entry content is:",
                 self.contents_height_cookie.get())
         except TclError:
             self.entry_height_cookie.delete(0, END)
-            print("Enter a double")
+            log.info("Enter a double")
     
     def print_int(self, event):
         try:
-            print("Hi. The current entry content is:",
+            log.info("Hi. The current entry content is:",
                 self.contents_overlap.get())
         except TclError:
             self.entry_overlap.delete(0, END)
-            print("Enter an integer")
+            log.info("Enter an integer")
 
     def calculate_grid(self):
 
@@ -231,7 +241,7 @@ class App(Frame):
                                 self.contents_overlap.get(),
                                 START_POINT)
         
-        print("{} overlapping images calculated".format(len(self.GCM.g_code)))
+        log.info("{} overlapping images calculated".format(len(self.GCM.g_code)))
 
     def bulk_send_g_code(self, pause = 1):
         # self.GCM.serial_connect_port("ttyS0")
