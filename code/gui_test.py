@@ -14,14 +14,19 @@ class App(Frame):
         super().__init__(master)
         # self.grid()
         self.master = master
-        self.master.geometry("600x600")
+        self.master.geometry("800x400")
         self.master.title("Cookie Capture")
+        self.master.grid_rowconfigure(0, weight=1)
+        self.master.grid_columnconfigure(0, weight=1)
+
+        self.PAUSED = False
+
 
         # Frame for entries
-        self.frame_entry = ttk.Frame(self.master)
-        self.frame_entry.grid(column=0, row=0, sticky="")
-        self.frame_entry.grid_rowconfigure(0, weight=1)
-        self.frame_entry.grid_columnconfigure(0, weight=1)
+        self.frame_entry = ttk.Frame(self.master, padding = 25)
+        self.frame_entry.grid(column=0, row=0)
+        # self.frame_entry.grid_rowconfigure(0, weight=1)
+        # self.frame_entry.grid_columnconfigure(0, weight=1)
         # must instantiate GCM first
 
         self.create_cookie_height_entry()
@@ -34,6 +39,8 @@ class App(Frame):
         self.calculate_grid() # must run before create_serial_connect_button()
         self.create_serial_connect_button()
         self.create_g_code_sender_button()
+        self.create_g_code_pause_button()
+        self.create_g_code_resume_button()
         self.create_arrow_buttons()
 
 
@@ -132,26 +139,35 @@ class App(Frame):
         
     def create_calculate_grid_button(self):
          # Calculate button
-        self.frame_buttons = ttk.Frame(self.master, padding = 50)
+        self.frame_buttons = ttk.Frame(self.master, padding = 25)
         self.frame_buttons.grid()
         self.button_calculate = ttk.Button(self.frame_buttons, text="Calculate Grid", command=self.calculate_grid)
-        self.button_calculate.grid(column = 1, row = 0)
+        self.button_calculate.grid(column = 1, row = 1)
 
     def create_directory_button(self):
          # Calculate button
         self.button_directory = ttk.Button(self.frame_buttons, text="Select Directory", command=self.request_directory)
-        self.button_directory.grid(column = 0, row = 0)
+        self.button_directory.grid(column = 0, row = 1)
 
     def create_serial_connect_button(self):
         self.button_serial_connect = ttk.Button(self.frame_buttons, text="Serial Connect", command=self.GCM.serial_connect_port)
-        self.button_serial_connect.grid(column = 2, row = 0)
+        self.button_serial_connect.grid(column = 2, row = 1)
 
     def create_g_code_sender_button(self):
         self.button_g_code_send = ttk.Button(self.frame_buttons, text="Send G Code", command=self.bulk_send_g_code)
-        self.button_g_code_send.grid(column = 3, row = 0)
+        self.button_g_code_send.grid(column = 3, row = 1)
+
+    def create_g_code_pause_button(self):
+        self.button_g_code_pause = ttk.Button(self.frame_buttons, text="PAUSE", command=self.cb_pause_g_code)
+        self.button_g_code_pause.grid(column = 3, row = 0)
+
+    def create_g_code_resume_button(self):
+        self.button_g_code_resume = ttk.Button(self.frame_buttons, text="RESUME", command=self.cb_resume_g_code)
+        self.button_g_code_resume.grid(column = 3, row = 2)
+        
 
     def create_arrow_buttons(self):
-        self.frame_jogging = ttk.Frame(self.master, padding = 50)
+        self.frame_jogging = ttk.Frame(self.master, padding = 25)
         self.frame_jogging.grid()
         self.frame_jogging_title = ttk.Label(self.frame_jogging, text="JOGGING")
         self.button_y_plus = ttk.Button(self.frame_jogging, text="Y+", command=self.jog_y_plus)
@@ -210,7 +226,12 @@ class App(Frame):
 
     def request_directory(self):
         self.directory = filedialog.askdirectory()
-     
+    
+    def cb_pause_g_code(self):
+        self.PAUSED = True
+
+    def cb_resume_g_code(self):
+        self.PAUSED = False
 
     def print_cookie_height_entry(self, event):
         try:
@@ -266,12 +287,13 @@ class App(Frame):
     def bulk_send_g_code(self, pause = 1):
         # self.GCM.serial_connect_port("ttyS0")
         for line in self.GCM.g_code:
-            self.GCM.send_line_serial()
-            time.sleep(pause) # wait for vibrations to settle
-            #TAKE PHOTO
+            while not self.PAUSED:
+                self.GCM.send_line_serial()
+                time.sleep(pause) # wait for vibrations to settle
+                #TAKE PHOTO
 
    
 root = Tk()
 myapp = App(root)
-myapp.master.maxsize(1000,500)
+# myapp.master.maxsize(1000,500)
 myapp.mainloop()
