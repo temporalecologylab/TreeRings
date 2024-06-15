@@ -2,6 +2,9 @@ from tkinter import *
 from tkinter import ttk
 from tkinter import filedialog
 import logging as log
+import cv2
+
+from threading import Thread
 
 from picamera2 import Picamera2
 import GCodeManager as GCodeManager
@@ -21,8 +24,10 @@ class App(Frame):
         self.master.grid_columnconfigure(0, weight=1)
 
         self.PAUSED = False
+        self.SAVEFLAG = False #TODO: make this mutex
 
         self.picam2 = Picamera2()
+        self.current_image = ""
 
         # Frame for entries
         self.frame_entry = ttk.Frame(self.master, padding = 25)
@@ -43,8 +48,11 @@ class App(Frame):
         self.create_g_code_sender_button()
         self.create_g_code_pause_button()
         self.create_g_code_resume_button()
+        self.create_g_code_homing_button()
         self.create_arrow_buttons()
-        self.start_image_preview()
+
+        img_window = Thread(target=self.start_image_preview)
+        img_window.start()
 
 
     def create_cookie_height_entry(self):
@@ -57,7 +65,7 @@ class App(Frame):
         ## Create the application variable.
         self.contents_height_cookie = IntVar()
         ## Set it to some value.
-        self.contents_height_cookie.set("100")
+        self.contents_height_cookie.set("45")
         ## Tell the entry widget to watch this variable.
         self.entry_height_cookie["textvariable"] = self.contents_height_cookie
 
@@ -76,7 +84,7 @@ class App(Frame):
         ## Create the application variable.
         self.contents_width_cookie = IntVar()
         ## Set it to some value.
-        self.contents_width_cookie.set("100")
+        self.contents_width_cookie.set("45")
         ## Tell the entry widget to watch this variable.
         self.entry_width_cookie["textvariable"] = self.contents_width_cookie
 
@@ -167,7 +175,10 @@ class App(Frame):
     def create_g_code_resume_button(self):
         self.button_g_code_resume = ttk.Button(self.frame_buttons, text="RESUME", command=self.cb_resume_g_code)
         self.button_g_code_resume.grid(column = 3, row = 2)
-        
+    
+    def create_g_code_homing_button(self):
+        self.button_g_code_homing = ttk.Button(self.frame_buttons, text="SET HOME", command=self.cb_homing_g_code)
+        self.button_g_code_homing.grid(column = 3, row = 3)
 
     def create_arrow_buttons(self):
         self.frame_jogging = ttk.Frame(self.master, padding = 25)
@@ -207,29 +218,47 @@ class App(Frame):
         self.button_z_minus.grid(column = 4, row = 3)
 
     def start_image_preview(self):
-        self.picam2.configure(self.picam2.create_preview_configuration(main={"size": (800, 600)}))
-        self.picam2.start(show_preview=True)
+        print("preview start")
+        self.picam2.configure(self.picam2.create_preview_configuration(main={"format": "XRGB8888", "size": (640,480)}))
+        self.picam2.start()
+        while True:
+            if self.SAVEFLAG:
+                time.sleep(0.1)
+                continue
+            self.current_image = self.picam2.capture_array()
+            cv2.imshow("window", self.current_image)
+            time.sleep(.1)
+            cv2.waitKey(1)
+            
 
     def jog_y_plus(self):
         log.info("jog +{} mm y".format(self.jog_distance))
-        
+        self.GCM.jog_y(self.jog_distance)
+
+
     def jog_y_minus(self):
         log.info("jog -{} mm y".format(self.jog_distance))
+        self.GCM.jog_y(self.jog_distance * -1)
     
     def jog_x_plus(self):
         log.info("jog +{} mm x".format(self.jog_distance))
+        self.GCM.jog_x(self.jog_distance)
+
 
     def jog_x_minus(self):
         log.info("jog -{} mm x".format(self.jog_distance))
+        self.GCM.jog_x(self.jog_distance * -1)
     
     def jog_z_plus(self):
         log.info("jog +{} mm z".format(self.jog_distance))
+        self.GCM.jog_z(self.jog_distance)
 
     def jog_z_minus(self):
         log.info("jog -{} mm z".format(self.jog_distance))
+        self.GCM.jog_z(self.jog_distance * -1)
 
     def cb_jog_distance(self, event):
-        self.jog_distance = self.entry_jog_distance.get()
+        self.jog_distance = float(self.entry_jog_distance.get())
 
     def request_directory(self):
         self.directory = filedialog.askdirectory()
@@ -239,6 +268,9 @@ class App(Frame):
 
     def cb_resume_g_code(self):
         self.PAUSED = False
+
+    def cb_homing_g_code(self):
+        self.GCM.homing_sequence()
 
     def print_cookie_height_entry(self, event):
         try:
@@ -279,7 +311,7 @@ class App(Frame):
     def calculate_grid(self):
 
         # definitely going to need a different setup than this 
-        START_POINT = (20, 20)
+        START_POINT = (0, 0)
         
         self.GCM = GCodeManager.GCodeManager(self.contents_height_cookie.get(), 
                                 self.contents_width_cookie.get(),
@@ -293,14 +325,26 @@ class App(Frame):
 
     def bulk_send_g_code(self, pause = 1):
         # self.GCM.serial_connect_port("ttyS0")
-        capture_config = self.picam2.create_still_configuration()
+        self.SAVEFLAG = True
         i = 0
-        for line in self.GCM.g_code:
-            while not self.PAUSED:
-                self.GCM.send_line_serial()
+
+        log.info("Starting serpentine")
+        g_code = self.GCM.generate_serpentine_2()
+        for line in g_code:
+            if not self.PAUSED:
+                self.GCM.send_command(line)
                 time.sleep(pause) # wait for vibrations to settle
-                self.picam2.switch_mode_and_capture_file(capture_config, 'img{}.jpg',format(i))
-            i+=1
+                self.current_image = self.picam2.capture_array()
+                cv2.imwrite('images/img{}.jpg'.format(i), self.current_image)
+                i+=1
+            else: 
+                while self.PAUSED:
+                    if not self.PAUSED:
+                        continue        #TODO: this doesnt work - pause cannot be clicked -run in new thread?
+        
+        grbl_out = self.GCM.s.readline()
+        log.info(' : ' + str(grbl_out.strip()))
+        self.SAVEFLAG = False
             
 
    
