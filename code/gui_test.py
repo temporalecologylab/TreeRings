@@ -6,7 +6,6 @@ import cv2
 
 from threading import Thread
 
-from picamera2 import Picamera2
 import GCodeManager as GCodeManager
 import time
 
@@ -23,18 +22,19 @@ class App(Frame):
         self.master.grid_rowconfigure(0, weight=1)
         self.master.grid_columnconfigure(0, weight=1)
 
+        self.controller = GCodeManager.MachineControl(3, 2)
+
         self.PAUSED = False
         self.SAVEFLAG = False #TODO: make this mutex
 
-        self.picam2 = Picamera2()
-        self.current_image = ""
+        self.current_image = None
 
         # Frame for entries
         self.frame_entry = ttk.Frame(self.master, padding = 25)
         self.frame_entry.grid(column=0, row=0)
         # self.frame_entry.grid_rowconfigure(0, weight=1)
         # self.frame_entry.grid_columnconfigure(0, weight=1)
-        # must instantiate GCM first
+        # must instantiate controller first
 
         self.create_cookie_height_entry()
         self.create_cookie_width_entry()
@@ -148,6 +148,11 @@ class App(Frame):
         self.entry_overlap.bind('<Key-Return>',
                              self.print_overlap)
         
+    def create_add_cookie_button(self):
+        self.button_calculate = ttk.Button(self.frame_buttons, text="Add Cookie", command=self.cb_add_cookie)
+        self.button_calculate.grid(column = 5, row = 1)
+
+
     def create_calculate_grid_button(self):
          # Calculate button
         self.frame_buttons = ttk.Frame(self.master, padding = 25)
@@ -161,7 +166,7 @@ class App(Frame):
         self.button_directory.grid(column = 0, row = 1)
 
     def create_serial_connect_button(self):
-        self.button_serial_connect = ttk.Button(self.frame_buttons, text="Serial Connect", command=self.GCM.serial_connect_port)
+        self.button_serial_connect = ttk.Button(self.frame_buttons, text="Serial Connect", command=self.controller.serial_connect_port)
         self.button_serial_connect.grid(column = 2, row = 1)
 
     def create_g_code_sender_button(self):
@@ -219,43 +224,37 @@ class App(Frame):
 
     def start_image_preview(self):
         print("preview start")
-        self.picam2.configure(self.picam2.create_preview_configuration(main={"format": "XRGB8888", "size": (640,480)}))
-        self.picam2.start()
         while True:
-            if self.SAVEFLAG:
-                time.sleep(0.1)
-                continue
-            self.current_image = self.picam2.capture_array()
+            self.controller.mutex_camera.acquire()
+            self.current_image = self.controller.capture_image()
             cv2.imshow("window", self.current_image)
+            self.controller.mutex_camera.release()
             time.sleep(.1)
             cv2.waitKey(1)
             
-
     def jog_y_plus(self):
         log.info("jog +{} mm y".format(self.jog_distance))
-        self.GCM.jog_y(self.jog_distance)
-
+        self.controller.jog_y(self.jog_distance)
 
     def jog_y_minus(self):
         log.info("jog -{} mm y".format(self.jog_distance))
-        self.GCM.jog_y(self.jog_distance * -1)
+        self.controller.jog_y(self.jog_distance * -1)
     
     def jog_x_plus(self):
         log.info("jog +{} mm x".format(self.jog_distance))
-        self.GCM.jog_x(self.jog_distance)
-
+        self.controller.jog_x(self.jog_distance)
 
     def jog_x_minus(self):
         log.info("jog -{} mm x".format(self.jog_distance))
-        self.GCM.jog_x(self.jog_distance * -1)
+        self.controller.jog_x(self.jog_distance * -1)
     
     def jog_z_plus(self):
         log.info("jog +{} mm z".format(self.jog_distance))
-        self.GCM.jog_z(self.jog_distance)
+        self.controller.jog_z(self.jog_distance)
 
     def jog_z_minus(self):
         log.info("jog -{} mm z".format(self.jog_distance))
-        self.GCM.jog_z(self.jog_distance * -1)
+        self.controller.jog_z(self.jog_distance * -1)
 
     def cb_jog_distance(self, event):
         self.jog_distance = float(self.entry_jog_distance.get())
@@ -270,7 +269,10 @@ class App(Frame):
         self.PAUSED = False
 
     def cb_homing_g_code(self):
-        self.GCM.homing_sequence()
+        self.controller.homing_sequence()
+
+    def cb_add_cookie(self):
+        self.controller.add_cookie_sample(self.contents_width_cookie.get(), self.contents_width_cookie.get(), self.contents_overlap.get())
 
     def print_cookie_height_entry(self, event):
         try:
@@ -308,43 +310,32 @@ class App(Frame):
             self.entry_overlap.delete(0, END)
             log.info("Enter an integer")
 
-    def calculate_grid(self):
-
-        # definitely going to need a different setup than this 
-        START_POINT = (0, 0)
+    def calculate_grid(self): 
+        if len(self.controller.cookie_samples) > 0:
+            self.g_code = self.controller.generate_serpentine(self.controller.cookie_samples[0]) #TODO make work with multiple samples... will be hard
+            log.info("{} overlapping images calculated".format(len(self.g_code)))
+        else:
+            log.info("ERROR: NO COOKIES ADDED... Add a cookie using the button")
         
-        self.GCM = GCodeManager.GCodeManager(self.contents_height_cookie.get(), 
-                                self.contents_width_cookie.get(),
-                                self.contents_width_img.get(),
-                                self.contents_height_img.get(),
-                                500,
-                                self.contents_overlap.get(),
-                                START_POINT)
-        
-        log.info("{} overlapping images calculated".format(len(self.GCM.g_code)))
 
     def bulk_send_g_code(self, pause = 1):
-        # self.GCM.serial_connect_port("ttyS0")
-        self.SAVEFLAG = True
         i = 0
 
         log.info("Starting serpentine")
-        g_code = self.GCM.generate_serpentine_2()
+        g_code = self.controller.generate_serpentine()
+
         for line in g_code:
-            if not self.PAUSED:
-                self.GCM.send_command(line)
-                time.sleep(pause) # wait for vibrations to settle
-                self.current_image = self.picam2.capture_array()
-                cv2.imwrite('images/img{}.jpg'.format(i), self.current_image)
-                i+=1
-            else: 
-                while self.PAUSED:
-                    if not self.PAUSED:
-                        continue        #TODO: this doesnt work - pause cannot be clicked -run in new thread?
+            self.controller.mutex_camera.acquire()
+            self.controller.send_command(line)
+            time.sleep(pause) # wait for vibrations to settle
+            self.current_image = self.controller.capture_image()
+            cv2.imwrite('images/img{}.jpg'.format(i), self.current_image)
+            i+=1
+            self.controller.mutex_camera.release()
+                 #TODO: this doesnt work - pause cannot be clicked -run in new thread?
         
-        grbl_out = self.GCM.s.readline()
-        log.info(' : ' + str(grbl_out.strip()))
-        self.SAVEFLAG = False
+            grbl_out = self.controller.s.readline()
+            log.info(' : ' + str(grbl_out.strip()))
             
 
    
