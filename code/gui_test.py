@@ -275,30 +275,37 @@ class App(Frame):
 
         self.controller.add_cookie_sample(width, height, overlap)
         log.info("Adding Cookie \nW: {}\nH: {}\nO: {}\n".format(width, height,overlap))
+
     def print_cookie_height_entry(self, event):
         try:
-            log.info("Cookie Height: {} mm".format(self.contents_height_cookie.get()))
+            height = self.contents_height_cookie.get()
+            log.info("Update Image Height: {} mm".format(height))
         except TclError:
             self.entry_height_cookie.delete(0, END)
             log.info("Enter a double")
 
     def print_cookie_width_entry(self, event):
         try:
-            log.info("Cookie Width: {} mm".format(self.contents_width_cookie.get()))
+            width = self.contents_width_cookie.get()
+            log.info("Update Cookie Width: {} mm".format(width))
         except TclError:
             self.entry_width_cookie.delete(0, END)
             log.info("Enter a double")
     
     def print_img_height_entry(self, event):
         try:
-            log.info("Image Height: {} mm".format(self.contents_height_img.get()))
+            height = self.contents_height_img.get()
+            self.controller.image_height_mm = height
+            log.info("Update Image Height: {} mm".format(height))
         except TclError:
             self.entry_height_img.delete(0, END)
             log.info("Enter a double")
     
     def print_img_width_entry(self, event):
         try:
-            log.info("Image Width: {} mm".format(self.contents_width_img.get()))
+            width = self.contents_width_img.get()
+            self.controller.image_width_mm = width
+            log.info("Update Image Width: {} mm".format(width))
         except TclError:
             self.entry_width_img.delete(0, END)
             log.info("Enter a double")
