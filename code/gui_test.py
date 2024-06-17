@@ -27,9 +27,12 @@ class App(Frame):
         self.PAUSED = False
         self.SAVEFLAG = False #TODO: make this mutex
 
-        # Frame for entries
-        self.frame_entry = ttk.Frame(self.master, padding = 25)
-        self.frame_entry.grid(column=0, row=0)
+        # Frames for entries
+        self.frame_entry_cookie = ttk.Frame(self.master, padding = 25)
+        self.frame_entry_cookie.grid(column=0, row=1)
+        
+        self.frame_entry_machine = ttk.Frame(self.master, padding = 25)
+        self.frame_entry_machine.grid(column=0, row=0)
         # self.frame_entry.grid_rowconfigure(0, weight=1)
         # self.frame_entry.grid_columnconfigure(0, weight=1)
         # must instantiate controller first
@@ -56,9 +59,9 @@ class App(Frame):
 
     def create_cookie_height_entry(self):
         # Entry for cookie height
-        self.label_height_cookie = ttk.Label(self.frame_entry, text="Enter Cookie Height (mm):   ")
+        self.label_height_cookie = ttk.Label(self.frame_entry_cookie, text="Enter Cookie Height (mm):   ")
         self.label_height_cookie.grid(column = 0, row = 0)
-        self.entry_height_cookie = Entry(self.frame_entry)
+        self.entry_height_cookie = Entry(self.frame_entry_cookie)
         self.entry_height_cookie.grid(column = 1, row = 0)
 
         ## Create the application variable.
@@ -75,9 +78,9 @@ class App(Frame):
 
     def create_cookie_width_entry(self):
         # Entry for cookie width
-        self.label_width_cookie = ttk.Label(self.frame_entry, text="Enter Cookie Width (mm):   ")
+        self.label_width_cookie = ttk.Label(self.frame_entry_cookie, text="Enter Cookie Width (mm):   ")
         self.label_width_cookie.grid(column = 3, row = 0)
-        self.entry_width_cookie = Entry(self.frame_entry)
+        self.entry_width_cookie = Entry(self.frame_entry_cookie)
         self.entry_width_cookie.grid(column = 4, row = 0)
 
         ## Create the application variable.
@@ -92,11 +95,32 @@ class App(Frame):
         self.entry_width_cookie.bind('<Key-Return>',
                              self.print_cookie_width_entry)
 
+    def create_percent_overlap_entry(self):
+        # Entry for percent overlap between images
+        self.label_overlap = ttk.Label(self.frame_entry_cookie, text="Enter Percent Overlap (%):   ")
+        self.label_overlap.grid(column = 0, row = 2)
+        self.entry_overlap = Entry(self.frame_entry_cookie)
+        self.entry_overlap.grid(column = 1, row = 2)
+
+        ## Create the application variable.
+        self.contents_overlap = IntVar()
+        ## Set it to some value.
+        self.contents_overlap.set("20")
+        ## Tell the entry widget to watch this variable.
+        self.entry_overlap["textvariable"] = self.contents_overlap
+
+        self.entry_overlap.bind('<Key-Return>',
+                             self.print_overlap)
+        
+    def create_add_cookie_button(self):
+        self.button_calculate = ttk.Button(self.frame_entry_cookie, text="Add Cookie", command=self.cb_add_cookie)
+        self.button_calculate.grid(column = 5, row = 1)
+
     def create_img_height_entry(self):
         # Entry for Image height
-        self.label_height_img = ttk.Label(self.frame_entry, text="Enter Image Height (mm):   ")
+        self.label_height_img = ttk.Label(self.frame_entry_machine, text="Enter Image Height (mm):   ")
         self.label_height_img.grid(column = 0, row = 1)
-        self.entry_height_img = Entry(self.frame_entry)
+        self.entry_height_img = Entry(self.frame_entry_machine)
         self.entry_height_img.grid(column = 1, row = 1)
 
         ## Create the application variable.
@@ -113,9 +137,9 @@ class App(Frame):
         
     def create_img_width_entry(self):
         # Entry for Image width
-        self.label_width_img = ttk.Label(self.frame_entry, text="Enter Image Width (mm):   ")
+        self.label_width_img = ttk.Label(self.frame_entry_machine, text="Enter Image Width (mm):   ")
         self.label_width_img.grid(column = 3, row = 1)
-        self.entry_width_img = Entry(self.frame_entry)
+        self.entry_width_img = Entry(self.frame_entry_machine)
         self.entry_width_img.grid(column = 4, row = 1)
 
         ## Create the application variable.
@@ -129,28 +153,6 @@ class App(Frame):
         ## It prints the current value of the variable.
         self.entry_width_img.bind('<Key-Return>',
                              self.print_img_width_entry)
-
-    def create_percent_overlap_entry(self):
-        # Entry for percent overlap between images
-        self.label_overlap = ttk.Label(self.frame_entry, text="Enter Percent Overlap (%):   ")
-        self.label_overlap.grid(column = 0, row = 2)
-        self.entry_overlap = Entry(self.frame_entry)
-        self.entry_overlap.grid(column = 1, row = 2)
-
-        ## Create the application variable.
-        self.contents_overlap = IntVar()
-        ## Set it to some value.
-        self.contents_overlap.set("20")
-        ## Tell the entry widget to watch this variable.
-        self.entry_overlap["textvariable"] = self.contents_overlap
-
-        self.entry_overlap.bind('<Key-Return>',
-                             self.print_overlap)
-        
-    def create_add_cookie_button(self):
-        self.button_calculate = ttk.Button(self.frame_entry, text="Add Cookie", command=self.cb_add_cookie)
-        self.button_calculate.grid(column = 5, row = 1)
-
 
     def create_calculate_grid_button(self):
          # Calculate button

@@ -180,8 +180,8 @@ class MachineControl:
         g_code = []
 
         # More than 0.00 precision is unrealistic with the machinery
-        overlap_x = round(self.image_width_mm * cookie.percent_overlap / 100, 2)
-        overlap_y = round(self.image_height_mm * cookie.percent_overlap / 100, 2)
+        overlap_x = round(self.image_width_mm * cookie.percent_overlap / 100, 3)
+        overlap_y = round(self.image_height_mm * cookie.percent_overlap / 100, 3)
 
         log.info("overlap x: {}".format(overlap_x))
         log.info("overlap y: {}".format(overlap_y))
