@@ -150,7 +150,7 @@ class App(Frame):
                              self.print_overlap)
         
     def create_add_cookie_button(self):
-        self.button_calculate = ttk.Button(self.frame_buttons, text="Add Cookie", command=self.cb_add_cookie)
+        self.button_calculate = ttk.Button(self.frame_entry, text="Add Cookie", command=self.cb_add_cookie)
         self.button_calculate.grid(column = 5, row = 1)
 
 
