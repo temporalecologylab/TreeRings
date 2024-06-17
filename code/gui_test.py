@@ -27,8 +27,6 @@ class App(Frame):
         self.PAUSED = False
         self.SAVEFLAG = False #TODO: make this mutex
 
-        self.current_image = None
-
         # Frame for entries
         self.frame_entry = ttk.Frame(self.master, padding = 25)
         self.frame_entry.grid(column=0, row=0)
@@ -226,10 +224,8 @@ class App(Frame):
     def start_image_preview(self):
         print("preview start")
         while True:
-            self.controller.mutex_camera.acquire()
-            self.current_image = self.controller.capture_image()
-            cv2.imshow("window", self.current_image)
-            self.controller.mutex_camera.release()
+            img = self.controller.capture_image()
+            cv2.imshow("window", img)
             time.sleep(.1)
             cv2.waitKey(1)
             
@@ -264,10 +260,10 @@ class App(Frame):
         self.directory = filedialog.askdirectory()
     
     def cb_pause_g_code(self):
-        self.PAUSED = True
+        self.controller.pause()
 
     def cb_resume_g_code(self):
-        self.PAUSED = False
+        self.controller.resume()
 
     def cb_homing_g_code(self):
         self.controller.homing_sequence()
@@ -323,14 +319,13 @@ class App(Frame):
         i = 0
 
         log.info("Starting serpentine")
-        g_code = self.controller.generate_serpentine()
-
-        for line in g_code:
+        
+        for line in self.g_code:
             self.controller.mutex_camera.acquire()
             self.controller.send_command(line)
             time.sleep(pause) # wait for vibrations to settle
-            self.current_image = self.controller.capture_image()
-            cv2.imwrite('images/img{}.jpg'.format(i), self.current_image)
+            img = self.controller.capture_image()
+            cv2.imwrite('images/img{}.jpg'.format(i), img)
             i+=1
             self.controller.mutex_camera.release()
                  #TODO: this doesnt work - pause cannot be clicked -run in new thread?

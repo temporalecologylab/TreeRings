@@ -183,8 +183,8 @@ class MachineControl:
             return "EMPTY"
 
         # More than 0.00 precision is unrealistic with the machinery
-        overlap_x = round(self.image_width_mm * cookie.overlap_percentage / 100, 2)
-        overlap_y = round(self.image_height_mm * cookie.overlap_percentage / 100, 2)
+        overlap_x = round(self.image_width_mm * cookie.percent_overlap / 100, 2)
+        overlap_y = round(self.image_height_mm * cookie.percent_overlap / 100, 2)
 
 
         # TODO: add logic / user input / something to move z to be in focus
