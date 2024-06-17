@@ -7,7 +7,8 @@ import cv2
 from threading import Thread
 
 import GCodeManager 
-import time, datetime
+import time
+from datetime import datetime
 
 log.basicConfig(format='%(process)d-%(levelname)s-%(message)s', level=log.INFO)
 
@@ -286,7 +287,9 @@ class App(Frame):
 
     def cb_capture_image(self):
         img = self.controller.capture_image()
-        cv2.imwrite("image_{}".format(datetime.now().strftime("%H_%M_%S"), img))
+        name = "image_{}".format(datetime.now().strftime("%H_%M_%S"))
+        cv2.imwrite(name, img)
+        log.info("Saving {}".format(name))
 
     def print_cookie_height_entry(self, event):
         try:
