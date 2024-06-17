@@ -5,7 +5,7 @@ import time
 from threading import Lock
 from picamera2 import Picamera2
 import cv2
-
+import focus_stack
 
 log.basicConfig(format='%(process)d-%(levelname)s-%(message)s', level=log.INFO)
 
@@ -106,6 +106,29 @@ class MachineControl:
         cmd = "$J=G91 G21 Z{} F{}".format(dist, self.feed_rate_z)
         self.send_command(cmd)
 
+    def focus_stack_sequence(self, step_size_mm: float, image_count_odd: int):
+        images = []
+        dist = 0 #distance from zero 
+
+        if image_count_odd // 2 == 0:
+            return "MUST BE ODD"
+        
+        z_offset = round(math.floor(image_count_odd / 2) * step_size_mm, 3)
+
+        # go to the bottom of the range 
+        self.jog_z(-z_offset)
+
+        # move upwards by a step, take a photo, then repeat
+        for i in range(0, image_count_odd):
+            images.append(self.capture_image())
+            self.jog_z(step_size_mm)
+        # return to original position
+        self.jog_z(-z_offset)
+
+        stacked = focus_stack(images)
+
+        return stacked
+    
     def jog_cancel(self) -> None:
         """Immediately cancels the current jog state by a feed hold and
         automatically flushing any remaining jog commands in the buffer.
@@ -173,6 +196,22 @@ class MachineControl:
     def disable_soft_limits(self):
         cmd = "$20 0"
         self.send_command(cmd)
+
+    def send_serpentine(self, g_code, pause = 1):
+        i = 0
+
+        log.info("Starting serpentine")
+
+        for line in g_code:
+            time.sleep(pause) # wait for vibrations to settle
+            # img = self.capture_image()
+            # cv2.imwrite('images/img{}.jpg'.format(i), focused)
+            # i+=1
+            focused = self.focus_stack_sequence(0.1, 5)
+            cv2.imwrite('images/focused{}.jpg'.format(i), focused)
+            i+=1
+            
+            
 
     def generate_serpentine(self, cookie: CookieSample) -> list[str]:
         # TODO: make this work for multiple cookies... this is going to be interesting

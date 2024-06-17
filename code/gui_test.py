@@ -342,22 +342,9 @@ class App(Frame):
         
 
     def bulk_send_g_code(self, pause = 1):
-        i = 0
-
         log.info("Starting serpentine")
 
-        for line in self.g_code:
-            self.controller.mutex_camera.acquire()
-            self.controller.send_command(line)
-            time.sleep(pause) # wait for vibrations to settle
-            img = self.controller.capture_image()
-            cv2.imwrite('images/img{}.jpg'.format(i), img)
-            i+=1
-            self.controller.mutex_camera.release()
-                 #TODO: this doesnt work - pause cannot be clicked -run in new thread?
-        
-            grbl_out = self.controller.s.readline()
-            log.info(' : ' + str(grbl_out.strip()))
+        self.controller.send_serpentine(self.g_code)
             
 
    
