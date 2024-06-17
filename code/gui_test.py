@@ -6,9 +6,9 @@ import cv2
 
 from threading import Thread
 
-from picamera2 import Picamera2
-import GCodeManager as GCodeManager
+import GCodeManager 
 import time
+from datetime import datetime
 
 log.basicConfig(format='%(process)d-%(levelname)s-%(message)s', level=log.INFO)
 
@@ -18,29 +18,32 @@ class App(Frame):
         super().__init__(master)
         # self.grid()
         self.master = master
-        self.master.geometry("800x400")
+        self.master.geometry("900x500")
         self.master.title("Cookie Capture")
         self.master.grid_rowconfigure(0, weight=1)
         self.master.grid_columnconfigure(0, weight=1)
 
+        self.controller = GCodeManager.MachineControl(3, 2)
+
         self.PAUSED = False
         self.SAVEFLAG = False #TODO: make this mutex
 
-        self.picam2 = Picamera2()
-        self.current_image = ""
-
-        # Frame for entries
-        self.frame_entry = ttk.Frame(self.master, padding = 25)
-        self.frame_entry.grid(column=0, row=0)
+        # Frames for entries
+        self.frame_entry_cookie = ttk.Frame(self.master, padding = 25)
+        self.frame_entry_cookie.grid(column=0, row=0)
+        
+        self.frame_entry_machine = ttk.Frame(self.master, padding = 25)
+        self.frame_entry_machine.grid(column=0, row=1)
         # self.frame_entry.grid_rowconfigure(0, weight=1)
         # self.frame_entry.grid_columnconfigure(0, weight=1)
-        # must instantiate GCM first
+        # must instantiate controller first
 
         self.create_cookie_height_entry()
         self.create_cookie_width_entry()
         self.create_img_height_entry()
         self.create_img_width_entry()
         self.create_percent_overlap_entry()
+        self.create_add_cookie_button()
         self.create_calculate_grid_button()
         self.create_directory_button()
         self.calculate_grid() # must run before create_serial_connect_button()
@@ -49,6 +52,7 @@ class App(Frame):
         self.create_g_code_pause_button()
         self.create_g_code_resume_button()
         self.create_g_code_homing_button()
+        self.create_capture_button()
         self.create_arrow_buttons()
 
         img_window = Thread(target=self.start_image_preview)
@@ -57,9 +61,9 @@ class App(Frame):
 
     def create_cookie_height_entry(self):
         # Entry for cookie height
-        self.label_height_cookie = ttk.Label(self.frame_entry, text="Enter Cookie Height (mm):   ")
+        self.label_height_cookie = ttk.Label(self.frame_entry_cookie, text="Enter Cookie Height (mm):   ")
         self.label_height_cookie.grid(column = 0, row = 0)
-        self.entry_height_cookie = Entry(self.frame_entry)
+        self.entry_height_cookie = Entry(self.frame_entry_cookie)
         self.entry_height_cookie.grid(column = 1, row = 0)
 
         ## Create the application variable.
@@ -76,9 +80,9 @@ class App(Frame):
 
     def create_cookie_width_entry(self):
         # Entry for cookie width
-        self.label_width_cookie = ttk.Label(self.frame_entry, text="Enter Cookie Width (mm):   ")
+        self.label_width_cookie = ttk.Label(self.frame_entry_cookie, text="Enter Cookie Width (mm):   ")
         self.label_width_cookie.grid(column = 3, row = 0)
-        self.entry_width_cookie = Entry(self.frame_entry)
+        self.entry_width_cookie = Entry(self.frame_entry_cookie)
         self.entry_width_cookie.grid(column = 4, row = 0)
 
         ## Create the application variable.
@@ -93,11 +97,32 @@ class App(Frame):
         self.entry_width_cookie.bind('<Key-Return>',
                              self.print_cookie_width_entry)
 
+    def create_percent_overlap_entry(self):
+        # Entry for percent overlap between images
+        self.label_overlap = ttk.Label(self.frame_entry_cookie, text="Enter Percent Overlap (%):   ")
+        self.label_overlap.grid(column = 0, row = 2)
+        self.entry_overlap = Entry(self.frame_entry_cookie)
+        self.entry_overlap.grid(column = 1, row = 2)
+
+        ## Create the application variable.
+        self.contents_overlap = IntVar()
+        ## Set it to some value.
+        self.contents_overlap.set("20")
+        ## Tell the entry widget to watch this variable.
+        self.entry_overlap["textvariable"] = self.contents_overlap
+
+        self.entry_overlap.bind('<Key-Return>',
+                             self.print_overlap)
+        
+    def create_add_cookie_button(self):
+        self.button_calculate = ttk.Button(self.frame_entry_cookie, text="Add Cookie", command=self.cb_add_cookie)
+        self.button_calculate.grid(column = 4, row = 2)
+
     def create_img_height_entry(self):
         # Entry for Image height
-        self.label_height_img = ttk.Label(self.frame_entry, text="Enter Image Height (mm):   ")
+        self.label_height_img = ttk.Label(self.frame_entry_machine, text="Enter Image Height (mm):   ")
         self.label_height_img.grid(column = 0, row = 1)
-        self.entry_height_img = Entry(self.frame_entry)
+        self.entry_height_img = Entry(self.frame_entry_machine)
         self.entry_height_img.grid(column = 1, row = 1)
 
         ## Create the application variable.
@@ -114,9 +139,9 @@ class App(Frame):
         
     def create_img_width_entry(self):
         # Entry for Image width
-        self.label_width_img = ttk.Label(self.frame_entry, text="Enter Image Width (mm):   ")
+        self.label_width_img = ttk.Label(self.frame_entry_machine, text="Enter Image Width (mm):   ")
         self.label_width_img.grid(column = 3, row = 1)
-        self.entry_width_img = Entry(self.frame_entry)
+        self.entry_width_img = Entry(self.frame_entry_machine)
         self.entry_width_img.grid(column = 4, row = 1)
 
         ## Create the application variable.
@@ -131,23 +156,6 @@ class App(Frame):
         self.entry_width_img.bind('<Key-Return>',
                              self.print_img_width_entry)
 
-    def create_percent_overlap_entry(self):
-        # Entry for percent overlap between images
-        self.label_overlap = ttk.Label(self.frame_entry, text="Enter Percent Overlap (%):   ")
-        self.label_overlap.grid(column = 0, row = 2)
-        self.entry_overlap = Entry(self.frame_entry)
-        self.entry_overlap.grid(column = 1, row = 2)
-
-        ## Create the application variable.
-        self.contents_overlap = IntVar()
-        ## Set it to some value.
-        self.contents_overlap.set("20")
-        ## Tell the entry widget to watch this variable.
-        self.entry_overlap["textvariable"] = self.contents_overlap
-
-        self.entry_overlap.bind('<Key-Return>',
-                             self.print_overlap)
-        
     def create_calculate_grid_button(self):
          # Calculate button
         self.frame_buttons = ttk.Frame(self.master, padding = 25)
@@ -161,7 +169,7 @@ class App(Frame):
         self.button_directory.grid(column = 0, row = 1)
 
     def create_serial_connect_button(self):
-        self.button_serial_connect = ttk.Button(self.frame_buttons, text="Serial Connect", command=self.GCM.serial_connect_port)
+        self.button_serial_connect = ttk.Button(self.frame_buttons, text="Serial Connect", command=self.controller.serial_connect_port)
         self.button_serial_connect.grid(column = 2, row = 1)
 
     def create_g_code_sender_button(self):
@@ -179,6 +187,11 @@ class App(Frame):
     def create_g_code_homing_button(self):
         self.button_g_code_homing = ttk.Button(self.frame_buttons, text="SET HOME", command=self.cb_homing_g_code)
         self.button_g_code_homing.grid(column = 3, row = 3)
+
+    def create_capture_button(self):
+        self.button_capture = ttk.Button(self.frame_buttons, text="CAPTURE", command=self.cb_capture_image)
+        self.button_capture.grid(column = 4, row = 2)
+
 
     def create_arrow_buttons(self):
         self.frame_jogging = ttk.Frame(self.master, padding = 25)
@@ -219,43 +232,35 @@ class App(Frame):
 
     def start_image_preview(self):
         print("preview start")
-        self.picam2.configure(self.picam2.create_preview_configuration(main={"format": "XRGB8888", "size": (640,480)}))
-        self.picam2.start()
         while True:
-            if self.SAVEFLAG:
-                time.sleep(0.1)
-                continue
-            self.current_image = self.picam2.capture_array()
-            cv2.imshow("window", self.current_image)
+            img = self.controller.capture_image()
+            cv2.imshow("window", img)
             time.sleep(.1)
             cv2.waitKey(1)
             
-
     def jog_y_plus(self):
         log.info("jog +{} mm y".format(self.jog_distance))
-        self.GCM.jog_y(self.jog_distance)
-
+        self.controller.jog_y(self.jog_distance)
 
     def jog_y_minus(self):
         log.info("jog -{} mm y".format(self.jog_distance))
-        self.GCM.jog_y(self.jog_distance * -1)
+        self.controller.jog_y(self.jog_distance * -1)
     
     def jog_x_plus(self):
         log.info("jog +{} mm x".format(self.jog_distance))
-        self.GCM.jog_x(self.jog_distance)
-
+        self.controller.jog_x(self.jog_distance)
 
     def jog_x_minus(self):
         log.info("jog -{} mm x".format(self.jog_distance))
-        self.GCM.jog_x(self.jog_distance * -1)
+        self.controller.jog_x(self.jog_distance * -1)
     
     def jog_z_plus(self):
         log.info("jog +{} mm z".format(self.jog_distance))
-        self.GCM.jog_z(self.jog_distance)
+        self.controller.jog_z(self.jog_distance)
 
     def jog_z_minus(self):
         log.info("jog -{} mm z".format(self.jog_distance))
-        self.GCM.jog_z(self.jog_distance * -1)
+        self.controller.jog_z(self.jog_distance * -1)
 
     def cb_jog_distance(self, event):
         self.jog_distance = float(self.entry_jog_distance.get())
@@ -264,38 +269,58 @@ class App(Frame):
         self.directory = filedialog.askdirectory()
     
     def cb_pause_g_code(self):
-        self.PAUSED = True
+        self.controller.pause()
 
     def cb_resume_g_code(self):
-        self.PAUSED = False
+        self.controller.resume()
 
     def cb_homing_g_code(self):
-        self.GCM.homing_sequence()
+        self.controller.homing_sequence()
+
+    def cb_add_cookie(self):
+        width = self.contents_width_cookie.get()
+        height = self.contents_height_cookie.get()
+        overlap = self.contents_overlap.get()
+
+        self.controller.add_cookie_sample(width, height, overlap)
+        log.info("Adding Cookie \nW: {}\nH: {}\nO: {}\n".format(width, height,overlap))
+
+    def cb_capture_image(self):
+        img = self.controller.capture_image()
+        name = "image_{}.jpg".format(datetime.now().strftime("%H_%M_%S"))
+        cv2.imwrite(name, img)
+        log.info("Saving {}".format(name))
 
     def print_cookie_height_entry(self, event):
         try:
-            log.info("Cookie Height: {} mm".format(self.contents_height_cookie.get()))
+            height = self.contents_height_cookie.get()
+            log.info("Update Image Height: {} mm".format(height))
         except TclError:
             self.entry_height_cookie.delete(0, END)
             log.info("Enter a double")
 
     def print_cookie_width_entry(self, event):
         try:
-            log.info("Cookie Width: {} mm".format(self.contents_width_cookie.get()))
+            width = self.contents_width_cookie.get()
+            log.info("Update Cookie Width: {} mm".format(width))
         except TclError:
             self.entry_width_cookie.delete(0, END)
             log.info("Enter a double")
     
     def print_img_height_entry(self, event):
         try:
-            log.info("Image Height: {} mm".format(self.contents_height_img.get()))
+            height = self.contents_height_img.get()
+            self.controller.image_height_mm = height
+            log.info("Update Image Height: {} mm".format(height))
         except TclError:
             self.entry_height_img.delete(0, END)
             log.info("Enter a double")
     
     def print_img_width_entry(self, event):
         try:
-            log.info("Image Width: {} mm".format(self.contents_width_img.get()))
+            width = self.contents_width_img.get()
+            self.controller.image_width_mm = width
+            log.info("Update Image Width: {} mm".format(width))
         except TclError:
             self.entry_width_img.delete(0, END)
             log.info("Enter a double")
@@ -308,43 +333,31 @@ class App(Frame):
             self.entry_overlap.delete(0, END)
             log.info("Enter an integer")
 
-    def calculate_grid(self):
-
-        # definitely going to need a different setup than this 
-        START_POINT = (0, 0)
+    def calculate_grid(self): 
+        if len(self.controller.cookie_samples) > 0:
+            self.g_code = self.controller.generate_serpentine(self.controller.cookie_samples[-1]) #TODO make work with multiple samples... will be hard
+            log.info("{} overlapping images calculated".format(len(self.g_code)))
+        else:
+            log.info("ERROR: NO COOKIES ADDED... Add a cookie using the button")
         
-        self.GCM = GCodeManager.GCodeManager(self.contents_height_cookie.get(), 
-                                self.contents_width_cookie.get(),
-                                self.contents_width_img.get(),
-                                self.contents_height_img.get(),
-                                500,
-                                self.contents_overlap.get(),
-                                START_POINT)
-        
-        log.info("{} overlapping images calculated".format(len(self.GCM.g_code)))
 
     def bulk_send_g_code(self, pause = 1):
-        # self.GCM.serial_connect_port("ttyS0")
-        self.SAVEFLAG = True
         i = 0
 
         log.info("Starting serpentine")
-        g_code = self.GCM.generate_serpentine_2()
-        for line in g_code:
-            if not self.PAUSED:
-                self.GCM.send_command(line)
-                time.sleep(pause) # wait for vibrations to settle
-                self.current_image = self.picam2.capture_array()
-                cv2.imwrite('images/img{}.jpg'.format(i), self.current_image)
-                i+=1
-            else: 
-                while self.PAUSED:
-                    if not self.PAUSED:
-                        continue        #TODO: this doesnt work - pause cannot be clicked -run in new thread?
+
+        for line in self.g_code:
+            self.controller.mutex_camera.acquire()
+            self.controller.send_command(line)
+            time.sleep(pause) # wait for vibrations to settle
+            img = self.controller.capture_image()
+            cv2.imwrite('images/img{}.jpg'.format(i), img)
+            i+=1
+            self.controller.mutex_camera.release()
+                 #TODO: this doesnt work - pause cannot be clicked -run in new thread?
         
-        grbl_out = self.GCM.s.readline()
-        log.info(' : ' + str(grbl_out.strip()))
-        self.SAVEFLAG = False
+            grbl_out = self.controller.s.readline()
+            log.info(' : ' + str(grbl_out.strip()))
             
 
    
