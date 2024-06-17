@@ -7,7 +7,7 @@ import cv2
 from threading import Thread
 
 import GCodeManager 
-import time
+import time, datetime
 
 log.basicConfig(format='%(process)d-%(levelname)s-%(message)s', level=log.INFO)
 
@@ -17,7 +17,7 @@ class App(Frame):
         super().__init__(master)
         # self.grid()
         self.master = master
-        self.master.geometry("800x400")
+        self.master.geometry("900x500")
         self.master.title("Cookie Capture")
         self.master.grid_rowconfigure(0, weight=1)
         self.master.grid_columnconfigure(0, weight=1)
@@ -29,10 +29,10 @@ class App(Frame):
 
         # Frames for entries
         self.frame_entry_cookie = ttk.Frame(self.master, padding = 25)
-        self.frame_entry_cookie.grid(column=0, row=1)
+        self.frame_entry_cookie.grid(column=0, row=0)
         
         self.frame_entry_machine = ttk.Frame(self.master, padding = 25)
-        self.frame_entry_machine.grid(column=0, row=0)
+        self.frame_entry_machine.grid(column=0, row=1)
         # self.frame_entry.grid_rowconfigure(0, weight=1)
         # self.frame_entry.grid_columnconfigure(0, weight=1)
         # must instantiate controller first
@@ -114,7 +114,7 @@ class App(Frame):
         
     def create_add_cookie_button(self):
         self.button_calculate = ttk.Button(self.frame_entry_cookie, text="Add Cookie", command=self.cb_add_cookie)
-        self.button_calculate.grid(column = 5, row = 1)
+        self.button_calculate.grid(column = 4, row = 2)
 
     def create_img_height_entry(self):
         # Entry for Image height
@@ -185,6 +185,11 @@ class App(Frame):
     def create_g_code_homing_button(self):
         self.button_g_code_homing = ttk.Button(self.frame_buttons, text="SET HOME", command=self.cb_homing_g_code)
         self.button_g_code_homing.grid(column = 3, row = 3)
+
+    def create_capture_button(self):
+        self.button_capture = ttk.Button(self.frame_buttons, text="CAPTURE", command=self.cb_capture_image)
+        self.button_capture.grid(column = 4, row = 2)
+
 
     def create_arrow_buttons(self):
         self.frame_jogging = ttk.Frame(self.master, padding = 25)
@@ -277,6 +282,10 @@ class App(Frame):
 
         self.controller.add_cookie_sample(width, height, overlap)
         log.info("Adding Cookie \nW: {}\nH: {}\nO: {}\n".format(width, height,overlap))
+
+    def cb_capture_image(self):
+        img = self.controller.capture_image()
+        cv2.imwrite("image_{}".format(datetime.now().strftime("%H_%M_%S"), img))
 
     def print_cookie_height_entry(self, event):
         try:
