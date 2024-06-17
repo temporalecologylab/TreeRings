@@ -62,7 +62,7 @@ class MachineControl:
 
     def capture_image(self):
         self.mutex_camera.acquire(blocking=True)
-        img = self.picam2.capture_array()
+        img = self.picam2.capture_array().format(img)
         self.mutex_camera.release()
         return img
 
