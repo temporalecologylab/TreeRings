@@ -3,6 +3,10 @@
 import numpy as np
 import cv2
 import os
+import logging as log
+
+log.basicConfig(format='%(process)d-%(levelname)s-%(message)s', level=log.INFO)
+
 
 class FocusStack:
 
@@ -88,7 +92,12 @@ class FocusStack:
         return cv2.Laplacian(blurred, cv2.CV_64F, ksize=kernel_size)
 
     def focus_stack(self, unimages):
-        images = self.align_images(unimages)
+        images_formatted = []
+
+        for img in unimages:
+            images_formatted.append(cv2.imread(img))
+
+        images = self.align_images(images_formatted)
 
         print("Computing the laplacian of the blurred images")
         laps = []
