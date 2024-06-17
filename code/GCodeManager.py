@@ -61,7 +61,7 @@ class MachineControl:
         self.picam2.start()
 
     def capture_image(self):
-        self.mutex_camera.acquire()
+        self.mutex_camera.acquire(blocking=True)
         img = self.picam2.capture_array()
         self.mutex_camera.release()
         return img
@@ -120,9 +120,11 @@ class MachineControl:
 
         # move upwards by a step, take a photo, then repeat
         for i in range(0, image_count_odd):
+            log.info("Stack image {}".format(i))
             images.append(self.capture_image())
             self.jog_z(step_size_mm)
             time.sleep(1)
+            
         # return to original position
         self.jog_z(-z_offset)
 
@@ -210,6 +212,7 @@ class MachineControl:
             # cv2.imwrite('images/img{}.jpg'.format(i), focused)
             # i+=1
             focused = self.focus_stack_sequence(0.1, 5)
+            log.info("Saving focused image")
             cv2.imwrite('images/focused{}.jpg'.format(i), focused)
             i+=1
             
