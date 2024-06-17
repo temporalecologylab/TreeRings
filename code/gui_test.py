@@ -51,6 +51,7 @@ class App(Frame):
         self.create_g_code_pause_button()
         self.create_g_code_resume_button()
         self.create_g_code_homing_button()
+        self.create_capture_button()
         self.create_arrow_buttons()
 
         img_window = Thread(target=self.start_image_preview)
