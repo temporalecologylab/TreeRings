@@ -6,7 +6,7 @@ import cv2
 
 from threading import Thread
 
-import GCodeManager as GCodeManager
+import GCodeManager 
 import time
 
 log.basicConfig(format='%(process)d-%(levelname)s-%(message)s', level=log.INFO)
@@ -309,7 +309,7 @@ class App(Frame):
 
     def calculate_grid(self): 
         if len(self.controller.cookie_samples) > 0:
-            self.g_code = self.controller.generate_serpentine(self.controller.cookie_samples[0]) #TODO make work with multiple samples... will be hard
+            self.g_code = self.controller.generate_serpentine(self.controller.cookie_samples[-1]) #TODO make work with multiple samples... will be hard
             log.info("{} overlapping images calculated".format(len(self.g_code)))
         else:
             log.info("ERROR: NO COOKIES ADDED... Add a cookie using the button")
@@ -319,7 +319,7 @@ class App(Frame):
         i = 0
 
         log.info("Starting serpentine")
-        
+
         for line in self.g_code:
             self.controller.mutex_camera.acquire()
             self.controller.send_command(line)
