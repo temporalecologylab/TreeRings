@@ -3,8 +3,8 @@ import math
 import serial
 import time
 from threading import Lock
-# from picamera2 import Picamera2
-# import cv2
+from picamera2 import Picamera2
+import cv2
 
 
 log.basicConfig(format='%(process)d-%(levelname)s-%(message)s', level=log.INFO)
