@@ -125,7 +125,8 @@ class MachineControl:
         # return to original position
         self.jog_z(-z_offset)
 
-        stacked = focus_stack(images)
+        stacker = focus_stack.FocusStack()
+        stacked = stacker.focus_stack(images)
 
         return stacked
     
