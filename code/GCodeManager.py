@@ -186,8 +186,8 @@ class MachineControl:
         log.info("overlap x: {}".format(overlap_x))
         log.info("overlap y: {}".format(overlap_y))
         # TODO: add logic / user input / something to move z to be in focus
-        x_step_size = cookie.width - overlap_x
-        y_step_size = cookie.height - overlap_y 
+        x_step_size = self.image_width_mm - overlap_x
+        y_step_size = self.image_height_mm - overlap_y 
 
         log.info("x_step_size x: {}".format(x_step_size))
         log.info("y_step_size y: {}".format(y_step_size))
