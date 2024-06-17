@@ -36,6 +36,7 @@ class FocusStack:
         outimages = []
 
         if use_sift:
+            log.info("using sift")
             detector = cv2.SIFT_create()
         else:
             detector = cv2.ORB_create(1000)
@@ -45,7 +46,7 @@ class FocusStack:
         image1gray = cv2.cvtColor(images[0],cv2.COLOR_BGR2GRAY)
         image_1_kp, image_1_desc = detector.detectAndCompute(image1gray, None)
 
-        log.info(images)
+        log.info("begin alignment")
         for i in range(1,len(images)):
             log.info("Aligning image {}".format(i))
             image_i_kp, image_i_desc = detector.detectAndCompute(images[i], None)
@@ -92,6 +93,7 @@ class FocusStack:
 
     def focus_stack(self, unimages):
 
+        log.info("focus stack begin")
         images = self.align_images(unimages)
 
         log.info("Computing the laplacian of the blurred images")
