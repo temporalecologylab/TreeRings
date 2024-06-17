@@ -269,8 +269,12 @@ class App(Frame):
         self.controller.homing_sequence()
 
     def cb_add_cookie(self):
-        self.controller.add_cookie_sample(self.contents_width_cookie.get(), self.contents_width_cookie.get(), self.contents_overlap.get())
+        width = self.contents_width_cookie.get()
+        height = self.contents_height_cookie.get()
+        overlap = self.contents_overlap.get()
 
+        self.controller.add_cookie_sample(width, height, overlap)
+        log.info("Adding Cookie \nW: {}\nH: {}\nO: {}\n".format(width, height,overlap))
     def print_cookie_height_entry(self, event):
         try:
             log.info("Cookie Height: {} mm".format(self.contents_height_cookie.get()))
