@@ -287,7 +287,7 @@ class App(Frame):
 
     def cb_capture_image(self):
         img = self.controller.capture_image()
-        name = "image_{}".format(datetime.now().strftime("%H_%M_%S"))
+        name = "image_{}.jpg".format(datetime.now().strftime("%H_%M_%S"))
         cv2.imwrite(name, img)
         log.info("Saving {}".format(name))
 
