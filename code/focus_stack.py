@@ -9,7 +9,7 @@ class FocusStack:
     def __init__(self):
         pass
 
-    def findHomography(image_1_kp, image_2_kp, matches):
+    def findHomography(self, image_1_kp, image_2_kp, matches):
         image_1_points = np.zeros((len(matches), 1, 2), dtype=np.float32)
         image_2_points = np.zeros((len(matches), 1, 2), dtype=np.float32)
 
@@ -76,7 +76,7 @@ class FocusStack:
 
     #
     #   Compute the gradient map of the image
-    def compute_laplacian(image):
+    def compute_laplacian(self,image):
 
         # YOU SHOULD TUNE THESE VALUES TO SUIT YOUR NEEDS
         kernel_size = 5         # Size of the laplacian window
@@ -231,16 +231,17 @@ class FocusStack:
 
         print("test")
 
-# if __name__ == "__main__":
-#     # image_files = os.listdir("edge_imgs")
-#     # focusimages = []
-#     # for img in image_files:
-#     #     focusimages.append(cv2.imread("edge_imgs/{}".format(img)))
+if __name__ == "__main__":
+    image_files = os.listdir("edge_imgs")
+    focusimages = []
+    for img in image_files:
+        focusimages.append(cv2.imread("edge_imgs/{}".format(img)))
 
-#     # img = focus_stack (focusimages)
+    stacker = FocusStack()
+    img = stacker.focus_stack(focusimages)
 
 
-#     # cv2.imwrite("stackedimg.jpg", img)
+    cv2.imwrite("stackedimg.jpg", img)
 
 #     os.chdir("c:/Users/chloe/wolkovich_s24/TreeRings/code")
 #     print(os.getcwd())
