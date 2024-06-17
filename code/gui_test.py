@@ -41,6 +41,7 @@ class App(Frame):
         self.create_img_height_entry()
         self.create_img_width_entry()
         self.create_percent_overlap_entry()
+        self.create_add_cookie_button()
         self.create_calculate_grid_button()
         self.create_directory_button()
         self.calculate_grid() # must run before create_serial_connect_button()
