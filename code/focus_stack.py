@@ -111,13 +111,55 @@ def focus_stack(unimages):
     
     return 255-output
 
+def crop_stacked(img_stacked):
+    combined = img_stacked[:, :, 0] + img_stacked[:, :, 1] + img_stacked[:, :, 2]
+    black_idx = np.where(combined == 0)
+
+    rows = black_idx[0]
+    cols = black_idx[1]
+    # upper left corner is origin, therefore max row and max col are bottom right
+
+    min_row = min(rows)
+    max_row = max(rows)
+    min_col = min(cols)
+    max_col = max(cols)
+
+    # top left -> (min_row, min_col)
+    tl = (min_row, min_col)
+    # top right -> (min_row, max_col)
+    tr = (min_row, max_col)
+    # bottom left ->(max_row, min_col)
+    bl = (max_row, min_col)
+    # bottom right -> (max_row, max_col)
+    br = (max_row, max_col)
+
+    # row_tr = 
+    # col_tr = 
+
+    # row_br = 
+    # col_br = 
+
+    # row_bl = 
+    # col_bl = 
+
+    print("test")
 
 if __name__ == "__main__":
-    image_files = os.listdir("edge_imgs")
-    focusimages = []
-    for img in image_files:
-        focusimages.append(cv2.imread("edge_imgs/{}".format(img)))
+    # image_files = os.listdir("edge_imgs")
+    # focusimages = []
+    # for img in image_files:
+    #     focusimages.append(cv2.imread("edge_imgs/{}".format(img)))
 
-    img = focus_stack (focusimages)
+    # img = focus_stack (focusimages)
 
-    cv2.imwrite("stackedimg.jpg", img)
+
+    # cv2.imwrite("stackedimg.jpg", img)
+
+    os.chdir("c:/code/TreeRings/code")
+    print(os.getcwd())
+    img = cv2.imread("stackedimg.jpg")
+    crop_stacked(img)
+
+    cv2.imwrite("og.jpg", img)
+    cv2.imwrite("new.jpg", img[img.nonzero()])
+    cv2.waitKey(0)
