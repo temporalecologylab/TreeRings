@@ -128,9 +128,12 @@ class MachineControl:
         # return to original position
         self.jog_z(-z_offset)
 
+        log.info("Sending images to focus stacker")
+
         stacker = focus_stack.FocusStack()
         stacked = stacker.focus_stack(images)
 
+        log.info("Returning stacked image")
         return stacked
     
     def jog_cancel(self) -> None:
@@ -212,7 +215,7 @@ class MachineControl:
             # cv2.imwrite('images/img{}.jpg'.format(i), focused)
             # i+=1
             focused = self.focus_stack_sequence(0.1, 5)
-            log.info("Saving focused image")
+            log.info("Saving focused image {} of {}".format(i, len(g_code)))
             cv2.imwrite('images/focused{}.jpg'.format(i), focused)
             i+=1
             
