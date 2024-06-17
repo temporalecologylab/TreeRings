@@ -122,6 +122,7 @@ class MachineControl:
         for i in range(0, image_count_odd):
             images.append(self.capture_image())
             self.jog_z(step_size_mm)
+            time.sleep(1)
         # return to original position
         self.jog_z(-z_offset)
 

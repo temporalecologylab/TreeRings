@@ -235,7 +235,7 @@ class App(Frame):
         while True:
             img = self.controller.capture_image()
             cv2.imshow("window", img)
-            time.sleep(.1)
+            time.sleep(.2)
             cv2.waitKey(1)
             
     def jog_y_plus(self):
