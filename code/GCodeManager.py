@@ -179,21 +179,25 @@ class MachineControl:
 
         g_code = []
 
-        if len(self.cookie_samples) == 0:
-            return "EMPTY"
-
         # More than 0.00 precision is unrealistic with the machinery
         overlap_x = round(self.image_width_mm * cookie.percent_overlap / 100, 2)
         overlap_y = round(self.image_height_mm * cookie.percent_overlap / 100, 2)
 
-
+        log.info("overlap x: {}".format(overlap_x))
+        log.info("overlap y: {}".format(overlap_y))
         # TODO: add logic / user input / something to move z to be in focus
         x_step_size = cookie.width - overlap_x
         y_step_size = cookie.height - overlap_y 
 
+        log.info("x_step_size x: {}".format(x_step_size))
+        log.info("y_step_size y: {}".format(y_step_size))
 
         x_steps = math.ceil(cookie.width / x_step_size)
         y_steps = math.ceil(cookie.height / y_step_size)
+
+        log.info("x_steps: {}".format(x_steps))
+        log.info("y_steps: {}".format(y_steps))
+
         total_images = x_steps * y_steps
         
         
