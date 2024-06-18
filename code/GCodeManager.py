@@ -57,7 +57,7 @@ class MachineControl:
 
     def launch_rpi_cam(self):
         self.picam2 = Picamera2()
-        self.picam2.configure(self.picam2.create_preview_configuration(main={"format": "XRGB8888", "size": (4056,3040)}))
+        self.picam2.configure(self.picam2.create_preview_configuration(main={"format": "BGR888", "size": (4056,3040)}))
         self.picam2.start()
 
     def capture_image(self):
