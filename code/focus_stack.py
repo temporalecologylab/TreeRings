@@ -3,6 +3,9 @@
 import numpy as np
 import cv2
 import os
+import logging as log
+
+log.basicConfig(format='%(process)d-%(levelname)s-%(message)s', level=log.INFO)
 
 class FocusStack:
 
@@ -33,6 +36,7 @@ class FocusStack:
         outimages = []
 
         if use_sift:
+            log.info("using sift")
             detector = cv2.SIFT_create()
         else:
             detector = cv2.ORB_create(1000)
@@ -42,9 +46,9 @@ class FocusStack:
         image1gray = cv2.cvtColor(images[0],cv2.COLOR_BGR2GRAY)
         image_1_kp, image_1_desc = detector.detectAndCompute(image1gray, None)
 
-        print(images)
+        log.info("begin alignment")
         for i in range(1,len(images)):
-            print("Aligning image {}".format(i))
+            log.info("Aligning image {}".format(i))
             image_i_kp, image_i_desc = detector.detectAndCompute(images[i], None)
 
             if use_sift:
@@ -88,15 +92,17 @@ class FocusStack:
         return cv2.Laplacian(blurred, cv2.CV_64F, ksize=kernel_size)
 
     def focus_stack(self, unimages):
+
+        log.info("focus stack begin")
         images = self.align_images(unimages)
 
-        print("Computing the laplacian of the blurred images")
+        log.info("Computing the laplacian of the blurred images")
         laps = []
         for i in range(len(images)):
             laps.append(self.compute_laplacian(cv2.cvtColor(images[i],cv2.COLOR_BGR2GRAY)))
 
         laps = np.asarray(laps)
-        print("Shape of array of laplacians = {}".format(laps.shape))
+        log.info("Shape of array of laplacians = {}".format(laps.shape))
 
         output = np.zeros(shape=images[0].shape, dtype=images[0].dtype)
 
@@ -116,8 +122,8 @@ class FocusStack:
         img_stacked[black_idx] = (0, 255, 0)
         cv2.imshow("test", img_stacked)
         cv2.waitKey(0)
-        # print(combined[0:10])
-        # print(black_idx)
+        # log.info(combined[0:10])
+        # log.info(black_idx)
 
         rows = black_idx[0]
         cols = black_idx[1]
@@ -128,7 +134,7 @@ class FocusStack:
         min_col = min(cols)
         max_col = max(cols) 
         
-        print(min_col)
+        log.info(min_col)
 
         middle_pt = [round(max_row/2), round(max_col/2)]
         
@@ -146,17 +152,17 @@ class FocusStack:
         while (not top_found or not bottom_found or not right_found or not left_found) and (y1 >= min_col or y2 < max_col or x2 < max_row or x1 >= min_row):
             for x in (x1, x2):
                 if combined[x][y1] == 0:
-                    print(y1)
+                    log.info(y1)
                     top_found = True
                 if combined[x][y2] == 0:
-                    print(y2)
+                    log.info(y2)
                     bottom_found = True
             for y in (y1, y2):
                 if combined[x2][y] == 0:
-                    print(x2)
+                    log.info(x2)
                     right_found = True
                 if combined[x1][y] == 0:
-                    print(x1)
+                    log.info(x1)
                     left_found = True
             if y1 == min_col:
                 top_found = True
@@ -215,7 +221,7 @@ class FocusStack:
 
 
         
-        print(x1, x2, y1, y2)
+        log.info(x1, x2, y1, y2)
         # row_tr = 
         # col_tr = 
 
@@ -229,7 +235,7 @@ class FocusStack:
 
         cv2.imwrite("cropped.jpg", cropped_img)
 
-        print("test")
+        log.info("test")
 
 if __name__ == "__main__":
     image_files = os.listdir("edge_imgs")
@@ -244,7 +250,7 @@ if __name__ == "__main__":
     cv2.imwrite("stackedimg.jpg", img)
 
 #     os.chdir("c:/Users/chloe/wolkovich_s24/TreeRings/code")
-#     print(os.getcwd())
+#     log.info(os.getcwd())
 #     img = cv2.imread("stackedimg.jpg")
 
 #     crop_stacked(img)
