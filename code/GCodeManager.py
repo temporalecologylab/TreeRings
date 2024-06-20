@@ -115,7 +115,7 @@ class MachineControl:
     #     self.picam2.configure(self.picam2.create_preview_configuration(main={"format": "BGR888", "size": (4056,3040)}))
     #     self.picam2.start()
 
-    def launch_gstreamer_feed(self):
+    # def launch_gstreamer_feed(self):
 
 
     def capture_image(self):
