@@ -235,7 +235,7 @@ class App(Frame):
             img = self.controller.capture_image()
             window = cv2.imread(img)
             img = cv2.flip(window, 0)
-            window = cv2.imshow("window", img)
+            cv2.imshow("window", img)
 
             time.sleep(.2)
             cv2.waitKey(1)
