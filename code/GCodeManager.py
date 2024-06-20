@@ -76,7 +76,7 @@ class MachineControl:
 
 
     def start_camera(self):
-        log("Starting pipeline:\n")
+        log.info("Starting pipeline:\n{}".format(self.gstreamer_pipeline(flip_method=0)))
 
         self.video_stream = cv2.VideoCapture(self.gstreamer_pipeline(flip_method=0), cv2.CAP_GSTREAMER)
 
