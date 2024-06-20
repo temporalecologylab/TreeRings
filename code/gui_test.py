@@ -232,7 +232,7 @@ class App(Frame):
 
     def start_image_preview(self):
         while True:
-            img = self.controller.capture_image()
+            img = self.controller.capture_image(flip=0)
             cv2.imshow("window", img)
             time.sleep(.2)
             cv2.waitKey(1)

@@ -334,21 +334,24 @@ class MachineControl:
 
         i = 0
         for y_step in range(0, y_steps):
-
+            g_code_i = []
+            
             # Move in X-direction with overlap
             for _ in range(0, x_steps - 1): # -1 because the y movement counts as the first image in the new row
                 x = round(x_step_size, 2)
-                g_code[i].append(f"$J=G91 G21 X{x} F{self.feed_rate_xy}")
+                g_code_i.append(f"$J=G91 G21 X{x} F{self.feed_rate_xy}")
 
             # Move down one step in the +Y-direction with overlap
             y = round(y_step_size, 2)
 
             # Don't go further down after the final row is finished
             if y_step != y_steps - 1:
-                g_code[i].append(f"$J=G91 G21 Y-{y} F{self.feed_rate_xy}")
+                g_code_i.append(f"$J=G91 G21 Y-{y} F{self.feed_rate_xy}")
 
+            g_code.append(g_code_i)
             x_step_size *= -1 # switch X directions
             i += 1
+
         # End program
         # g_code.append("M2")
     
