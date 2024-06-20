@@ -294,9 +294,9 @@ class MachineControl:
             for j in (0, len(g_code[i])):
                 self.send_command(j)
                 stack = self.stack_sequence(0.1, 5)
+                print(stack)
                 log.info("Saving images in location {},{} of {}".format(i, j , len(g_code) * len(g_code[i])))
                 for k in (0, len(stack)):
-                    log.INFO("{}".format(stack[k]))
                     cv2.imwrite('images/focused{}-{}_{}.jpg'.format(i,j,k), stack[k])
                 
             
@@ -332,7 +332,7 @@ class MachineControl:
         log.info("Creating G-Code for {} serpentine images".format(total_images))
         
         # begin serpentine logic
-        g_code[0].append("$J=G91 G21 X{} F{}".format(x_step_size, self.feed_rate_xy)) # set and forget feed
+        #g_code[0].append("$J=G91 G21 X{} F{}".format(x_step_size, self.feed_rate_xy)) # set and forget feed
 
         i = 0
         for y_step in range(0, y_steps):
