@@ -52,9 +52,9 @@ class MachineControl:
         sensor_id=0,
         capture_width=4052,
         capture_height=3040,
-        display_width=960,
-        display_height=540,
-        framerate=15,
+        display_width=4052,
+        display_height=3040,
+        framerate=30,
         flip_method=0,
     ):
         return (
