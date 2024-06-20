@@ -50,10 +50,10 @@ class MachineControl:
     def gstreamer_pipeline(
         self,
         sensor_id=0,
-        capture_width=4052,
-        capture_height=3040,
-        display_width=4052,
-        display_height=3040,
+        capture_width=3840,
+        capture_height=2160,
+        display_width=3840,
+        display_height=2160,
         framerate=30,
         flip_method=0,
     ):
