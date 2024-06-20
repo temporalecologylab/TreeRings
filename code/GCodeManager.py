@@ -286,17 +286,17 @@ class MachineControl:
 
         log.info("Starting serpentine")
 
-        for i in (0, len(g_code)):
+        for i in range(0, len(g_code)):
             time.sleep(pause) # wait for vibrations to settle
             # img = self.capture_image()
             # cv2.imwrite('images/img{}.jpg'.format(i), focused)
             # i+=1
-            for j in (0, len(g_code[i])):
+            for j in range(0, len(g_code[i])):
                 self.send_command(j)
                 stack = self.stack_sequence(0.1, 5)
                 print(stack)
                 log.info("Saving images in location {},{} of {}".format(i, j , len(g_code) * len(g_code[i])))
-                for k in (0, len(stack)):
+                for k in range(0, len(stack)):
                     log.info("saving image {} of {} in stack".format(k, len(stack)))
                     cv2.imwrite('images/focused{}-{}_{}.jpg'.format(i,j,k), stack[k])
                 
