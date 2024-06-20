@@ -292,9 +292,9 @@ class MachineControl:
             # cv2.imwrite('images/img{}.jpg'.format(i), focused)
             # i+=1
             for j in range(0, len(g_code[i])):
+                log.info("xy move: {}".format(j))
                 self.send_command(j)
                 stack = self.stack_sequence(0.1, 5)
-                print(stack)
                 log.info("Saving images in location {},{} of {}".format(i, j , len(g_code) * len(g_code[i])))
                 for k in range(0, len(stack)):
                     log.info("saving image {} of {} in stack".format(k, len(stack)))
