@@ -297,6 +297,7 @@ class MachineControl:
                 print(stack)
                 log.info("Saving images in location {},{} of {}".format(i, j , len(g_code) * len(g_code[i])))
                 for k in (0, len(stack)):
+                    log.info("saving image {} of {} in stack".format(k, len(stack)))
                     cv2.imwrite('images/focused{}-{}_{}.jpg'.format(i,j,k), stack[k])
                 
             
