@@ -47,10 +47,6 @@ class MachineControl:
 
         self.start_camera()
 
-    def __del__(self):
-        self.tr.stop()
-        log("Stopping all threads in GCodeManager")
-
     def gstreamer_pipeline(
         self,
         sensor_id=0,
@@ -85,7 +81,7 @@ class MachineControl:
         self.video_stream = cv2.VideoCapture(self.gstreamer_pipeline(flip_method=0), cv2.CAP_GSTREAMER)
 
     def display_stream(self):
-        self.tr = Thread(target = self._display_stream)
+        self.tr = Thread(target = self._display_stream, daemon=True)
         self.tr.start()
 
     def _display_stream(self):
@@ -98,7 +94,7 @@ class MachineControl:
             try:
                 while True:            
                     frame = self.capture_image()
-                    
+
                     cv2.imshow(window_title, frame)
                     
                     keyCode = cv2.waitKey(int(1000 / 15)) & 0xFF
