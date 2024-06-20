@@ -2,7 +2,7 @@ import logging as log
 import math
 import serial
 import time
-from threading import Lock
+from threading import Lock, Thread
 import cv2
 import focus_stack
 
@@ -45,7 +45,11 @@ class MachineControl:
         # mutex for taking images
         self.mutex_camera = Lock()
 
-        self.show_camera()
+        self.start_camera()
+
+    def __del__(self):
+        self.tr.stop()
+        log("Stopping all threads in GCodeManager")
 
     def gstreamer_pipeline(
         self,
@@ -75,6 +79,42 @@ class MachineControl:
         )
 
 
+    def start_camera(self):
+        log("Starting pipeline:\n{}".format(self.gstreamer_pipeline(flip_method=0)))
+
+        self.video_stream = cv2.VideoCapture(self.gstreamer_pipeline(flip_method=0), cv2.CAP_GSTREAMER)
+
+    def display_stream(self):
+        self.tr = Thread(target = self._display_stream)
+        self.tr.start()
+
+    def _display_stream(self):
+        REFRESH_RATE = 15 #hz
+        window_title = "HQ Camera"
+        window_handle = cv2.namedWindow(window_title, cv2.WINDOW_AUTOSIZE)
+
+        if self.video_stream.isOpened():
+
+            try:
+                while True:            
+                    frame = self.capture_image()
+                    
+                    cv2.imshow(window_title, frame)
+                    
+                    keyCode = cv2.waitKey(int(1000 / 15)) & 0xFF
+                    # Stop the program on the ESC key or 'q'
+                    if keyCode == 27 or keyCode == ord('q'):
+                        break
+
+            finally:
+                cv2.destroyAllWindows()
+
+    def capture_image(self):
+        self.mutex_camera.acquire(blocking=True)
+        _, frame = self.video_stream.read()
+        self.mutex_camera.release()
+        return frame
+    
     def show_camera(self,):
         window_title = "CSI Camera"
 
@@ -110,19 +150,7 @@ class MachineControl:
     def add_core_sample(self, core: CoreSample) -> None:
         self.core_samples.append(core) 
 
-    # def launch_rpi_cam(self):
-    #     self.picam2 = Picamera2()
-    #     self.picam2.configure(self.picam2.create_preview_configuration(main={"format": "BGR888", "size": (4056,3040)}))
-    #     self.picam2.start()
 
-    # def launch_gstreamer_feed(self):
-
-
-    def capture_image(self):
-        self.mutex_camera.acquire(blocking=True)
-        # img = self.picam2.capture_array()
-        self.mutex_camera.release()
-        return img
 
     def set_feed_rate_xy(self, feed_rate):
         self.feed_rate_xy = feed_rate
