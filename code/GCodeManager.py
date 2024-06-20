@@ -3,7 +3,6 @@ import math
 import serial
 import time
 from threading import Lock
-from picamera2 import Picamera2
 import cv2
 import focus_stack
 
@@ -46,7 +45,63 @@ class MachineControl:
         # mutex for taking images
         self.mutex_camera = Lock()
 
-        self.launch_rpi_cam()
+        self.show_camera()
+
+    def gstreamer_pipeline(
+        self,
+        sensor_id=0,
+        capture_width=4052,
+        capture_height=3040,
+        display_width=960,
+        display_height=540,
+        framerate=15,
+        flip_method=0,
+    ):
+        return (
+            "nvarguscamerasrc sensor-id={} ! "
+            "video/x-raw(memory:NVMM), width=(int){}, height=(int){}, framerate=(fraction){}/1 ! "
+            "nvvidconv flip-method={} ! "
+            "video/x-raw, width=(int){}, height=(int){}, format=(string)BGRx ! "
+            "videoconvert ! "
+            "video/x-raw, format=(string)BGR ! appsink".format(
+                sensor_id,
+                capture_width,
+                capture_height,
+                framerate,
+                flip_method,
+                display_width,
+                display_height,
+            )
+        )
+
+
+    def show_camera(self,):
+        window_title = "CSI Camera"
+
+        # To flip the image, modify the flip_method parameter (0 and 2 are the most common)
+        print(self.gstreamer_pipeline(flip_method=0))
+        video_capture = cv2.VideoCapture(self.gstreamer_pipeline(flip_method=0), cv2.CAP_GSTREAMER)
+        if video_capture.isOpened():
+            try:
+                window_handle = cv2.namedWindow(window_title, cv2.WINDOW_AUTOSIZE)
+                while True:
+                    ret_val, frame = video_capture.read()
+                    # Check to see if the user closed the window
+                    # Under GTK+ (Jetson Default), WND_PROP_VISIBLE does not work correctly. Under Qt it does
+                    # GTK - Substitute WND_PROP_AUTOSIZE to detect if window has been closed by user
+                    if cv2.getWindowProperty(window_title, cv2.WND_PROP_AUTOSIZE) >= 0:
+                        cv2.imshow(window_title, frame)
+                    else:
+                        break 
+                    keyCode = cv2.waitKey(10) & 0xFF
+                    # Stop the program on the ESC key or 'q'
+                    if keyCode == 27 or keyCode == ord('q'):
+                        break
+            finally:
+                video_capture.release()
+                cv2.destroyAllWindows()
+        else:
+            print("Error: Unable to open camera")
 
     def add_cookie_sample(self, cookie_width_mm: int, cookie_height_mm: int, percent_overlap: int = 20) -> None:
         cookie = CookieSample(cookie_width_mm, cookie_height_mm, percent_overlap = percent_overlap)
@@ -55,14 +110,17 @@ class MachineControl:
     def add_core_sample(self, core: CoreSample) -> None:
         self.core_samples.append(core) 
 
-    def launch_rpi_cam(self):
-        self.picam2 = Picamera2()
-        self.picam2.configure(self.picam2.create_preview_configuration(main={"format": "BGR888", "size": (4056,3040)}))
-        self.picam2.start()
+    # def launch_rpi_cam(self):
+    #     self.picam2 = Picamera2()
+    #     self.picam2.configure(self.picam2.create_preview_configuration(main={"format": "BGR888", "size": (4056,3040)}))
+    #     self.picam2.start()
+
+    def launch_gstreamer_feed(self):
+
 
     def capture_image(self):
         self.mutex_camera.acquire(blocking=True)
-        img = self.picam2.capture_array()
+        # img = self.picam2.capture_array()
         self.mutex_camera.release()
         return img
 
