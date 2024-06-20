@@ -3,14 +3,17 @@ import argparse
 import cv2
 import time
 from picamera2 import Picamera2
+import GCodeManager as GCodeManager
 
 picam2 = Picamera2()
 picam2.start()
 
 class Autofocus:
 
-    def __init__(self):
-        pass
+    def __init__(self, GCM):
+
+        self.GCM: GCodeManager = GCM
+        
 
     ## recursive function to find the best focus across a large z-axis distance
     ## to initialize, choose a deceptively large distance between start and end, 0 for best_focus_score and best_focus_position
@@ -28,6 +31,7 @@ class Autofocus:
             position = start_mm + (step * step_size_mm)
             # move z-axis to pos?
             print("move z-axis up")
+            self.z_axis_move(self, step_size_mm)
             time.sleep(5)
             image = picam2.capture_array()
 
@@ -39,6 +43,9 @@ class Autofocus:
             return self.get_best_focus(current_best_focus_position-step_size_mm, current_best_focus_position+step_size_mm, current_best_focus_position, current_best_focus_score)
         else:
             return (best_focus_score, best_focus_position)
+        
+    def z_axis_move(self, step_size_mm):
+        self.GCM.jog_z(self.GCM, step_size_mm)
         
     ## calculates focus score using 
     def calculate_focus_score(image, blur) -> float:

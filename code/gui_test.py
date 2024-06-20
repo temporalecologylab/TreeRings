@@ -231,7 +231,6 @@ class App(Frame):
         self.button_z_minus.grid(column = 4, row = 3)
 
     def start_image_preview(self):
-        print("preview start")
         while True:
             img = self.controller.capture_image()
             cv2.imshow("window", img)

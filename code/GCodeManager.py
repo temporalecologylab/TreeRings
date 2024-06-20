@@ -188,7 +188,7 @@ class MachineControl:
         cmd = "$J=G91 G21 Z{} F{}".format(dist, self.feed_rate_z)
         self.send_command(cmd)
 
-    def focus_stack_sequence(self, step_size_mm: float, image_count_odd: int):
+    def stack_sequence(self, step_size_mm: float, image_count_odd: int):
         images = []
         dist = 0 #distance from zero 
 
@@ -210,13 +210,8 @@ class MachineControl:
         # return to original position
         self.jog_z(-z_offset)
 
-        log.info("Sending images to focus stacker")
+        return images
 
-        stacker = focus_stack.FocusStack()
-        stacked = stacker.focus_stack(images)
-
-        log.info("Returning stacked image")
-        return stacked
     
     def jog_cancel(self) -> None:
         """Immediately cancels the current jog state by a feed hold and
@@ -291,22 +286,24 @@ class MachineControl:
 
         log.info("Starting serpentine")
 
-        for line in g_code:
+        for i in g_code:
             time.sleep(pause) # wait for vibrations to settle
             # img = self.capture_image()
             # cv2.imwrite('images/img{}.jpg'.format(i), focused)
             # i+=1
-            focused = self.focus_stack_sequence(0.1, 5)
-            log.info("Saving focused image {} of {}".format(i, len(g_code)))
-            cv2.imwrite('images/focused{}.jpg'.format(i), focused)
-            i+=1
+            for j in g_code[i]:
+                stack = self.stack_sequence(0.1, 5)
+                log.info("Saving images in location {},{} of {}".format(i, k , len(g_code) * len(g_code[i])))
+                for k in (0, len(stack)):
+                    cv2.imwrite('images/focused{}-{}_{}.jpg'.format(i,j,k), stack)
+                
             
             
 
-    def generate_serpentine(self, cookie: CookieSample) -> list[str]:
+    def generate_serpentine(self, cookie: CookieSample) -> list[list[str]]:
         # TODO: make this work for multiple cookies... this is going to be interesting
 
-        g_code = []
+        g_code = [[]]
 
         # More than 0.00 precision is unrealistic with the machinery
         overlap_x = round(self.image_width_mm * cookie.percent_overlap / 100, 3)
@@ -333,24 +330,25 @@ class MachineControl:
         log.info("Creating G-Code for {} serpentine images".format(total_images))
         
         # begin serpentine logic
-        g_code.append("$J=G91 G21 X{} F{}".format(x_step_size, self.feed_rate_xy)) # set and forget feed
+        g_code[0].append("$J=G91 G21 X{} F{}".format(x_step_size, self.feed_rate_xy)) # set and forget feed
 
+        i = 0
         for y_step in range(0, y_steps):
 
             # Move in X-direction with overlap
             for _ in range(0, x_steps - 1): # -1 because the y movement counts as the first image in the new row
                 x = round(x_step_size, 2)
-                g_code.append(f"$J=G91 G21 X{x} F{self.feed_rate_xy}")
+                g_code[i].append(f"$J=G91 G21 X{x} F{self.feed_rate_xy}")
 
             # Move down one step in the +Y-direction with overlap
             y = round(y_step_size, 2)
 
             # Don't go further down after the final row is finished
             if y_step != y_steps - 1:
-                g_code.append(f"$J=G91 G21 Y-{y} F{self.feed_rate_xy}")
+                g_code[i].append(f"$J=G91 G21 Y-{y} F{self.feed_rate_xy}")
 
             x_step_size *= -1 # switch X directions
-
+            i += 1
         # End program
         # g_code.append("M2")
     
