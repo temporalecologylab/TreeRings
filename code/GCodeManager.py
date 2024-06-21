@@ -5,6 +5,9 @@ import time
 from threading import Lock, Thread
 import cv2
 import focus_stack
+import gi
+gi.require_version('Gst', '1.0')
+from gi.repository import Gst
 
 log.basicConfig(format='%(process)d-%(levelname)s-%(message)s', level=log.INFO)
 
@@ -47,6 +50,32 @@ class MachineControl:
 
         self.start_camera()
 
+    def gstreamer_pipeline_filesave_tee(
+        self,
+        sensor_id=0,
+        capture_width=3840,
+        capture_height=2160,
+        display_width=640,
+        display_height=480,
+        framerate=30,
+        flip_method=-1,
+    ):
+        return (
+            "nvarguscamerasrc sensor-id={} ! "
+            "video/x-raw(memory:NVMM), width=(int){}, height=(int){}, framerate=(fraction){}/1 ! "
+            "tee name=t "
+            "t. nvvidconv flip-method={} ! video/x-raw(memory:NVMM), width=(int){}, height=(int){}, format=(string)BGRx ! nvoverlaysink  "
+            "t. valve drop=true name=valve0 ! nvjpegenc ! filesink name=filesink0 location=test.jpg".format( # can add queue leaky=1, max-size-buffers=1 
+                sensor_id,
+                capture_width,
+                capture_height,
+                framerate,
+                flip_method,
+                display_width,
+                display_height,
+            )
+        )
+
     def gstreamer_pipeline(
         self,
         sensor_id=0,
@@ -76,9 +105,36 @@ class MachineControl:
 
 
     def start_camera(self):
-        log.info("Starting pipeline:\n{}".format(self.gstreamer_pipeline(flip_method=0)))
+        pipeline_str = self.gstreamer_pipeline(flip_method=-1)
+        log.info("Starting pipeline:\n{}".format(pipeline_str))
 
-        self.video_stream = cv2.VideoCapture(self.gstreamer_pipeline(flip_method=-1), cv2.CAP_GSTREAMER)
+        self.video_stream = cv2.VideoCapture(pipeline_str, cv2.CAP_GSTREAMER)
+
+    def start_camera_filesave(self):
+        pipeline_str = self.gstreamer_pipeline_filesave_tee(flip_method=-1)
+        log.info("Starting pipeline \n{}".format(pipeline_str))
+    
+        self.pipeline = Gst.parse_launch(pipeline_str)
+        self.pipeline.set_state(Gst.State.PLAYING)
+
+    def save_image(self, path):
+        # set the correct filename
+        filesink = self.pipeline.get_by_name("filesink0")
+        filesink.set_property('location', path)
+
+        # open the valve to buffers 
+        valve = self.pipeline.get_by_name("valve0")
+        valve.set_property('drop', False)
+
+        # now the image will save, do I need a sleep?
+        
+        # close the valve
+        valve.set_property('drop', True)
+
+        # flush the queue with an event
+        
+        # done
+
 
     def display_stream(self):
         self.tr = Thread(target = self._display_stream, daemon=True)
