@@ -52,10 +52,10 @@ class MachineControl:
         sensor_id=0,
         capture_width=3840,
         capture_height=2160,
-        display_width=3840,
-        display_height=2160,
+        display_width=640,
+        display_height=480,
         framerate=30,
-        flip_method=0,
+        flip_method=-1,
     ):
         return (
             "nvarguscamerasrc sensor-id={} ! "
@@ -76,9 +76,9 @@ class MachineControl:
 
 
     def start_camera(self):
-        log.info("Starting pipeline:\n{}".format(self.gstreamer_pipeline(flip_method=1)))
+        log.info("Starting pipeline:\n{}".format(self.gstreamer_pipeline(flip_method=0)))
 
-        self.video_stream = cv2.VideoCapture(self.gstreamer_pipeline(flip_method=1), cv2.CAP_GSTREAMER)
+        self.video_stream = cv2.VideoCapture(self.gstreamer_pipeline(flip_method=-1), cv2.CAP_GSTREAMER)
 
     def display_stream(self):
         self.tr = Thread(target = self._display_stream, daemon=True)
@@ -88,7 +88,7 @@ class MachineControl:
         REFRESH_RATE = 15 #hz
         window_title = "HQ Camera"
         window_handle = cv2.namedWindow(window_title, cv2.WINDOW_NORMAL)
-
+        cv2.resizeWindow(window_title, 640, 480)
         if self.video_stream.isOpened():
 
             try:
@@ -116,10 +116,10 @@ class MachineControl:
 
         # To flip the image, modify the flip_method parameter (0 and 2 are the most common)
         print(self.gstreamer_pipeline(flip_method=0))
-        video_capture = cv2.VideoCapture(self.gstreamer_pipeline(flip_method=0), cv2.CAP_GSTREAMER)
+        video_capture = cv2.VideoCapture(self.gstreamer_pipeline(flip_method=-1), cv2.CAP_GSTREAMER)
         if video_capture.isOpened():
             try:
-                window_handle = cv2.namedWindow(window_title, cv2.WINDOW_AUTOSIZE)
+                window_handle = cv2.namedWindow(window_title, cv2.WINDOW_NORMAL)
                 while True:
                     ret_val, frame = video_capture.read()
                     # Check to see if the user closed the window
@@ -199,18 +199,18 @@ class MachineControl:
 
         # go to the bottom of the range 
         self.jog_z(-z_offset)
-        time.sleep(2)
-
+        
+        
         # move upwards by a step, take a photo, then repeat
-        for i in range(0, image_count_odd):
+        for i in range(1, image_count_odd):
             log.info("Stack image {}".format(i))
             images.append(self.capture_image())
             self.jog_z(step_size_mm)
-            time.sleep(2)
-            
+           
+        images.append(self.capture_image())     
         # return to original position
         self.jog_z(-z_offset)
-        time.sleep(2)
+        
 
         return images
 
@@ -261,7 +261,7 @@ class MachineControl:
         log.info("Connecting to GRBL via serial")
         self.s = serial.Serial(self._serial_port, 115200) # WILL NEED TO CHANGE THIS PER DEVICE / OS
         self.s.write(b"\r\n\r\n")
-        time.sleep(2)   # Wait for grbl to initialize 
+        time.sleep(2)# Wait for grbl to initialize 
         # Wake up grbl
         grbl_out = self.s.readline() # Wait for grbl response with carriage return
         grbl_out_str = grbl_out.decode("utf-8")
@@ -283,7 +283,7 @@ class MachineControl:
         cmd = "$20 0"
         self.send_command(cmd)
 
-    def send_serpentine(self, g_code, pause = 1):
+    def send_serpentine(self, g_code, pause = 2):
         i = 0
 
         log.info("Starting serpentine")
@@ -294,7 +294,7 @@ class MachineControl:
             # i+=1
             for j in range(0, len(g_code[i])):
                 self.send_command(g_code[i][j])
-                time.sleep(pause)
+                
                 stack = self.stack_sequence(0.1, 5)
                 log.info("Saving images in location {},{} of {}".format(i, j , len(g_code) * len(g_code[i])))
                 for k in range(0, len(stack)):
@@ -307,7 +307,7 @@ class MachineControl:
     def generate_serpentine(self, cookie: CookieSample) -> list[list[str]]:
         # TODO: make this work for multiple cookies... this is going to be interesting
 
-        g_code = [[]]
+        g_code = []
 
         # More than 0.00 precision is unrealistic with the machinery
         overlap_x = round(self.image_width_mm * cookie.percent_overlap / 100, 3)
@@ -358,8 +358,6 @@ class MachineControl:
 
         # End program
         # g_code.append("M2")
-        log.info(g_code[:10])
-    
         return g_code
 # class GCodeManager:
 #     def __init__(self, cookie_width_mm: int, cookie_height_mm: int, image_width_mm: int, image_height_mm: int, feed_rate: int, overlap_percentage: int, start_point: tuple[int, int]=(0, 0)) -> None:
