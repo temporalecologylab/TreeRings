@@ -76,9 +76,9 @@ class MachineControl:
 
 
     def start_camera(self):
-        log.info("Starting pipeline:\n{}".format(self.gstreamer_pipeline(flip_method=0)))
+        log.info("Starting pipeline:\n{}".format(self.gstreamer_pipeline(flip_method=1)))
 
-        self.video_stream = cv2.VideoCapture(self.gstreamer_pipeline(flip_method=0), cv2.CAP_GSTREAMER)
+        self.video_stream = cv2.VideoCapture(self.gstreamer_pipeline(flip_method=1), cv2.CAP_GSTREAMER)
 
     def display_stream(self):
         self.tr = Thread(target = self._display_stream, daemon=True)
@@ -87,7 +87,7 @@ class MachineControl:
     def _display_stream(self):
         REFRESH_RATE = 15 #hz
         window_title = "HQ Camera"
-        window_handle = cv2.namedWindow(window_title, cv2.WINDOW_AUTOSIZE)
+        window_handle = cv2.namedWindow(window_title, cv2.WINDOW_NORMAL)
 
         if self.video_stream.isOpened():
 
@@ -199,16 +199,18 @@ class MachineControl:
 
         # go to the bottom of the range 
         self.jog_z(-z_offset)
+        time.sleep(2)
 
         # move upwards by a step, take a photo, then repeat
         for i in range(0, image_count_odd):
             log.info("Stack image {}".format(i))
             images.append(self.capture_image())
             self.jog_z(step_size_mm)
-            time.sleep(1)
+            time.sleep(2)
             
         # return to original position
         self.jog_z(-z_offset)
+        time.sleep(2)
 
         return images
 
@@ -287,12 +289,12 @@ class MachineControl:
         log.info("Starting serpentine")
 
         for i in range(0, len(g_code)):
-            time.sleep(pause) # wait for vibrations to settle
             # img = self.capture_image()
             # cv2.imwrite('images/img{}.jpg'.format(i), focused)
             # i+=1
             for j in range(0, len(g_code[i])):
                 self.send_command(g_code[i][j])
+                time.sleep(pause)
                 stack = self.stack_sequence(0.1, 5)
                 log.info("Saving images in location {},{} of {}".format(i, j , len(g_code) * len(g_code[i])))
                 for k in range(0, len(stack)):
@@ -356,6 +358,7 @@ class MachineControl:
 
         # End program
         # g_code.append("M2")
+        log.info(g_code[:10])
     
         return g_code
 # class GCodeManager:
