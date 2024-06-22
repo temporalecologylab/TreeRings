@@ -55,8 +55,8 @@ class App(Frame):
         self.create_capture_button()
         self.create_arrow_buttons()
 
-        img_window = Thread(target=self.start_image_preview)
-        img_window.start()
+        # img_window = Thread(target=self.start_image_preview)
+        # img_window.start()
 
 
     def create_cookie_height_entry(self):
@@ -288,7 +288,7 @@ class App(Frame):
         log.info("Adding Cookie \nW: {}\nH: {}\nO: {}\n".format(width, height,overlap))
 
     def cb_capture_image(self):
-        img = self.controller.capture_image()
+        # img = self.controller.capture_image()
         name = "image_{}.jpg".format(datetime.now().strftime("%H_%M_%S"))
         # cv2.imwrite(name, img)
         self.controller.save_image(name)

@@ -7,12 +7,47 @@ import cv2
 import focus_stack
 import gi
 gi.require_version('Gst', '1.0')
-from gi.repository import Gst
+from gi.repository import Gst, GObject, GLib
 
 log.basicConfig(format='%(process)d-%(levelname)s-%(message)s', level=log.INFO)
 
 class CoreSample:
     pass
+
+
+class VideoSaver:
+    def __init__(self):
+        Gst.init(None)
+        # Create the pipeline with both display and save frame functionality
+        self.pipeline = Gst.parse_launch(
+            "nvarguscamerasrc ! nvvideoconvert ! tee name=t "
+            "t. ! queue ! autovideosink "
+            "t. ! queue ! nvjpegenc ! multifilesink name=sink"
+        )
+        self.filesink = self.pipeline.get_by_name("sink")
+        self.filesink.set_property("location", "/dev/null")
+        self.filesink.set_property("next-file", 4)  # 4 is the value for "max-size"
+        self.filesink.set_property("max-file-size", 1)  # We only want one file
+
+    def start_pipeline(self):
+        self.pipeline.set_state(Gst.State.PLAYING)
+        print("Pipeline started")
+
+    def stop_pipeline(self):
+        self.pipeline.set_state(Gst.State.NULL)
+        print("Pipeline stopped")
+
+    def save_frame(self, path):
+        self.filesink.set_property("location", path)
+        self.filesink.send_event(Gst.Event.new_eos())
+
+
+    def reset_sink(self):
+        # Reset the filesink to not save any more frames
+        self.filesink.set_property("location", "/dev/null")
+        self.pipeline.seek_simple(Gst.Format.TIME, Gst.SeekFlags.FLUSH, 0)
+        print("Sink reset")
+
 
 class CookieSample:
     def __init__(self, cookie_width_mm: int, cookie_height_mm: int, percent_overlap:int = 20):
@@ -48,7 +83,7 @@ class MachineControl:
         # mutex for taking images
         self.mutex_camera = Lock()
 
-        self.start_camera()
+        self.start_camera_filesave()
 
     def gstreamer_pipeline_filesave_tee(
         self,
@@ -61,20 +96,11 @@ class MachineControl:
         flip_method=-1,
     ):
         return (
-            "nvarguscamerasrc sensor-id={} ! "
-            "video/x-raw(memory:NVMM), width=(int){}, height=(int){}, framerate=(fraction){}/1 ! "
-            "tee name=t "
-            "t. nvvidconv flip-method={} ! video/x-raw(memory:NVMM), width=(int){}, height=(int){}, format=(string)BGRx ! nvoverlaysink  "
-            "t. valve drop=true name=valve0 ! nvjpegenc ! filesink name=filesink0 location=test.jpg".format( # can add queue leaky=1, max-size-buffers=1 
-                sensor_id,
-                capture_width,
-                capture_height,
-                framerate,
-                flip_method,
-                display_width,
-                display_height,
+            "nvarguscamerasrc ! nvvideoconvert ! tee name=t "
+            "t. ! queue ! autovideosink "
+            "t. ! queue ! nvjpegenc ! multifilesink name=sink"
             )
-        )
+        
 
     def gstreamer_pipeline(
         self,
@@ -111,30 +137,62 @@ class MachineControl:
         self.video_stream = cv2.VideoCapture(pipeline_str, cv2.CAP_GSTREAMER)
 
     def start_camera_filesave(self):
-        pipeline_str = self.gstreamer_pipeline_filesave_tee(flip_method=-1)
-        log.info("Starting pipeline \n{}".format(pipeline_str))
+
+        #pipeline_str = self.gstreamer_pipeline_filesave_tee(flip_method=0)
+        log.info("Starting pipeline \n")
+        
+        self.video_saver = VideoSaver()
+        self.video_saver.start_pipeline()
+
+        glib_thread = Thread(target=self.run_glib)
+        glib_thread.start()
+        # self.pipeline = Gst.parse_launch(pipeline_str)
+        
+        # bus = self.pipeline.get_bus()
+        # bus.add_signal_watch()
+        # bus.connect("message::error", self.on_error)
+
+        # Set video widget handle for displaying frames
+
+        # Create a GLib MainLoop, but don't start it (we'll run it manually with Tkinter)
+        # self.mainloop = GObject.MainLoop()
+
+        # Add a timeout to check for messages from the pipeline every 100ms
+        # GObject.timeout_add(100, self.check_bus_messages)
+        
+        # self.filesink = self.pipeline.get_by_name("sink")
+        # self.filesink.set_property("location", "/dev/null")
+        # self.filesink.set_property("next-file", 4)  # 4 is the value for "max-size"
+        # self.filesink.set_property("max-file-size", 1)  # We only want one file
+        # self.pipeline.set_state(Gst.State.PLAYING)
     
-        self.pipeline = Gst.parse_launch(pipeline_str)
-        self.pipeline.set_state(Gst.State.PLAYING)
+    def run_glib(self):
+        loop = GLib.MainLoop()
+        try:
+            loop.run()
+        except KeyboardInterrupt:
+            loop.quit()
+            
+
+
+    def reset_sink(self):
+        # Reset the filesink to not save any more frames
+        self.filesink.set_property("location", "/dev/null")
+        self.pipeline.seek_simple(Gst.Format.TIME, Gst.SeekFlags.FLUSH, 0)
+        print("Sink reset")
 
     def save_image(self, path):
-        # set the correct filename
-        filesink = self.pipeline.get_by_name("filesink0")
-        filesink.set_property('location', path)
-
-        # open the valve to buffers 
-        valve = self.pipeline.get_by_name("valve0")
-        valve.set_property('drop', False)
-
-        # now the image will save, do I need a sleep?
         
-        # close the valve
-        valve.set_property('drop', True)
-
-        # flush the queue with an event
+        # Generate a unique filename with a timestamp
+        timestamp = time.strftime("%Y%m%d_%H%M%S")
+        file_location = f"frame_{timestamp}.jpg"
         
-        # done
-
+        self.video_saver.save_frame(path)
+        #self.filesink.set_property("location", file_location)
+        #self.filesink.send_event(Gst.Event.new_eos())
+        
+        #self.reset_sink()
+        #print(f"Frame saved: {file_location}")
 
     def display_stream(self):
         self.tr = Thread(target = self._display_stream, daemon=True)
