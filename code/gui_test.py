@@ -293,9 +293,10 @@ class App(Frame):
         log.info("Adding Cookie \nW: {}\nH: {}\nO: {}\n".format(width, height,overlap))
 
     def cb_capture_image(self):
-        img = self.controller.capture_image()
+        # img = self.controller.capture_image()
         name = "image_{}.jpg".format(datetime.now().strftime("%H_%M_%S"))
-        cv2.imwrite(name, img)
+        # cv2.imwrite(name, img)
+        self.controller.save_image(name)
         log.info("Saving {}".format(name))
 
     def print_cookie_height_entry(self, event):
