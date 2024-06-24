@@ -4,9 +4,10 @@ import serial
 import time
 from threading import Lock, Thread
 import cv2
-import focus_stack
+from pathlib import Path
 
 log.basicConfig(format='%(process)d-%(levelname)s-%(message)s', level=log.INFO)
+p = Path('.')
 
 class CoreSample:
     pass
@@ -23,7 +24,7 @@ class CookieSample:
 
 class MachineControl:
     def __init__(self, image_width_mm: int, image_height_mm: int, serial_port = "/dev/ttyUSB0", x_soft_limit = 700, y_soft_limit = 700, z_soft_limit = 200):
-        self._serial_port = serial_port # windows should be a "COM[X]" port which will vary per device
+        self._serial_port = serial_port # windows should be a "COM[X]" port which will vary per deviceF
         
         # image dimensions TODO: create calibration sequence to automatically change this based on measuring ArUco marker
         self.image_width_mm = image_width_mm
@@ -110,6 +111,10 @@ class MachineControl:
         _, frame = self.video_stream.read()
         self.mutex_camera.release()
         return frame
+    
+    def end_capture(self):
+        self.tr.join()
+        cv2.destroyAllWindows()
     
     def show_camera(self,):
         window_title = "CSI Camera"
@@ -275,6 +280,10 @@ class MachineControl:
         self.s.flushInput()  # Flush startup t
         log.info("Input flushed")
 
+    def serial_disconnect_port(self):
+        self.s.close()
+        log.info("serial port disconnected")
+
     def enable_soft_limits(self):
         cmd = "$20 1"
         self.send_command(cmd)
@@ -299,10 +308,7 @@ class MachineControl:
                 log.info("Saving images in location {},{} of {}".format(i, j , len(g_code) * len(g_code[i])))
                 for k in range(0, len(stack)):
                     log.info("saving image {} of {} in stack".format(k, len(stack)))
-                    cv2.imwrite('images/focused{}-{}_{}.jpg'.format(i,j,k), stack[k])
-                
-            
-            
+                    cv2.imwrite('images/img{}-{}_{}.jpg'.format(i,j,k), stack[k])
 
     def generate_serpentine(self, cookie: CookieSample) -> list[list[str]]:
         # TODO: make this work for multiple cookies... this is going to be interesting
@@ -359,6 +365,40 @@ class MachineControl:
         # End program
         # g_code.append("M2")
         return g_code
+    
+    def find_focused(self, x, y, z):
+        
+        for i in range(0,y):
+            for j in range(0,x):
+                imgs = []
+                image_num = math.pow(i, 1) * j
+                for k in range(0, z):
+                    image_num += k     
+                    imgs.append(cv2.imread("/images/image{}".format(image_num)))
+                focused_image = self.best_focused_image(imgs)
+                cv2.iwrite("focused_images/img_{}-{}.jpg".format(i,j), focused_image)
+        
+    def best_focused_image(self, images):
+        best_image = []
+        best_lap = 0.0
+
+        for image in images:
+            lap = self.compute_laplacian(image)
+            if lap.var() > best_lap:
+                best_lap = lap.var()
+                best_image = image
+
+        return best_image
+    
+    def compute_laplacian(self,image):
+
+        # odd numbers only, can be tuned
+        kernel_size = 5         # Size of the laplacian window
+        blur_size = 5           # How big of a kernel to use for the gaussian blur
+
+        blurred = cv2.GaussianBlur(image, (blur_size,blur_size), 0)
+        return cv2.Laplacian(blurred, cv2.CV_64F, ksize=kernel_size)
+
 # class GCodeManager:
 #     def __init__(self, cookie_width_mm: int, cookie_height_mm: int, image_width_mm: int, image_height_mm: int, feed_rate: int, overlap_percentage: int, start_point: tuple[int, int]=(0, 0)) -> None:
 #         self.cookie_width_mm = cookie_width_mm

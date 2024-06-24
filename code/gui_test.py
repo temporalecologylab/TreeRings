@@ -55,9 +55,16 @@ class App(Frame):
         self.create_capture_button()
         self.create_arrow_buttons()
 
-        img_window = Thread(target=self.start_image_preview)
-        img_window.start()
+        #code to properly close windows at end of program
+        self.master.protocol("WM_DELETE_WINDOW", self.quit_program)
 
+        self.start_image_preview()
+
+    def quit_program(self):
+        #TODO: woll change with gstreamer implementation
+        self.controller.end_capture()
+        self.controller.serial_disconnect_port()
+        self.master.destroy()
 
     def create_cookie_height_entry(self):
         # Entry for cookie height
@@ -233,8 +240,6 @@ class App(Frame):
     def start_image_preview(self):
         while True:
             img = self.controller.capture_image()
-            #img = cv2.flip(img, 0)
-            img = cv2.flip(img, 1)
             cv2.imshow("window", img)
 
             time.sleep(.2)
