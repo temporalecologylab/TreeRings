@@ -41,7 +41,6 @@ class VideoSaver:
         self.filesink.set_property("location", path)
         self.filesink.send_event(Gst.Event.new_eos())
 
-
     def reset_sink(self):
         # Reset the filesink to not save any more frames
         self.filesink.set_property("location", "/dev/null")
@@ -83,6 +82,7 @@ class MachineControl:
         # mutex for taking images
         self.mutex_camera = Lock()
 
+        self.glib_stream = Thread(target=self.run_glib)
         self.start_camera_filesave()
 
     def gstreamer_pipeline_filesave_tee(
@@ -110,7 +110,7 @@ class MachineControl:
         display_width=640,
         display_height=480,
         framerate=30,
-        flip_method=-1,
+        flip_method=0,
     ):
         return (
             "nvarguscamerasrc sensor-id={} ! "
@@ -129,51 +129,28 @@ class MachineControl:
             )
         )
 
-
-    def start_camera(self):
-        pipeline_str = self.gstreamer_pipeline(flip_method=-1)
-        log.info("Starting pipeline:\n{}".format(pipeline_str))
-
-        self.video_stream = cv2.VideoCapture(pipeline_str, cv2.CAP_GSTREAMER)
-
     def start_camera_filesave(self):
 
-        #pipeline_str = self.gstreamer_pipeline_filesave_tee(flip_method=0)
         log.info("Starting pipeline \n")
         
         self.video_saver = VideoSaver()
         self.video_saver.start_pipeline()
 
-        glib_thread = Thread(target=self.run_glib)
-        glib_thread.start()
-        # self.pipeline = Gst.parse_launch(pipeline_str)
-        
-        # bus = self.pipeline.get_bus()
-        # bus.add_signal_watch()
-        # bus.connect("message::error", self.on_error)
-
-        # Set video widget handle for displaying frames
-
-        # Create a GLib MainLoop, but don't start it (we'll run it manually with Tkinter)
-        # self.mainloop = GObject.MainLoop()
-
-        # Add a timeout to check for messages from the pipeline every 100ms
-        # GObject.timeout_add(100, self.check_bus_messages)
-        
-        # self.filesink = self.pipeline.get_by_name("sink")
-        # self.filesink.set_property("location", "/dev/null")
-        # self.filesink.set_property("next-file", 4)  # 4 is the value for "max-size"
-        # self.filesink.set_property("max-file-size", 1)  # We only want one file
-        # self.pipeline.set_state(Gst.State.PLAYING)
+        self.glib_thread.start()
     
+    def end_camera_filesave(self):
+        log.info ("ending video stream")
+
+        self.video_saver.stop_pipeline()
+        self.glib_stream.join()
+    
+
     def run_glib(self):
         loop = GLib.MainLoop()
         try:
             loop.run()
         except KeyboardInterrupt:
             loop.quit()
-            
-
 
     def reset_sink(self):
         # Reset the filesink to not save any more frames
@@ -188,11 +165,6 @@ class MachineControl:
         file_location = f"frame_{timestamp}.jpg"
         
         self.video_saver.save_frame(path)
-        #self.filesink.set_property("location", file_location)
-        #self.filesink.send_event(Gst.Event.new_eos())
-        
-        #self.reset_sink()
-        #print(f"Frame saved: {file_location}")
 
     def display_stream(self):
         self.tr = Thread(target = self._display_stream, daemon=True)
@@ -224,34 +196,6 @@ class MachineControl:
         _, frame = self.video_stream.read()
         self.mutex_camera.release()
         return frame
-    
-    def show_camera(self,):
-        window_title = "CSI Camera"
-
-        # To flip the image, modify the flip_method parameter (0 and 2 are the most common)
-        print(self.gstreamer_pipeline(flip_method=0))
-        video_capture = cv2.VideoCapture(self.gstreamer_pipeline(flip_method=-1), cv2.CAP_GSTREAMER)
-        if video_capture.isOpened():
-            try:
-                window_handle = cv2.namedWindow(window_title, cv2.WINDOW_NORMAL)
-                while True:
-                    ret_val, frame = video_capture.read()
-                    # Check to see if the user closed the window
-                    # Under GTK+ (Jetson Default), WND_PROP_VISIBLE does not work correctly. Under Qt it does
-                    # GTK - Substitute WND_PROP_AUTOSIZE to detect if window has been closed by user
-                    if cv2.getWindowProperty(window_title, cv2.WND_PROP_AUTOSIZE) >= 0:
-                        cv2.imshow(window_title, frame)
-                    else:
-                        break 
-                    keyCode = cv2.waitKey(10) & 0xFF
-                    # Stop the program on the ESC key or 'q'
-                    if keyCode == 27 or keyCode == ord('q'):
-                        break
-            finally:
-                video_capture.release()
-                cv2.destroyAllWindows()
-        else:
-            print("Error: Unable to open camera")
 
     def add_cookie_sample(self, cookie_width_mm: int, cookie_height_mm: int, percent_overlap: int = 20) -> None:
         cookie = CookieSample(cookie_width_mm, cookie_height_mm, percent_overlap = percent_overlap)
@@ -259,8 +203,6 @@ class MachineControl:
 
     def add_core_sample(self, core: CoreSample) -> None:
         self.core_samples.append(core) 
-
-
 
     def set_feed_rate_xy(self, feed_rate):
         self.feed_rate_xy = feed_rate
@@ -395,6 +337,9 @@ class MachineControl:
         self.log_serial_out(grbl_out)
         self.s.flushInput()  # Flush startup t
         log.info("Input flushed")
+
+    def serial_disconnect_port(self):
+        self.s.close()
 
     def enable_soft_limits(self):
         cmd = "$20 1"

@@ -57,15 +57,15 @@ class App(Frame):
         self.create_arrow_buttons()
 
         #code to properly close windows at end of program
-        #self.master.protocol("WM_DELETE_WINDOW", self.quit_program)
+        self.master.protocol("WM_DELETE_WINDOW", self.quit_program)
 
         
 
-#    def quit_program(self):
-#        #TODO: woll change with gstreamer implementation
-#        self.controller.end_capture()
-#        self.controller.serial_disconnect_port()
-#        self.master.destroy()        
+    def quit_program(self):
+       #TODO: woll change with gstreamer implementation
+       self.controller.end_camera_filesave()
+       self.controller.serial_disconnect_port()
+       self.master.destroy()        
 
     def create_cookie_height_entry(self):
         # Entry for cookie height
