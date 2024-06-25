@@ -3,8 +3,9 @@ from tkinter import ttk
 from tkinter import filedialog
 import logging as log
 import cv2
-
-from threading import Thread
+import queue
+import concurrent.futures
+from threading import Thread, Event
 
 import GCodeManager 
 import time
@@ -56,15 +57,15 @@ class App(Frame):
         self.create_arrow_buttons()
 
         #code to properly close windows at end of program
-        self.master.protocol("WM_DELETE_WINDOW", self.quit_program)
+        #self.master.protocol("WM_DELETE_WINDOW", self.quit_program)
 
-        self.start_image_preview()
+        
 
-    def quit_program(self):
-        #TODO: woll change with gstreamer implementation
-        self.controller.end_capture()
-        self.controller.serial_disconnect_port()
-        self.master.destroy()
+#    def quit_program(self):
+#        #TODO: woll change with gstreamer implementation
+#        self.controller.end_capture()
+#        self.controller.serial_disconnect_port()
+#        self.master.destroy()        
 
     def create_cookie_height_entry(self):
         # Entry for cookie height
@@ -349,10 +350,17 @@ class App(Frame):
             log.info("ERROR: NO COOKIES ADDED... Add a cookie using the button")
         
 
-    def bulk_send_g_code(self, pause = 1):
+    def bulk_send_g_code(self):
         log.info("Starting serpentine")
-
-        self.controller.send_serpentine(self.g_code)
+        img_pipeline = queue.Queue()
+        image_serp_thread = Thread(target=self.controller.send_serpentine, args=(img_pipeline, self.g_code, self.directory))
+        focus_thread = Thread(target=self.controller.focus_thread, args=(img_pipeline, self.directory))
+        image_serp_thread.start()
+        focus_thread.start()
+        
+        image_serp_thread.join()	
+        img_pipeline.join()    	
+        focus_thread.join()
             
 
    

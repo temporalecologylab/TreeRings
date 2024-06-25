@@ -10,7 +10,6 @@ gi.require_version('Gst', '1.0')
 from gi.repository import Gst, GObject, GLib
 
 log.basicConfig(format='%(process)d-%(levelname)s-%(message)s', level=log.INFO)
-p = Path('.')
 
 class CoreSample:
     pass
@@ -21,7 +20,7 @@ class VideoSaver:
         Gst.init(None)
         # Create the pipeline with both display and save frame functionality
         self.pipeline = Gst.parse_launch(
-            "nvarguscamerasrc ! nvvideoconvert ! tee name=t "
+            "nvarguscamerasrc ! video/x-raw(memory:NVMM),width=3840,height=2160,framerate=30/1 ! nvvideoconvert ! tee name=t "
             "t. ! queue ! autovideosink "
             "t. ! queue ! nvjpegenc ! multifilesink name=sink"
         )
@@ -62,7 +61,7 @@ class CookieSample:
 
 class MachineControl:
     def __init__(self, image_width_mm: int, image_height_mm: int, serial_port = "/dev/ttyUSB0", x_soft_limit = 700, y_soft_limit = 700, z_soft_limit = 200):
-        self._serial_port = serial_port # windows should be a "COM[X]" port which will vary per deviceF
+        self._serial_port = serial_port # windows should be a "COM[X]" port which will vary per device
         
         # image dimensions TODO: create calibration sequence to automatically change this based on measuring ArUco marker
         self.image_width_mm = image_width_mm
@@ -74,8 +73,8 @@ class MachineControl:
         self._z_soft_limit = z_soft_limit 
 
         # machine settings
-        self.feed_rate_z = 100
-        self.feed_rate_xy = 500 
+        self.feed_rate_z = 10
+        self.feed_rate_xy = 300 
 
         # sample information
         self.cookie_samples = []
@@ -226,10 +225,6 @@ class MachineControl:
         self.mutex_camera.release()
         return frame
     
-    def end_capture(self):
-        self.tr.join()
-        cv2.destroyAllWindows()
-    
     def show_camera(self,):
         window_title = "CSI Camera"
 
@@ -307,7 +302,7 @@ class MachineControl:
         cmd = "$J=G91 G21 Z{} F{}".format(dist, self.feed_rate_z)
         self.send_command(cmd)
 
-    def stack_sequence(self, step_size_mm: float, image_count_odd: int):
+    def stack_sequence(self, step_size_mm: float, image_count_odd: int, x_loc, y_loc, directory, pause = 1):
         images = []
         dist = 0 #distance from zero 
 
@@ -319,19 +314,26 @@ class MachineControl:
         # go to the bottom of the range 
         self.jog_z(-z_offset)
         
+        #take first photo in stack
+        file_location = f"{directory}/frame_{x_loc}_{y_loc}_{0}.jpg"
+        log.info("Stack image {}".format(file_location))
+        self.save_image(file_location)
+        time.sleep(pause)
         
         # move upwards by a step, take a photo, then repeat
         for i in range(1, image_count_odd):
-            log.info("Stack image {}".format(i))
-            images.append(self.capture_image())
+            #timestamp = time.strftime("%Y%m%d_%H%M%S")
+            
             self.jog_z(step_size_mm)
-           
-        images.append(self.capture_image())     
+            time.sleep(pause)
+            file_location = f"{directory}/frame_{x_loc}_{y_loc}_{i}.jpg"
+            log.info("Stack image {}".format(file_location))
+            self.save_image(file_location)
+        
+        # self.save_frame()
         # return to original position
         self.jog_z(-z_offset)
-        
-
-        return images
+        time.sleep(pause)
 
     
     def jog_cancel(self) -> None:
@@ -394,10 +396,6 @@ class MachineControl:
         self.s.flushInput()  # Flush startup t
         log.info("Input flushed")
 
-    def serial_disconnect_port(self):
-        self.s.close()
-        log.info("serial port disconnected")
-
     def enable_soft_limits(self):
         cmd = "$20 1"
         self.send_command(cmd)
@@ -406,23 +404,57 @@ class MachineControl:
         cmd = "$20 0"
         self.send_command(cmd)
 
-    def send_serpentine(self, g_code, pause = 2):
-        i = 0
-
+    def send_serpentine(self, img_pipeline, g_code, directory, pause = 2, z_steps = 7):
         log.info("Starting serpentine")
-
         for i in range(0, len(g_code)):
-            # img = self.capture_image()
-            # cv2.imwrite('images/img{}.jpg'.format(i), focused)
-            # i+=1
             for j in range(0, len(g_code[i])):
+                self.stack_sequence(0.1, z_steps, i, j, directory, pause=1)
+                log.info("Stack {}, {} finished of {}".format(i,j, len(g_code) * len(g_code[i])))
+                log.info("Traversing")
                 self.send_command(g_code[i][j])
-                
-                stack = self.stack_sequence(0.1, 5)
-                log.info("Saving images in location {},{} of {}".format(i, j , len(g_code) * len(g_code[i])))
-                for k in range(0, len(stack)):
-                    log.info("saving image {} of {} in stack".format(k, len(stack)))
-                    cv2.imwrite('images/img{}-{}_{}.jpg'.format(i,j,k), stack[k])
+                img_pipeline.put([i,j,z_steps])
+
+        self.save_image("{}/frame_trash.jpg".format(directory))
+        img_pipeline.put([-1,-1,-1])
+
+    def focus_thread(self, img_pipeline, directory):
+        while True:
+            args = img_pipeline.get()
+            log.info(args)
+            i = args[0]
+            j = args[1]
+            z = args[2]
+            if i == -1:
+                img_pipeline.task_done()
+                break
+            for k in range (0, z):
+                imgs = []
+                imgs.append(cv2.imread("/{}/frame_{}_{}_{}.jpg".format(directory, i, j, k)))
+                log.info("calling focus method")
+                focused_image = self.best_focused_image(imgs)
+                cv2.imwrite("/{}/focused_images/focused_{}_{}.jpg".format(directory,i,j), focused_image)
+                img_pipeline.task_done()
+        
+    def best_focused_image(self, images):
+        best_image = []
+        best_lap = 0.0
+
+        for image in images:
+            lap = self.compute_laplacian(image)
+            if lap.var() > best_lap:
+                best_lap = lap.var()
+                best_image = image
+
+        return best_image
+    
+    def compute_laplacian(self,image):
+
+        # odd numbers only, can be tuned
+        kernel_size = 5         # Size of the laplacian window
+        blur_size = 5           # How big of a kernel to use for the gaussian blur
+
+        blurred = cv2.GaussianBlur(image, (blur_size,blur_size), 0)
+        return cv2.Laplacian(blurred, cv2.CV_64F, ksize=kernel_size)            
 
     def generate_serpentine(self, cookie: CookieSample) -> list[list[str]]:
         # TODO: make this work for multiple cookies... this is going to be interesting
@@ -460,9 +492,9 @@ class MachineControl:
         for y_step in range(0, y_steps):
             g_code_i = []
             
+            x = round(x_step_size, 2)
             # Move in X-direction with overlap
             for _ in range(0, x_steps - 1): # -1 because the y movement counts as the first image in the new row
-                x = round(x_step_size, 2)
                 g_code_i.append(f"$J=G91 G21 X{x} F{self.feed_rate_xy}")
 
             # Move down one step in the +Y-direction with overlap
@@ -471,6 +503,9 @@ class MachineControl:
             # Don't go further down after the final row is finished
             if y_step != y_steps - 1:
                 g_code_i.append(f"$J=G91 G21 Y-{y} F{self.feed_rate_xy}")
+            else:
+            	g_code_i.append(f"$J=G91 G21 X{x} F{self.feed_rate_xy}")
+		              
 
             g_code.append(g_code_i)
             x_step_size *= -1 # switch X directions
@@ -478,41 +513,8 @@ class MachineControl:
 
         # End program
         # g_code.append("M2")
+        log.info(g_code)
         return g_code
-    
-    def find_focused(self, x, y, z):
-        
-        for i in range(0,y):
-            for j in range(0,x):
-                imgs = []
-                image_num = math.pow(i, 1) * j
-                for k in range(0, z):
-                    image_num += k     
-                    imgs.append(cv2.imread("/images/image{}".format(image_num)))
-                focused_image = self.best_focused_image(imgs)
-                cv2.iwrite("focused_images/img_{}-{}.jpg".format(i,j), focused_image)
-        
-    def best_focused_image(self, images):
-        best_image = []
-        best_lap = 0.0
-
-        for image in images:
-            lap = self.compute_laplacian(image)
-            if lap.var() > best_lap:
-                best_lap = lap.var()
-                best_image = image
-
-        return best_image
-    
-    def compute_laplacian(self,image):
-
-        # odd numbers only, can be tuned
-        kernel_size = 5         # Size of the laplacian window
-        blur_size = 5           # How big of a kernel to use for the gaussian blur
-
-        blurred = cv2.GaussianBlur(image, (blur_size,blur_size), 0)
-        return cv2.Laplacian(blurred, cv2.CV_64F, ksize=kernel_size)
-
 # class GCodeManager:
 #     def __init__(self, cookie_width_mm: int, cookie_height_mm: int, image_width_mm: int, image_height_mm: int, feed_rate: int, overlap_percentage: int, start_point: tuple[int, int]=(0, 0)) -> None:
 #         self.cookie_width_mm = cookie_width_mm
