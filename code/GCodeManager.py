@@ -20,7 +20,7 @@ class VideoSaver:
         Gst.init(None)
         # Create the pipeline with both display and save frame functionality
         self.pipeline = Gst.parse_launch(
-            "nvarguscamerasrc ! video/x-raw(memory:NVMM),width=3840,height=2160,framerate=30/1 ! nvvideoconvert ! tee name=t "
+            "nvarguscamerasrc ! video/x-raw(memory:NVMM),width=3840,height=2160,framerate=30/1 ! nvvideoconvert flip-method=2 ! tee name=t "
             "t. ! queue ! autovideosink "
             "t. ! queue ! nvjpegenc ! multifilesink name=sink"
         )
@@ -81,8 +81,9 @@ class MachineControl:
 
         # mutex for taking images
         self.mutex_camera = Lock()
-
-        self.glib_stream = Thread(target=self.run_glib)
+        
+        self.stop_glib = False
+        self.glib_thread = Thread(target=self.run_glib)
         self.start_camera_filesave()
 
     def gstreamer_pipeline_filesave_tee(
@@ -93,7 +94,7 @@ class MachineControl:
         display_width=640,
         display_height=480,
         framerate=30,
-        flip_method=-1,
+        flip_method=1,
     ):
         return (
             "nvarguscamerasrc ! nvvideoconvert ! tee name=t "
@@ -110,7 +111,7 @@ class MachineControl:
         display_width=640,
         display_height=480,
         framerate=30,
-        flip_method=0,
+        flip_method=1,
     ):
         return (
             "nvarguscamerasrc sensor-id={} ! "
@@ -139,17 +140,18 @@ class MachineControl:
         self.glib_thread.start()
     
     def end_camera_filesave(self):
-        log.info ("ending video stream")
-
         self.video_saver.stop_pipeline()
-        self.glib_stream.join()
+        self.stop_glib = True
+        self.glib_thread.join()
     
 
     def run_glib(self):
         loop = GLib.MainLoop()
+        GLib.timeout_add_seconds(1, not self.stop_glib)
         try:
             loop.run()
         except KeyboardInterrupt:
+            self.stop_glib = True
             loop.quit()
 
     def reset_sink(self):
@@ -339,8 +341,9 @@ class MachineControl:
         log.info("Input flushed")
 
     def serial_disconnect_port(self):
+    	#TODO: somehow make it so we dont have to reset blackbox?
         self.s.close()
-
+        
     def enable_soft_limits(self):
         cmd = "$20 1"
         self.send_command(cmd)
@@ -449,9 +452,8 @@ class MachineControl:
             if y_step != y_steps - 1:
                 g_code_i.append(f"$J=G91 G21 Y-{y} F{self.feed_rate_xy}")
             else:
-            	g_code_i.append(f"$J=G91 G21 X{x} F{self.feed_rate_xy}")
+                g_code_i.append(f"$J=G91 G21 X{x} F{self.feed_rate_xy}")
 		              
-
             g_code.append(g_code_i)
             x_step_size *= -1 # switch X directions
             i += 1

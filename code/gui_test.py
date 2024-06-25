@@ -59,12 +59,12 @@ class App(Frame):
         #code to properly close windows at end of program
         self.master.protocol("WM_DELETE_WINDOW", self.quit_program)
 
-        
-
     def quit_program(self):
-       #TODO: woll change with gstreamer implementation
-       self.controller.end_camera_filesave()
+       log.info("Ending Camera Stream")
+       self.controller.end_camera_filesave()       
+       log.info("Disconnecting serial port")
        self.controller.serial_disconnect_port()
+       log.info("Destroy tkinter window")
        self.master.destroy()        
 
     def create_cookie_height_entry(self):
