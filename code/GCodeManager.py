@@ -478,6 +478,7 @@ class MachineControl:
         #g_code[0].append("$J=G91 G21 X{} F{}".format(x_step_size, self.feed_rate_xy)) # set and forget feed
 
         i = 0
+
         for y_step in range(0, y_steps):
             g_code_i = []
             
