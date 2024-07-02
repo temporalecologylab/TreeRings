@@ -6,6 +6,8 @@ import logging as log
 import datetime
 import time
 import math
+import queue
+from threading import Thread
 
 
 class Controller:
@@ -56,16 +58,36 @@ class Controller:
         
         return y_steps, x_steps, y_step_size, x_step_size
 
+
+    def bulk_send_g_code(self):
+        log.info("Starting serpentine")
+
+
     def capture_cookie(self):
         # calculating row, col, x_move, y_move
         rows, cols, y_dist, x_dist = self.calculate_grid(self)
+        img_pipeline = queue.Queue()
+
+        gantry_thread = Thread(target=self.capture_grid_photos, args=(img_pipeline, rows, cols, y_dist, x_dist))
+        focus_thread = Thread(target=self.find_focus, args=(img_pipeline, self.directory))
+        gantry_thread.start()
+        #focus_thread.start()
+        
+        gantry_thread.join()	
+        img_pipeline.join()    	
+        #focus_thread.join()
+    
+    def capture_grid_photos(self, img_pipeline, rows, cols, y_dist, x_dist):
         # for loop capture
         for row in rows:
             for col in cols:
-                ##todo: left movements, naming not in serp order
-                self.capture_images_multiple_distances(0.1, 7, col, row)
-                self.gantry.jog_x(x_dist)
-            self.gantry.jog_y(y_dist)
+                if col % 2 == 1:
+                    self.capture_images_multiple_distances(0.1, 7, cols - col -1, row)
+                    self.gantry.jog_x(-x_dist)
+                else:
+                    self.capture_images_multiple_distances(0.1, 7, col, row)
+                    self.gantry.jog_x(x_dist)
+            self.gantry.jog_y(-y_dist)
 
     def capture_images_multiple_distances(self, step_size_mm: float, image_count_odd: int, x_loc, y_loc, pause = 1):
         images = []
