@@ -2,7 +2,6 @@ import logging as log
 import serial
 import time
 
-
 log.basicConfig(format='%(process)d-%(levelname)s-%(message)s', level=log.INFO)
 
 class Gantry:
@@ -21,6 +20,9 @@ class Gantry:
         # sample information
         self.cookie_samples = []
         self.core_samples = []
+
+        self.s = None
+        self.serial_connect_port()
 
     def _send_command(self, cmd) -> str:
         log.info("Sending {}".format(cmd))
