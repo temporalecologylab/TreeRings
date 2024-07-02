@@ -18,7 +18,7 @@ class Controller:
         #TODO: logic for when we have many cookies on one platform
         self.cookies = []
         self.gantry = gantry.Gantry()
-        self.camera = camera.VideoSaver()
+        self.camera = camera.Camera()
         self.focus = focus.Focus()
 
         #attributes
