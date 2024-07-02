@@ -80,7 +80,7 @@ class Controller:
         
         return y_steps, x_steps, y_step_size, x_step_size
     
-    def capture_grid_photos(self, img_pipeline, rows, cols, y_dist, x_dist, z_steps=7, pause=2):
+    def capture_grid_photos(self, img_pipeline, rows, cols, y_dist, x_dist, z_steps=5, pause=2):
         # for loop capture
         for row in rows:
             for col in cols:
