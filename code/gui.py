@@ -46,7 +46,6 @@ class App(Frame):
         self.create_img_width_entry()
         self.create_percent_overlap_entry()
         self.create_add_cookie_button()
-        self.create_calculate_grid_button()
         self.create_directory_button()
         self.create_serial_connect_button()
         self.create_g_code_sender_button()
