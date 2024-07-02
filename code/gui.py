@@ -190,12 +190,12 @@ class App(Frame):
         self.frame_jogging = ttk.Frame(self.master, padding = 25)
         self.frame_jogging.grid()
         self.frame_jogging_title = ttk.Label(self.frame_jogging, text="JOGGING")
-        self.button_y_plus = ttk.Button(self.frame_jogging, text="Y+", command=self.controller.jog_y_plus)
-        self.button_y_minus = ttk.Button(self.frame_jogging, text="Y-", command=self.controller.jog_y_minus)
-        self.button_x_plus = ttk.Button(self.frame_jogging, text="X+", command=self.controller.jog_x_plus)
-        self.button_x_minus = ttk.Button(self.frame_jogging, text="X-", command=self.controller.jog_x_minus)
-        self.button_z_plus = ttk.Button(self.frame_jogging, text="Z+", command=self.controller.jog_z_plus)
-        self.button_z_minus = ttk.Button(self.frame_jogging, text="Z-", command=self.controller.jog_z_minus)
+        self.button_y_plus = ttk.Button(self.frame_jogging, text="Y+", command=lambda: self.controller.jog_y_plus(self.jog_distance))
+        self.button_y_minus = ttk.Button(self.frame_jogging, text="Y-", command=lambda: self.controller.jog_y_minus(self.jog_distance))
+        self.button_x_plus = ttk.Button(self.frame_jogging, text="X+", command=lambda: self.controller.jog_x_plus(self.jog_distance))
+        self.button_x_minus = ttk.Button(self.frame_jogging, text="X-", command=lambda: self.controller.jog_x_minus(self.jog_distance))
+        self.button_z_plus = ttk.Button(self.frame_jogging, text="Z+", command=lambda: self.controller.jog_z_plus(self.jog_distance))
+        self.button_z_minus = ttk.Button(self.frame_jogging, text="Z-", command=lambda: self.controller.jog_z_minus(self.jog_distance))
         
         # Entry for percent overlap between images
         self.label_jog_distance = ttk.Label(self.frame_jogging, text="Enter Jog Distance (mm):   ")
