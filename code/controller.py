@@ -28,7 +28,7 @@ class Controller:
 
     def quit(self):
         log.info("Ending Camera Stream")
-        self.camera.end_camera_filesave()
+        self.camera.stop_pipeline()
         log.info("Disconnecting serial port")
         self.gantry.serial_disconnect_port()
 
