@@ -248,27 +248,27 @@ class App(Frame):
             
     def jog_y_plus(self):
         log.info("jog +{} mm y".format(self.jog_distance))
-        self.controller.jog_y(self.jog_distance)
+        self.controller.jog_fast_y(self.jog_distance)
 
     def jog_y_minus(self):
         log.info("jog -{} mm y".format(self.jog_distance))
-        self.controller.jog_y(self.jog_distance * -1)
+        self.controller.jog_fast_y(self.jog_distance * -1)
     
     def jog_x_plus(self):
         log.info("jog +{} mm x".format(self.jog_distance))
-        self.controller.jog_x(self.jog_distance)
+        self.controller.jog_fast_x(self.jog_distance)
 
     def jog_x_minus(self):
         log.info("jog -{} mm x".format(self.jog_distance))
-        self.controller.jog_x(self.jog_distance * -1)
+        self.controller.jog_fast_x(self.jog_distance * -1)
     
     def jog_z_plus(self):
         log.info("jog +{} mm z".format(self.jog_distance))
-        self.controller.jog_z(self.jog_distance)
+        self.controller.jog_fast_z(self.jog_distance)
 
     def jog_z_minus(self):
         log.info("jog -{} mm z".format(self.jog_distance))
-        self.controller.jog_z(self.jog_distance * -1)
+        self.controller.jog_fast_z(self.jog_distance * -1)
 
     def cb_jog_distance(self, event):
         self.jog_distance = float(self.entry_jog_distance.get())
@@ -356,11 +356,11 @@ class App(Frame):
         image_serp_thread = Thread(target=self.controller.send_serpentine, args=(img_pipeline, self.g_code, self.directory))
         focus_thread = Thread(target=self.controller.focus_thread, args=(img_pipeline, self.directory))
         image_serp_thread.start()
-        focus_thread.start()
+        #focus_thread.start()
         
         image_serp_thread.join()	
         img_pipeline.join()    	
-        focus_thread.join()
+        #focus_thread.join()
             
 
    
