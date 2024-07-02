@@ -80,7 +80,7 @@ class Controller:
         
         return y_steps, x_steps, y_step_size, x_step_size
     
-    def capture_grid_photos(self, img_pipeline, rows, cols, y_dist, x_dist, z_steps=5, pause=2):
+    def capture_grid_photos(self, focus_queue: queue.Queue, rows: int, cols: int, y_dist, x_dist, z_steps=5, pause=2):
         # for loop capture
         for row in rows:
             for col in cols:
@@ -93,7 +93,7 @@ class Controller:
                     self.capture_images_multiple_distances(0.1, z_steps, col, row)
                     self.gantry.jog_x(x_dist)
                 time.sleep(pause)
-                img_pipeline.put([row, col, z_steps])
+                focus_queue.put([row, col, z_steps])
             # S
             self.gantry.jog_y(-y_dist)
             time.sleep(pause)
