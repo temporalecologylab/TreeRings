@@ -147,29 +147,29 @@ class Controller:
     def serial_connect(self):
         self.gantry.serial_connect_port()
 
-    def jog_y_plus(self):
-        log.info("jog +{} mm y".format(self.jog_distance))
-        self.gantry.jog_fast_y(self.jog_distance)
+    def jog_y_plus(self, jog_dist):
+        log.info("jog +{} mm y".format(jog_dist))
+        self.gantry.jog_fast_y(jog_dist)
 
-    def jog_y_minus(self):
-        log.info("jog -{} mm y".format(self.jog_distance))
-        self.gantry.jog_fast_y(self.jog_distance * -1)
+    def jog_y_minus(self, jog_dist):
+        log.info("jog -{} mm y".format(jog_dist))
+        self.gantry.jog_fast_y(jog_dist * -1)
     
-    def jog_x_plus(self):
-        log.info("jog +{} mm x".format(self.jog_distance))
-        self.gantry.jog_fast_x(self.jog_distance)
+    def jog_x_plus(self, jog_dist):
+        log.info("jog +{} mm x".format(jog_dist))
+        self.gantry.jog_fast_x(jog_dist)
 
-    def jog_x_minus(self):
-        log.info("jog -{} mm x".format(self.jog_distance))
-        self.gantry.jog_fast_x(self.jog_distance * -1)
+    def jog_x_minus(self, jog_dist):
+        log.info("jog -{} mm x".format(jog_dist))
+        self.gantry.jog_fast_x(jog_dist * -1)
     
-    def jog_z_plus(self):
-        log.info("jog +{} mm z".format(self.jog_distance))
-        self.gantry.jog_fast_z(self.jog_distance)
+    def jog_z_plus(self, jog_dist):
+        log.info("jog +{} mm z".format(jog_dist))
+        self.gantry.jog_fast_z(jog_dist)
 
-    def jog_z_minus(self):
-        log.info("jog -{} mm z".format(self.jog_distance))
-        self.gantry.jog_fast_z(self.jog_distance * -1)
+    def jog_z_minus(self, jog_dist):
+        log.info("jog -{} mm z".format(jog_dist))
+        self.gantry.jog_fast_z(jog_dist * -1)
 
     def cb_pause_g_code(self):
         self.gantry.pause()
