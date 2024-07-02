@@ -161,13 +161,6 @@ class App(Frame):
         self.entry_width_img.bind('<Key-Return>',
                              self.print_img_width_entry)
 
-    def create_calculate_grid_button(self):
-         # Calculate button
-        self.frame_buttons = ttk.Frame(self.master, padding = 25)
-        self.frame_buttons.grid()
-        self.button_calculate = ttk.Button(self.frame_buttons, text="Calculate Grid", command=self.controller.calculate_grid)
-        self.button_calculate.grid(column = 1, row = 1)
-
     def create_directory_button(self):
          # Calculate button
         self.button_directory = ttk.Button(self.frame_buttons, text="Select Directory", command=self.request_directory)
@@ -175,27 +168,27 @@ class App(Frame):
 
     def create_serial_connect_button(self):
         self.button_serial_connect = ttk.Button(self.frame_buttons, text="Serial Connect", command=self.controller.serial_connect)
-        self.button_serial_connect.grid(column = 2, row = 1)
+        self.button_serial_connect.grid(column = 1, row = 1)
 
     def create_g_code_sender_button(self):
-        self.button_g_code_send = ttk.Button(self.frame_buttons, text="Send G Code", command=self.bulk_send_g_code)
-        self.button_g_code_send.grid(column = 3, row = 1)
+        self.button_g_code_send = ttk.Button(self.frame_buttons, text="Capture Cookie", command=self.controller.capture_cookie)
+        self.button_g_code_send.grid(column = 2, row = 1)
 
     def create_g_code_pause_button(self):
-        self.button_g_code_pause = ttk.Button(self.frame_buttons, text="PAUSE", command=self.cb_pause_g_code)
-        self.button_g_code_pause.grid(column = 3, row = 0)
+        self.button_g_code_pause = ttk.Button(self.frame_buttons, text="PAUSE", command=self.controller.cb_pause_g_code)
+        self.button_g_code_pause.grid(column = 2, row = 0)
 
     def create_g_code_resume_button(self):
-        self.button_g_code_resume = ttk.Button(self.frame_buttons, text="RESUME", command=self.cb_resume_g_code)
-        self.button_g_code_resume.grid(column = 3, row = 2)
+        self.button_g_code_resume = ttk.Button(self.frame_buttons, text="RESUME", command=self.controller.cb_resume_g_code)
+        self.button_g_code_resume.grid(column = 2, row = 2)
     
     def create_g_code_homing_button(self):
-        self.button_g_code_homing = ttk.Button(self.frame_buttons, text="SET HOME", command=self.cb_homing_g_code)
-        self.button_g_code_homing.grid(column = 3, row = 3)
+        self.button_g_code_homing = ttk.Button(self.frame_buttons, text="SET HOME", command=self.controller.cb_homing_g_code)
+        self.button_g_code_homing.grid(column = 2, row = 3)
 
     def create_capture_button(self):
-        self.button_capture = ttk.Button(self.frame_buttons, text="CAPTURE", command=self.cb_capture_image)
-        self.button_capture.grid(column = 4, row = 2)
+        self.button_capture = ttk.Button(self.frame_buttons, text="CAPTURE", command=self.controller.cb_capture_image)
+        self.button_capture.grid(column = 3, row = 2)
 
 
     def create_arrow_buttons(self):
@@ -240,16 +233,8 @@ class App(Frame):
         self.jog_distance = float(self.entry_jog_distance.get())
 
     def request_directory(self):
-        self.directory = filedialog.askdirectory()
-    
-    def cb_pause_g_code(self):
-        self.controller.pause()
-
-    def cb_resume_g_code(self):
-        self.controller.resume()
-
-    def cb_homing_g_code(self):
-        self.controller.homing_sequence()
+        directory = filedialog.askdirectory()
+        self.controller.set_directory(directory)
 
     def cb_add_cookie(self):
         width = self.contents_width_cookie.get()
@@ -258,13 +243,6 @@ class App(Frame):
 
         self.controller.add_cookie_sample(width, height, overlap)
         log.info("Adding Cookie \nW: {}\nH: {}\nO: {}\n".format(width, height,overlap))
-
-    def cb_capture_image(self):
-        # img = self.controller.capture_image()
-        name = "image_{}.jpg".format(datetime.now().strftime("%H_%M_%S"))
-        # cv2.imwrite(name, img)
-        self.controller.save_image(name)
-        log.info("Saving {}".format(name))
 
     def print_cookie_height_entry(self, event):
         try:
@@ -300,36 +278,13 @@ class App(Frame):
             self.entry_width_img.delete(0, END)
             log.info("Enter a double")
     
-    
     def print_overlap(self, event):
         try:
             log.info("Image Overlap: {} %".format(self.contents_overlap.get()))
         except TclError:
             self.entry_overlap.delete(0, END)
-            log.info("Enter an integer")
-
-    def calculate_grid(self): 
-        if len(self.controller.cookie_samples) > 0:
-            self.g_code = self.controller.generate_serpentine(self.controller.cookie_samples[-1]) #TODO make work with multiple samples... will be hard
-            log.info("{} overlapping images calculated".format(len(self.g_code)))
-        else:
-            log.info("ERROR: NO COOKIES ADDED... Add a cookie using the button")
-        
-
-    def bulk_send_g_code(self):
-        log.info("Starting serpentine")
-        img_pipeline = queue.Queue()
-        image_serp_thread = Thread(target=self.controller.send_serpentine, args=(img_pipeline, self.g_code, self.directory))
-        focus_thread = Thread(target=self.controller.focus_thread, args=(img_pipeline, self.directory))
-        image_serp_thread.start()
-        #focus_thread.start()
-        
-        image_serp_thread.join()	
-        img_pipeline.join()    	
-        #focus_thread.join()
-            
-
-   
+            log.info("Enter an integer")       
+               
 root = Tk()
 myapp = App(root)
 # myapp.master.maxsize(1000,500)

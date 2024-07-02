@@ -3,21 +3,119 @@ import focus
 import cookie
 import camera
 import logging as log
+import datetime
+import time
+import math
 
 
 class Controller:
 
-    def __init__(self):
-        self.cookies = []
+    def __init__(self, image_width_mm, image_height_mm):
+        
+        #TODO: logic for when we have many cookies on one platform
+        #self.cookies = []
         self.gantry = gantry.Gantry()
         self.camera = camera.Camera()
 
+        #attributes
+        self.image_heignt_mm = image_height_mm
+        self.image_width_mm = image_width_mm
+
+        self.directory = "./"
 
     def quit(self):
         log.info("Ending Camera Stream")
         self.camera.end_camera_filesave()
         log.info("Disconnecting serial port")
         self.gantry.serial_disconnect_port()
+
+    def set_directory(self, dir):
+        self.directory = dir
+
+    #### SERPENTINE METHODS ####
+
+    def calculate_grid(self): 
+        if len(self.cookies) > 0:
+            overlap_x = round(self.image_width_mm * self.cookie.percent_overlap / 100, 3)
+            overlap_y = round(self.image_height_mm * self.cookie.percent_overlap / 100, 3)
+
+            log.info("overlap x: {}".format(overlap_x))
+            log.info("overlap y: {}".format(overlap_y))
+            # TODO: add logic / user input / something to move z to be in focus
+            x_step_size = self.image_width_mm - overlap_x
+            y_step_size = self.image_height_mm - overlap_y 
+
+            log.info("x_step_size x: {}".format(x_step_size))
+            log.info("y_step_size y: {}".format(y_step_size))
+
+            x_steps = math.ceil(cookie.width / x_step_size)
+            y_steps = math.ceil(cookie.height / y_step_size)
+
+            log.info("x_steps: {}".format(x_steps))
+            log.info("y_steps: {}".format(y_steps))
+        
+        return y_steps, x_steps, y_step_size, x_step_size
+
+    def capture_cookie(self):
+        # calculating row, col, x_move, y_move
+        rows, cols, y_dist, x_dist = self.calculate_grid(self)
+        # for loop capture
+        for row in rows:
+            for col in cols:
+                ##todo: left movements, naming not in serp order
+                self.capture_images_multiple_distances(0.1, 7, col, row)
+                self.gantry.jog_x(x_dist)
+            self.gantry.jog_y(y_dist)
+
+    def capture_images_multiple_distances(self, step_size_mm: float, image_count_odd: int, x_loc, y_loc, pause = 1):
+        images = []
+        dist = 0 #distance from zero 
+
+        if image_count_odd // 2 == 0:
+            return "MUST BE ODD"
+        
+        z_offset = round(math.floor(image_count_odd / 2) * step_size_mm, 3)
+
+        # go to the bottom of the range 
+        self.jog_z(-z_offset)
+        
+        #take first photo in stack
+        file_location = f"{self.directory}/frame_{x_loc}_{y_loc}_{0}.jpg"
+        log.info("Stack image {}".format(file_location))
+        self.save_image(file_location)
+        time.sleep(pause)
+        
+        # move upwards by a step, take a photo, then repeat
+        for i in range(1, image_count_odd):
+            #timestamp = time.strftime("%Y%m%d_%H%M%S")
+            
+            self.jog_z(step_size_mm)
+            time.sleep(pause)
+            file_location = f"{self.directory}/frame_{x_loc}_{y_loc}_{i}.jpg"
+            log.info("Stack image {}".format(file_location))
+            self.camera.save_frame(file_location)
+        
+        # self.save_frame()
+        # return to original position
+        self.jog_z(-z_offset)
+        time.sleep(pause)
+
+    #### CAMERA METHODS ####
+
+    def cb_capture_image(self):
+        name = "{}/image_{}.jpg".format(self.directory, datetime.now().strftime("%H_%M_%S"))
+        # cv2.imwrite(name, img)
+        self.camera.save_frame(name)
+        log.info("Saving {}".format(name))
+    
+    #### COOKIE METHODS ####
+
+    def add_cookie_sample(self, width, height, overlap):
+        self.cookie = cookie.Cookie(width, height, overlap)
+        #self.cookies.append(cookie)
+        log.info("Adding Cookie \nW: {}\nH: {}\nO: {}\n".format(width, height,overlap))
+
+   #### GANTRY METHODS ####
 
     def serial_connect(self):
         self.gantry.serial_connect_port()
@@ -45,7 +143,13 @@ class Controller:
     def jog_z_minus(self):
         log.info("jog -{} mm z".format(self.jog_distance))
         self.gantry.jog_fast_z(self.jog_distance * -1)
-    
-    def add_cookie_sample(self, width, height, overlap):
-        log.info("Adding Cookie \nW: {}\nH: {}\nO: {}\n".format(width, height,overlap))
+
+    def cb_pause_g_code(self):
+        self.gantry.pause()
+
+    def cb_resume_g_code(self):
+        self.gantry.resume()
+
+    def cb_homing_g_code(self):
+        self.gantry.homing_sequence() 
         
