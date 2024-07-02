@@ -5,6 +5,7 @@ import time
 from threading import Lock, Thread
 import cv2
 import focus_stack
+import numpy as np
 import gi
 gi.require_version('Gst', '1.0')
 from gi.repository import Gst, GObject, GLib
@@ -398,11 +399,23 @@ class MachineControl:
     def compute_laplacian(self,image):
 
         # odd numbers only, can be tuned
-        kernel_size = 5         # Size of the laplacian window
-        blur_size = 5           # How big of a kernel to use for the gaussian blur
+        kernel_size = 11         # Size of the laplacian window
+        blur_size = 11           # How big of a kernel to use for the gaussian blur
 
         blurred = cv2.GaussianBlur(image, (blur_size,blur_size), 0)
-        return cv2.Laplacian(blurred, cv2.CV_64F, ksize=kernel_size)            
+        return cv2.Laplacian(blurred, cv2.CV_64F, ksize=kernel_size) 
+
+    def hsl_mask(img):
+        imgHSV = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
+        imgRGB = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+
+        ## saturation filter for green background tray - this probably changes for different background colors
+        s_channel = imgHSV[:,:,1]
+        mask = cv2.inRange(s_channel, 0, 150)
+        # mask = cv2.inRange(imgHSV, np.array([0,250,0]), np.array([255,255,255]))
+        res =np.dstack((imgRGB, mask))
+
+        return res           
 
     def generate_serpentine(self, cookie: CookieSample) -> list[list[str]]:
         # TODO: make this work for multiple cookies... this is going to be interesting
