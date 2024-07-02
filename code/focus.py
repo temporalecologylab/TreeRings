@@ -22,10 +22,10 @@ class Focus:
                 break
             for k in range (0, z):
                 imgs = []
-                imgs.append(cv2.imread("/{}/frame_{}_{}_{}.jpg".format(directory, i, j, k)))
+                imgs.append(cv2.imread("{}/frame_{}_{}_{}.jpg".format(directory, i, j, k)))
                 log.info("calling focus method")
                 focused_image = self.best_focused_image(imgs)
-                cv2.imwrite("/{}/focused_images/focused_{}_{}.jpg".format(directory,i,j), focused_image)
+                cv2.imwrite("{}/focused_images/focused_{}_{}.jpg".format(directory,i,j), focused_image)
             img_pipeline.task_done()
         
     def best_focused_image(self, images):

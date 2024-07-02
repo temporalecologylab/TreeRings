@@ -87,11 +87,11 @@ class Controller:
             for col in range(cols):
                 # Even rows go left
                 if row % 2 == 1:
-                    self.capture_images_multiple_distances(0.1, z_steps, cols - col -1, row)
+                    self.capture_images_multiple_distances(0.1, z_steps, row, cols - col -1)
                     self.gantry.jog_x(-x_dist)
                 # Odd rows go right
                 else:
-                    self.capture_images_multiple_distances(0.1, z_steps, col, row)
+                    self.capture_images_multiple_distances(0.1, z_steps, row, col)
                     self.gantry.jog_x(x_dist)
                 time.sleep(pause)
                 focus_queue.put([row, col, z_steps])
@@ -99,7 +99,7 @@ class Controller:
             self.gantry.jog_y(-y_dist)
             time.sleep(pause)
 
-    def capture_images_multiple_distances(self, step_size_mm: float, image_count_odd: int, x_loc, y_loc, pause = 1):
+    def capture_images_multiple_distances(self, step_size_mm: float, image_count_odd: int, row, col, pause = 1):
         images = []
         dist = 0 #distance from zero 
 
@@ -112,7 +112,7 @@ class Controller:
         self.gantry.jog_z(-z_offset)
         
         #take first photo in stack
-        file_location = f"{self.directory}/frame_{x_loc}_{y_loc}_{0}.jpg"
+        file_location = f"{self.directory}/frame_{row}_{col}_{0}.jpg"
         log.info("Stack image {}".format(file_location))
         self.camera.save_frame(file_location)
         time.sleep(pause)
@@ -121,7 +121,7 @@ class Controller:
         for i in range(1, image_count_odd):
             self.gantry.jog_z(step_size_mm)
             time.sleep(pause)
-            file_location = f"{self.directory}/frame_{x_loc}_{y_loc}_{i}.jpg"
+            file_location = f"{self.directory}/frame_{row}_{col}_{i}.jpg"
             log.info("Stack image {}".format(file_location))
             self.camera.save_frame(file_location)
 
