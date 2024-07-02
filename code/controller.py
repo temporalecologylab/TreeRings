@@ -8,6 +8,7 @@ import time
 import math
 import queue
 from threading import Thread
+from pathlib import Path
 
 
 class Controller:
@@ -46,6 +47,7 @@ class Controller:
     def capture_cookie(self):
         rows, cols, y_dist, x_dist = self.calculate_grid(self)
         img_pipeline = queue.Queue()
+        Path("{}/focused_images".format(self.directory)).mkdir(exist_ok=True)
 
         gantry_thread = Thread(target=self.capture_grid_photos, args=(img_pipeline, rows, cols, y_dist, x_dist))
         focus_thread = Thread(target=self.focus.find_focus, args=(img_pipeline, self.directory))
