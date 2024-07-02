@@ -1,8 +1,10 @@
 from threading import Thread
-
+import logging as log
 import gi
 gi.require_version('Gst', '1.0')
 from gi.repository import Gst, GObject, GLib
+
+log.basicConfig(format='%(process)d-%(levelname)s-%(message)s', level=log.INFO)
 
 class VideoSaver:
     def __init__(self):
@@ -34,13 +36,13 @@ class VideoSaver:
     def start_pipeline(self):
         self.pipeline.set_state(Gst.State.PLAYING)
         self.glib_thread.start()
-        print("Pipeline started")
+        log.info("Pipeline started")
 
     def stop_pipeline(self):
         self.pipeline.set_state(Gst.State.NULL)
         self.stop_glib = True
         self.glib_thread.join()
-        print("Pipeline stopped")
+        log.info("Pipeline stopped")
 
     def save_frame(self, path):
         self.filesink.set_property("location", path)
@@ -50,4 +52,4 @@ class VideoSaver:
         # Reset the filesink to not save any more frames
         self.filesink.set_property("location", "/dev/null")
         self.pipeline.seek_simple(Gst.Format.TIME, Gst.SeekFlags.FLUSH, 0)
-        print("Sink reset")
+        log.info("Sink reset")
