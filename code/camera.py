@@ -20,7 +20,7 @@ class VideoSaver:
 
         self.stop_glib = False
         self.glib_thread = Thread(target=self.run_glib)
-        self.start_camera_filesave()
+        self.start_pipeline()
 
     def run_glib(self):
         loop = GLib.MainLoop()
