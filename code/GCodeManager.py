@@ -89,49 +89,6 @@ class MachineControl:
         self.glib_thread = Thread(target=self.run_glib)
         self.start_camera_filesave()
 
-    def gstreamer_pipeline_filesave_tee(
-        self,
-        sensor_id=0,
-        capture_width=3840,
-        capture_height=2160,
-        display_width=640,
-        display_height=480,
-        framerate=30,
-        flip_method=1,
-    ):
-        return (
-            "nvarguscamerasrc ! nvvideoconvert ! tee name=t "
-            "t. ! queue ! autovideosink "
-            "t. ! queue ! nvjpegenc ! multifilesink name=sink"
-            )
-        
-
-    def gstreamer_pipeline(
-        self,
-        sensor_id=0,
-        capture_width=3840,
-        capture_height=2160,
-        display_width=640,
-        display_height=480,
-        framerate=30,
-        flip_method=1,
-    ):
-        return (
-            "nvarguscamerasrc sensor-id={} ! "
-            "video/x-raw(memory:NVMM), width=(int){}, height=(int){}, framerate=(fraction){}/1 ! "
-            "nvvidconv flip-method={} ! "
-            "video/x-raw, width=(int){}, height=(int){}, format=(string)BGRx ! "
-            "videoconvert ! "
-            "video/x-raw, format=(string)BGR ! appsink".format(
-                sensor_id,
-                capture_width,
-                capture_height,
-                framerate,
-                flip_method,
-                display_width,
-                display_height,
-            )
-        )
 
     def start_camera_filesave(self):
 
