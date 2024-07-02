@@ -281,7 +281,7 @@ class MachineControl:
         self.send_command(cmd)
 
 
-    def stack_sequence(self, step_size_mm: float, image_count_odd: int, x_loc, y_loc, directory, pause = 1):
+    def stack_sequence(self, step_size_mm: float, image_count_odd: int, col, row, directory, pause = 1):
         images = []
         dist = 0 #distance from zero 
 
@@ -294,7 +294,7 @@ class MachineControl:
         self.jog_z(-z_offset)
         
         #take first photo in stack
-        file_location = f"{directory}/frame_{x_loc}_{y_loc}_{0}.jpg"
+        file_location = f"{directory}/frame_{col}_{row}_{0}.jpg"
         log.info("Stack image {}".format(file_location))
         self.save_image(file_location)
         time.sleep(pause)
@@ -305,7 +305,7 @@ class MachineControl:
             
             self.jog_z(step_size_mm)
             time.sleep(pause)
-            file_location = f"{directory}/frame_{x_loc}_{y_loc}_{i}.jpg"
+            file_location = f"{directory}/frame_{col}_{row}_{i}.jpg"
             log.info("Stack image {}".format(file_location))
             self.save_image(file_location)
         
@@ -377,8 +377,8 @@ class MachineControl:
 
     def serial_disconnect_port(self):
     	#TODO: somehow make it so we dont have to reset blackbox?
-    	self.s.close()
-
+        self.s.close()
+    
     def enable_soft_limits(self):
         cmd = "$20 1"
         self.send_command(cmd)
@@ -393,10 +393,10 @@ class MachineControl:
             for j in range(0, len(g_code[i])):
                 #self.stack_sequence(0.1, z_steps, i, j, directory, pause=1)
                 if i % 2 == 1:
-                	col = len(g_code[i]) - j - 1
-                	self.save_image("{}/frame_{}_{}.jpg".format(directory, i, col))
+                    col = len(g_code[i]) - j - 1
+                    self.save_image("{}/frame_{}_{}.jpg".format(directory, i, col))
                 else:
-                	self.save_image("{}/frame_{}_{}.jpg".format(directory, i, j))
+                    self.save_image("{}/frame_{}_{}.jpg".format(directory, i, j))
                 log.info("Stack {}, {} finished of {}".format(i,j, len(g_code) * len(g_code[i])))
                 log.info("Traversing")
                 self.send_command(g_code[i][j])
