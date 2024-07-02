@@ -46,16 +46,16 @@ class Controller:
     
     def capture_cookie(self):
         rows, cols, y_dist, x_dist = self.calculate_grid()
-        img_pipeline = queue.Queue()
+        focus_queue = queue.Queue()
         Path("{}/focused_images".format(self.directory)).mkdir(exist_ok=True)
 
-        gantry_thread = Thread(target=self.capture_grid_photos, args=(img_pipeline, rows, cols, y_dist, x_dist))
-        focus_thread = Thread(target=self.focus.find_focus, args=(img_pipeline, self.directory))
+        gantry_thread = Thread(target=self.capture_grid_photos, args=(focus_queue, rows, cols, y_dist, x_dist))
+        focus_thread = Thread(target=self.focus.find_focus, args=(focus_queue, self.directory))
         gantry_thread.start()
         focus_thread.start()
         
         gantry_thread.join()	
-        img_pipeline.join()    	
+        focus_queue.join()    	
         focus_thread.join()
 
     def calculate_grid(self): 
