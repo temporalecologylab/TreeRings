@@ -14,15 +14,16 @@ class Controller:
 
     def __init__(self, image_width_mm, image_height_mm):
         
+        #Objects
         #TODO: logic for when we have many cookies on one platform
         self.cookies = []
         self.gantry = gantry.Gantry()
-        self.camera = camera.Camera()
+        self.camera = camera.VideoSaver()
+        self.focus = focus.Focus()
 
         #attributes
         self.image_height_mm = image_height_mm
         self.image_width_mm = image_width_mm
-
         self.directory = "./"
 
     def quit(self):
@@ -41,6 +42,20 @@ class Controller:
         self.directory = dir
 
     #### SERPENTINE METHODS ####
+    
+    def capture_cookie(self):
+        # calculating row, col, x_move, y_move
+        rows, cols, y_dist, x_dist = self.calculate_grid(self)
+        img_pipeline = queue.Queue()
+
+        gantry_thread = Thread(target=self.capture_grid_photos, args=(img_pipeline, rows, cols, y_dist, x_dist))
+        focus_thread = Thread(target=self.focus.find_focus, args=(img_pipeline, self.directory))
+        gantry_thread.start()
+        focus_thread.start()
+        
+        gantry_thread.join()	
+        img_pipeline.join()    	
+        focus_thread.join()
 
     def calculate_grid(self): 
         if len(self.cookies) > 0:
@@ -63,20 +78,6 @@ class Controller:
             log.info("y_steps: {}".format(y_steps))
         
         return y_steps, x_steps, y_step_size, x_step_size
-
-    def capture_cookie(self):
-        # calculating row, col, x_move, y_move
-        rows, cols, y_dist, x_dist = self.calculate_grid(self)
-        img_pipeline = queue.Queue()
-
-        gantry_thread = Thread(target=self.capture_grid_photos, args=(img_pipeline, rows, cols, y_dist, x_dist))
-        focus_thread = Thread(target=self.focus.find_focus, args=(img_pipeline, self.directory))
-        gantry_thread.start()
-        #focus_thread.start()
-        
-        gantry_thread.join()	
-        img_pipeline.join()    	
-        #focus_thread.join()
     
     def capture_grid_photos(self, img_pipeline, rows, cols, y_dist, x_dist, z_steps=7, pause=2):
         # for loop capture
