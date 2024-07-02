@@ -7,7 +7,7 @@ import queue
 import concurrent.futures
 from threading import Thread, Event
 
-import GCodeManager 
+import controller 
 import time
 from datetime import datetime
 
@@ -24,7 +24,8 @@ class App(Frame):
         self.master.grid_rowconfigure(0, weight=1)
         self.master.grid_columnconfigure(0, weight=1)
 
-        self.controller = GCodeManager.MachineControl(3, 2)
+        ##TODO: make ref to controller when it exists
+        self.controller = controller.Controller()
 
         self.PAUSED = False
         self.SAVEFLAG = False #TODO: make this mutex
@@ -47,7 +48,6 @@ class App(Frame):
         self.create_add_cookie_button()
         self.create_calculate_grid_button()
         self.create_directory_button()
-        self.calculate_grid() # must run before create_serial_connect_button()
         self.create_serial_connect_button()
         self.create_g_code_sender_button()
         self.create_g_code_pause_button()
@@ -60,12 +60,9 @@ class App(Frame):
         self.master.protocol("WM_DELETE_WINDOW", self.quit_program)
 
     def quit_program(self):
-       log.info("Ending Camera Stream")
-       self.controller.end_camera_filesave()       
-       log.info("Disconnecting serial port")
-       self.controller.serial_disconnect_port()
-       log.info("Destroy tkinter window")
-       self.master.destroy()        
+        self.controller.quit()
+        log.info("Destroy tkinter window")
+        self.master.destroy()   
 
     def create_cookie_height_entry(self):
         # Entry for cookie height
@@ -168,7 +165,7 @@ class App(Frame):
          # Calculate button
         self.frame_buttons = ttk.Frame(self.master, padding = 25)
         self.frame_buttons.grid()
-        self.button_calculate = ttk.Button(self.frame_buttons, text="Calculate Grid", command=self.calculate_grid)
+        self.button_calculate = ttk.Button(self.frame_buttons, text="Calculate Grid", command=self.controller.calculate_grid)
         self.button_calculate.grid(column = 1, row = 1)
 
     def create_directory_button(self):
@@ -177,7 +174,7 @@ class App(Frame):
         self.button_directory.grid(column = 0, row = 1)
 
     def create_serial_connect_button(self):
-        self.button_serial_connect = ttk.Button(self.frame_buttons, text="Serial Connect", command=self.controller.serial_connect_port)
+        self.button_serial_connect = ttk.Button(self.frame_buttons, text="Serial Connect", command=self.controller.serial_connect)
         self.button_serial_connect.grid(column = 2, row = 1)
 
     def create_g_code_sender_button(self):
