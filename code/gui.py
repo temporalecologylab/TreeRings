@@ -3,8 +3,6 @@ from tkinter import ttk
 from tkinter import filedialog
 import logging as log
 
-from threading import Thread, Event
-
 import controller 
 from datetime import datetime
 
