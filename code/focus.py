@@ -1,6 +1,7 @@
 import cv2
 import logging as log
 
+log.basicConfig(format='%(process)d-%(levelname)s-%(message)s', level=log.INFO)
 
 class Focus:
 
