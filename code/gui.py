@@ -2,13 +2,8 @@ from tkinter import *
 from tkinter import ttk
 from tkinter import filedialog
 import logging as log
-import cv2
-import queue
-import concurrent.futures
-from threading import Thread, Event
 
 import controller 
-import time
 from datetime import datetime
 
 log.basicConfig(format='%(process)d-%(levelname)s-%(message)s', level=log.INFO)

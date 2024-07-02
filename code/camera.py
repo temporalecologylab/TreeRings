@@ -6,7 +6,7 @@ from gi.repository import Gst, GObject, GLib
 
 log.basicConfig(format='%(process)d-%(levelname)s-%(message)s', level=log.INFO)
 
-class VideoSaver:
+class Camera:
     def __init__(self):
         Gst.init(None)
         # Create the pipeline with both display and save frame functionality

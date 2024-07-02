@@ -19,7 +19,7 @@ class Controller:
         #TODO: logic for when we have many cookies on one platform
         self.cookies = []
         self.gantry = gantry.Gantry()
-        self.camera = camera.VideoSaver()
+        self.camera = camera.Camera()
         self.focus = focus.Focus()
 
         #attributes
@@ -29,7 +29,7 @@ class Controller:
 
     def quit(self):
         log.info("Ending Camera Stream")
-        self.camera.end_camera_filesave()
+        self.camera.stop_pipeline()
         log.info("Disconnecting serial port")
         self.gantry.serial_disconnect_port()
 
