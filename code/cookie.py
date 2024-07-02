@@ -5,5 +5,5 @@ class Cookie:
         self.percent_overlap = percent_overlap
         self.start_point = (None, None)
 
-    def set_location(self, top_left: tuple[int, int]):
+    def set_location(self, top_left: tuple[float, float]):
         self.start_point = top_left
