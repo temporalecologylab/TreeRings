@@ -44,7 +44,7 @@ class Controller:
     #### SERPENTINE METHODS ####
     
     def capture_cookie(self):
-        rows, cols, y_dist, x_dist = self.calculate_grid(self)
+        rows, cols, y_dist, x_dist = self.calculate_grid()
         img_pipeline = queue.Queue()
 
         gantry_thread = Thread(target=self.capture_grid_photos, args=(img_pipeline, rows, cols, y_dist, x_dist))
