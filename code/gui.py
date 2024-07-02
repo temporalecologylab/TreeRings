@@ -20,7 +20,7 @@ class App(Frame):
         self.master.grid_columnconfigure(0, weight=1)
 
         ##TODO: make ref to controller when it exists
-        self.controller = controller.Controller()
+        self.controller = controller.Controller(3, 2)
 
         # Frames for entries
         self.frame_entry_cookie = ttk.Frame(self.master, padding = 25)
@@ -128,7 +128,7 @@ class App(Frame):
         ## Create the application variable.
         self.contents_height_img = DoubleVar()
         ## Set it to some value.
-        self.contents_height_img.set("2.25")
+        self.contents_height_img.set("2.00")
         ## Tell the entry widget to watch this variable.
         self.entry_height_img["textvariable"] = self.contents_height_img
 
