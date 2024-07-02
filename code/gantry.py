@@ -22,7 +22,6 @@ class Gantry:
         self.core_samples = []
 
         self.s = None
-        self.serial_connect_port()
 
     def _send_command(self, cmd) -> str:
         log.info("Sending {}".format(cmd))
