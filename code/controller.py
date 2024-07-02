@@ -60,8 +60,9 @@ class Controller:
 
     def calculate_grid(self): 
         if len(self.cookies) > 0:
-            overlap_x = round(self.image_width_mm * self.cookie.percent_overlap / 100, 3)
-            overlap_y = round(self.image_height_mm * self.cookie.percent_overlap / 100, 3)
+            cookie = self.cookies[-1]
+            overlap_x = round(self.image_width_mm * cookie.percent_overlap / 100, 3)
+            overlap_y = round(self.image_height_mm * cookie.percent_overlap / 100, 3)
 
             log.info("overlap x: {}".format(overlap_x))
             log.info("overlap y: {}".format(overlap_y))
@@ -138,7 +139,7 @@ class Controller:
     #### COOKIE METHODS ####
 
     def add_cookie_sample(self, width, height, overlap):
-        self.cookie = cookie.Cookie(width, height, overlap)
+        cookie = cookie.Cookie(width, height, overlap)
         self.cookies.append(cookie)
         log.info("Adding Cookie \nW: {}\nH: {}\nO: {}\n".format(width, height,overlap))
 
