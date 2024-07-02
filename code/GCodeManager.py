@@ -1,5 +1,3 @@
-<<<<<<< HEAD
-=======
 import logging as log
 import math
 import serial
@@ -599,4 +597,3 @@ if __name__ == "__main__":
     controller.jog_x(10)
     print(controller.is_connected())
     time.sleep(10)    
->>>>>>> parent of 44ef8bd (Changing variable names)
