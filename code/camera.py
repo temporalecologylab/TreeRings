@@ -47,6 +47,7 @@ class VideoSaver:
     def save_frame(self, path):
         self.filesink.set_property("location", path)
         self.filesink.send_event(Gst.Event.new_eos())
+        log.info("Saving frame {}".format(path))
 
     def reset_sink(self):
         # Reset the filesink to not save any more frames
