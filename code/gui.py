@@ -43,7 +43,7 @@ class App(Frame):
         self.create_add_cookie_button()
         self.create_directory_button()
         self.create_serial_connect_button()
-        self.create_g_code_sender_button()
+        self.create_cookie_capture_button()
         self.create_g_code_pause_button()
         self.create_g_code_resume_button()
         self.create_g_code_homing_button()
@@ -164,7 +164,7 @@ class App(Frame):
         self.button_serial_connect = ttk.Button(self.frame_buttons, text="Serial Connect", command=self.controller.serial_connect)
         self.button_serial_connect.grid(column = 1, row = 1)
 
-    def create_g_code_sender_button(self):
+    def create_cookie_capture_button(self):
         self.button_g_code_send = ttk.Button(self.frame_buttons, text="Capture Cookie", command=self.controller.capture_cookie)
         self.button_g_code_send.grid(column = 2, row = 1)
 
