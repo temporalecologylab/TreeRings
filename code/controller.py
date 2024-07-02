@@ -147,7 +147,6 @@ class Controller:
     def serial_connect(self):
         self.gantry.serial_connect_port()
 
-<<<<<<< HEAD
     def jog_y_plus(self, dist):
         log.info("jog +{} mm y".format(dist))
         self.gantry.jog_fast_y(dist)
@@ -171,31 +170,6 @@ class Controller:
     def jog_z_minus(self, dist):
         log.info("jog -{} mm z".format(dist))
         self.gantry.jog_fast_z(dist * -1)
-=======
-    def jog_y_plus(self, jog_dist):
-        log.info("jog +{} mm y".format(jog_dist))
-        self.gantry.jog_fast_y(jog_dist)
-
-    def jog_y_minus(self, jog_dist):
-        log.info("jog -{} mm y".format(jog_dist))
-        self.gantry.jog_fast_y(jog_dist * -1)
-    
-    def jog_x_plus(self, jog_dist):
-        log.info("jog +{} mm x".format(jog_dist))
-        self.gantry.jog_fast_x(jog_dist)
-
-    def jog_x_minus(self, jog_dist):
-        log.info("jog -{} mm x".format(jog_dist))
-        self.gantry.jog_fast_x(jog_dist * -1)
-    
-    def jog_z_plus(self, jog_dist):
-        log.info("jog +{} mm z".format(jog_dist))
-        self.gantry.jog_fast_z(jog_dist)
-
-    def jog_z_minus(self, jog_dist):
-        log.info("jog -{} mm z".format(jog_dist))
-        self.gantry.jog_fast_z(jog_dist * -1)
->>>>>>> 57e92f90b4f0293461cd59f703de4d00bc62969a
 
     def cb_pause_g_code(self):
         self.gantry.pause()
