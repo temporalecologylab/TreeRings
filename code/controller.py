@@ -45,7 +45,7 @@ class Controller:
     #### SERPENTINE METHODS ####
     
     def capture_cookie(self):
-        rows, cols, y_dist, x_dist = self.calculate_grid(self)
+        rows, cols, y_dist, x_dist = self.calculate_grid()
         img_pipeline = queue.Queue()
         Path("{}/focused_images".format(self.directory)).mkdir(exist_ok=True)
 
