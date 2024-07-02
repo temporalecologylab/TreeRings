@@ -83,8 +83,8 @@ class Controller:
     
     def capture_grid_photos(self, focus_queue: queue.Queue, rows: int, cols: int, y_dist, x_dist, z_steps=5, pause=2):
         # for loop capture
-        for row in rows:
-            for col in cols:
+        for row in range(rows):
+            for col in range(cols):
                 # Even rows go left
                 if col % 2 == 1:
                     self.capture_images_multiple_distances(0.1, z_steps, cols - col -1, row)
@@ -139,8 +139,8 @@ class Controller:
     #### COOKIE METHODS ####
 
     def add_cookie_sample(self, width, height, overlap):
-        cookie = cookie.Cookie(width, height, overlap)
-        self.cookies.append(cookie)
+        ck = cookie.Cookie(width, height, overlap)
+        self.cookies.append(ck)
         log.info("Adding Cookie \nW: {}\nH: {}\nO: {}\n".format(width, height,overlap))
 
    #### GANTRY METHODS ####
