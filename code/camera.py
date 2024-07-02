@@ -1,3 +1,5 @@
+from threading import Thread
+
 import gi
 gi.require_version('Gst', '1.0')
 from gi.repository import Gst, GObject, GLib
@@ -16,12 +18,28 @@ class VideoSaver:
         self.filesink.set_property("next-file", 4)  # 4 is the value for "max-size"
         self.filesink.set_property("max-file-size", 1)  # We only want one file
 
+        self.stop_glib = False
+        self.glib_thread = Thread(target=self.run_glib)
+        self.start_camera_filesave()
+
+    def run_glib(self):
+        loop = GLib.MainLoop()
+        GLib.timeout_add_seconds(1, not self.stop_glib)
+        try:
+            loop.run()
+        except KeyboardInterrupt:
+            self.stop_glib = True
+            loop.quit()
+
     def start_pipeline(self):
         self.pipeline.set_state(Gst.State.PLAYING)
+        self.glib_thread.start()
         print("Pipeline started")
 
     def stop_pipeline(self):
         self.pipeline.set_state(Gst.State.NULL)
+        self.stop_glib = True
+        self.glib_thread.join()
         print("Pipeline stopped")
 
     def save_frame(self, path):
