@@ -22,9 +22,6 @@ class App(Frame):
         ##TODO: make ref to controller when it exists
         self.controller = controller.Controller()
 
-        self.PAUSED = False
-        self.SAVEFLAG = False #TODO: make this mutex
-
         # Frames for entries
         self.frame_entry_cookie = ttk.Frame(self.master, padding = 25)
         self.frame_entry_cookie.grid(column=0, row=0)
@@ -33,7 +30,11 @@ class App(Frame):
         self.frame_entry_machine.grid(column=0, row=1)
         # self.frame_entry.grid_rowconfigure(0, weight=1)
         # self.frame_entry.grid_columnconfigure(0, weight=1)
-        # must instantiate controller first
+        # must instantiate controller first\
+
+        # Frames for Buttons
+        self.frame_buttons = ttk.Frame(self.master, padding = 25)
+        self.frame_buttons.grid()
 
         self.create_cookie_height_entry()
         self.create_cookie_width_entry()
