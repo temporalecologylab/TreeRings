@@ -15,12 +15,12 @@ class Controller:
     def __init__(self, image_width_mm, image_height_mm):
         
         #TODO: logic for when we have many cookies on one platform
-        #self.cookies = []
+        self.cookies = []
         self.gantry = gantry.Gantry()
         self.camera = camera.Camera()
 
         #attributes
-        self.image_heignt_mm = image_height_mm
+        self.image_height_mm = image_height_mm
         self.image_width_mm = image_width_mm
 
         self.directory = "./"
@@ -30,6 +30,12 @@ class Controller:
         self.camera.end_camera_filesave()
         log.info("Disconnecting serial port")
         self.gantry.serial_disconnect_port()
+
+    def set_image_height_mm(self, height):
+        self.image_height_mm = height
+    
+    def set_image_width_mm(self, width):
+        self.image_width_mm = width
 
     def set_directory(self, dir):
         self.directory = dir
@@ -58,18 +64,13 @@ class Controller:
         
         return y_steps, x_steps, y_step_size, x_step_size
 
-
-    def bulk_send_g_code(self):
-        log.info("Starting serpentine")
-
-
     def capture_cookie(self):
         # calculating row, col, x_move, y_move
         rows, cols, y_dist, x_dist = self.calculate_grid(self)
         img_pipeline = queue.Queue()
 
         gantry_thread = Thread(target=self.capture_grid_photos, args=(img_pipeline, rows, cols, y_dist, x_dist))
-        focus_thread = Thread(target=self.find_focus, args=(img_pipeline, self.directory))
+        focus_thread = Thread(target=self.focus.find_focus, args=(img_pipeline, self.directory))
         gantry_thread.start()
         #focus_thread.start()
         
@@ -77,17 +78,20 @@ class Controller:
         img_pipeline.join()    	
         #focus_thread.join()
     
-    def capture_grid_photos(self, img_pipeline, rows, cols, y_dist, x_dist):
+    def capture_grid_photos(self, img_pipeline, rows, cols, y_dist, x_dist, z_steps=7, pause=2):
         # for loop capture
         for row in rows:
             for col in cols:
                 if col % 2 == 1:
-                    self.capture_images_multiple_distances(0.1, 7, cols - col -1, row)
+                    self.capture_images_multiple_distances(0.1, z_steps, cols - col -1, row)
                     self.gantry.jog_x(-x_dist)
                 else:
-                    self.capture_images_multiple_distances(0.1, 7, col, row)
+                    self.capture_images_multiple_distances(0.1, z_steps, col, row)
                     self.gantry.jog_x(x_dist)
+                time.sleep(pause)
+                img_pipeline.put([row, col, z_steps])
             self.gantry.jog_y(-y_dist)
+            time.sleep(pause)
 
     def capture_images_multiple_distances(self, step_size_mm: float, image_count_odd: int, x_loc, y_loc, pause = 1):
         images = []
@@ -109,15 +113,12 @@ class Controller:
         
         # move upwards by a step, take a photo, then repeat
         for i in range(1, image_count_odd):
-            #timestamp = time.strftime("%Y%m%d_%H%M%S")
-            
             self.jog_z(step_size_mm)
             time.sleep(pause)
             file_location = f"{self.directory}/frame_{x_loc}_{y_loc}_{i}.jpg"
             log.info("Stack image {}".format(file_location))
             self.camera.save_frame(file_location)
-        
-        # self.save_frame()
+
         # return to original position
         self.jog_z(-z_offset)
         time.sleep(pause)
@@ -126,7 +127,6 @@ class Controller:
 
     def cb_capture_image(self):
         name = "{}/image_{}.jpg".format(self.directory, datetime.now().strftime("%H_%M_%S"))
-        # cv2.imwrite(name, img)
         self.camera.save_frame(name)
         log.info("Saving {}".format(name))
     
@@ -134,7 +134,7 @@ class Controller:
 
     def add_cookie_sample(self, width, height, overlap):
         self.cookie = cookie.Cookie(width, height, overlap)
-        #self.cookies.append(cookie)
+        self.cookies.append(cookie)
         log.info("Adding Cookie \nW: {}\nH: {}\nO: {}\n".format(width, height,overlap))
 
    #### GANTRY METHODS ####

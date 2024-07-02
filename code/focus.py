@@ -10,7 +10,7 @@ class Focus:
         self.kernel_size = 5         # Size of the laplacian window
         self.blur_size = 5           # How big of a kernel to use for the gaussian blur
 
-    def focus_thread(self, img_pipeline, directory):
+    def find_focus(self, img_pipeline, directory):
         while True:
             args = img_pipeline.get()
             log.info(args)
