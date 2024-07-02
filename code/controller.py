@@ -44,7 +44,6 @@ class Controller:
     #### SERPENTINE METHODS ####
     
     def capture_cookie(self):
-        # calculating row, col, x_move, y_move
         rows, cols, y_dist, x_dist = self.calculate_grid(self)
         img_pipeline = queue.Queue()
 
@@ -64,7 +63,7 @@ class Controller:
 
             log.info("overlap x: {}".format(overlap_x))
             log.info("overlap y: {}".format(overlap_y))
-            # TODO: add logic / user input / something to move z to be in focus
+            
             x_step_size = self.image_width_mm - overlap_x
             y_step_size = self.image_height_mm - overlap_y 
 
