@@ -84,14 +84,17 @@ class Controller:
         # for loop capture
         for row in rows:
             for col in cols:
+                # Even rows go left
                 if col % 2 == 1:
                     self.capture_images_multiple_distances(0.1, z_steps, cols - col -1, row)
                     self.gantry.jog_x(-x_dist)
+                # Odd rows go right
                 else:
                     self.capture_images_multiple_distances(0.1, z_steps, col, row)
                     self.gantry.jog_x(x_dist)
                 time.sleep(pause)
                 img_pipeline.put([row, col, z_steps])
+            # S
             self.gantry.jog_y(-y_dist)
             time.sleep(pause)
 
@@ -105,24 +108,24 @@ class Controller:
         z_offset = round(math.floor(image_count_odd / 2) * step_size_mm, 3)
 
         # go to the bottom of the range 
-        self.jog_z(-z_offset)
+        self.gantry.jog_z(-z_offset)
         
         #take first photo in stack
         file_location = f"{self.directory}/frame_{x_loc}_{y_loc}_{0}.jpg"
         log.info("Stack image {}".format(file_location))
-        self.save_image(file_location)
+        self.camera.save_frame(file_location)
         time.sleep(pause)
         
         # move upwards by a step, take a photo, then repeat
         for i in range(1, image_count_odd):
-            self.jog_z(step_size_mm)
+            self.gantry.jog_z(step_size_mm)
             time.sleep(pause)
             file_location = f"{self.directory}/frame_{x_loc}_{y_loc}_{i}.jpg"
             log.info("Stack image {}".format(file_location))
             self.camera.save_frame(file_location)
 
         # return to original position
-        self.jog_z(-z_offset)
+        self.gantry.jog_z(-z_offset)
         time.sleep(pause)
 
     #### CAMERA METHODS ####
