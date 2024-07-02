@@ -3,8 +3,9 @@ from tkinter import ttk
 from tkinter import filedialog
 import logging as log
 import cv2
-
-from threading import Thread
+import queue
+import concurrent.futures
+from threading import Thread, Event
 
 import GCodeManager 
 import time
@@ -55,9 +56,16 @@ class App(Frame):
         self.create_capture_button()
         self.create_arrow_buttons()
 
-        # img_window = Thread(target=self.start_image_preview)
-        # img_window.start()
+        #code to properly close windows at end of program
+        self.master.protocol("WM_DELETE_WINDOW", self.quit_program)
 
+    def quit_program(self):
+       log.info("Ending Camera Stream")
+       self.controller.end_camera_filesave()       
+       log.info("Disconnecting serial port")
+       self.controller.serial_disconnect_port()
+       log.info("Destroy tkinter window")
+       self.master.destroy()        
 
     def create_cookie_height_entry(self):
         # Entry for cookie height
@@ -233,8 +241,6 @@ class App(Frame):
     def start_image_preview(self):
         while True:
             img = self.controller.capture_image()
-            #img = cv2.flip(img, 0)
-            img = cv2.flip(img, 1)
             cv2.imshow("window", img)
 
             time.sleep(.2)
@@ -242,27 +248,27 @@ class App(Frame):
             
     def jog_y_plus(self):
         log.info("jog +{} mm y".format(self.jog_distance))
-        self.controller.jog_y(self.jog_distance)
+        self.controller.jog_fast_y(self.jog_distance)
 
     def jog_y_minus(self):
         log.info("jog -{} mm y".format(self.jog_distance))
-        self.controller.jog_y(self.jog_distance * -1)
+        self.controller.jog_fast_y(self.jog_distance * -1)
     
     def jog_x_plus(self):
         log.info("jog +{} mm x".format(self.jog_distance))
-        self.controller.jog_x(self.jog_distance)
+        self.controller.jog_fast_x(self.jog_distance)
 
     def jog_x_minus(self):
         log.info("jog -{} mm x".format(self.jog_distance))
-        self.controller.jog_x(self.jog_distance * -1)
+        self.controller.jog_fast_x(self.jog_distance * -1)
     
     def jog_z_plus(self):
         log.info("jog +{} mm z".format(self.jog_distance))
-        self.controller.jog_z(self.jog_distance)
+        self.controller.jog_fast_z(self.jog_distance)
 
     def jog_z_minus(self):
         log.info("jog -{} mm z".format(self.jog_distance))
-        self.controller.jog_z(self.jog_distance * -1)
+        self.controller.jog_fast_z(self.jog_distance * -1)
 
     def cb_jog_distance(self, event):
         self.jog_distance = float(self.entry_jog_distance.get())
@@ -344,10 +350,17 @@ class App(Frame):
             log.info("ERROR: NO COOKIES ADDED... Add a cookie using the button")
         
 
-    def bulk_send_g_code(self, pause = 1):
+    def bulk_send_g_code(self):
         log.info("Starting serpentine")
-
-        self.controller.send_serpentine(self.g_code)
+        img_pipeline = queue.Queue()
+        image_serp_thread = Thread(target=self.controller.send_serpentine, args=(img_pipeline, self.g_code, self.directory))
+        focus_thread = Thread(target=self.controller.focus_thread, args=(img_pipeline, self.directory))
+        image_serp_thread.start()
+        #focus_thread.start()
+        
+        image_serp_thread.join()	
+        img_pipeline.join()    	
+        #focus_thread.join()
             
 
    
