@@ -46,4 +46,6 @@ class Controller:
         log.info("jog -{} mm z".format(self.jog_distance))
         self.gantry.jog_fast_z(self.jog_distance * -1)
     
+    def add_cookie_sample(self, width, height, overlap):
+        log.info("Adding Cookie \nW: {}\nH: {}\nO: {}\n".format(width, height,overlap))
         

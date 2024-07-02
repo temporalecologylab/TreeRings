@@ -202,12 +202,12 @@ class App(Frame):
         self.frame_jogging = ttk.Frame(self.master, padding = 25)
         self.frame_jogging.grid()
         self.frame_jogging_title = ttk.Label(self.frame_jogging, text="JOGGING")
-        self.button_y_plus = ttk.Button(self.frame_jogging, text="Y+", command=self.jog_y_plus)
-        self.button_y_minus = ttk.Button(self.frame_jogging, text="Y-", command=self.jog_y_minus)
-        self.button_x_plus = ttk.Button(self.frame_jogging, text="X+", command=self.jog_x_plus)
-        self.button_x_minus = ttk.Button(self.frame_jogging, text="X-", command=self.jog_x_minus)
-        self.button_z_plus = ttk.Button(self.frame_jogging, text="Z+", command=self.jog_z_plus)
-        self.button_z_minus = ttk.Button(self.frame_jogging, text="Z-", command=self.jog_z_minus)
+        self.button_y_plus = ttk.Button(self.frame_jogging, text="Y+", command=self.controller.jog_y_plus)
+        self.button_y_minus = ttk.Button(self.frame_jogging, text="Y-", command=self.controller.jog_y_minus)
+        self.button_x_plus = ttk.Button(self.frame_jogging, text="X+", command=self.controller.jog_x_plus)
+        self.button_x_minus = ttk.Button(self.frame_jogging, text="X-", command=self.controller.jog_x_minus)
+        self.button_z_plus = ttk.Button(self.frame_jogging, text="Z+", command=self.controller.jog_z_plus)
+        self.button_z_minus = ttk.Button(self.frame_jogging, text="Z-", command=self.controller.jog_z_minus)
         
         # Entry for percent overlap between images
         self.label_jog_distance = ttk.Label(self.frame_jogging, text="Enter Jog Distance (mm):   ")
@@ -234,38 +234,7 @@ class App(Frame):
         self.button_x_minus.grid(column = 1, row = 2)
         self.button_z_plus.grid(column = 4, row = 1)
         self.button_z_minus.grid(column = 4, row = 3)
-
-    def start_image_preview(self):
-        while True:
-            img = self.controller.capture_image()
-            cv2.imshow("window", img)
-
-            time.sleep(.2)
-            cv2.waitKey(1)
             
-    def jog_y_plus(self):
-        log.info("jog +{} mm y".format(self.jog_distance))
-        self.controller.jog_fast_y(self.jog_distance)
-
-    def jog_y_minus(self):
-        log.info("jog -{} mm y".format(self.jog_distance))
-        self.controller.jog_fast_y(self.jog_distance * -1)
-    
-    def jog_x_plus(self):
-        log.info("jog +{} mm x".format(self.jog_distance))
-        self.controller.jog_fast_x(self.jog_distance)
-
-    def jog_x_minus(self):
-        log.info("jog -{} mm x".format(self.jog_distance))
-        self.controller.jog_fast_x(self.jog_distance * -1)
-    
-    def jog_z_plus(self):
-        log.info("jog +{} mm z".format(self.jog_distance))
-        self.controller.jog_fast_z(self.jog_distance)
-
-    def jog_z_minus(self):
-        log.info("jog -{} mm z".format(self.jog_distance))
-        self.controller.jog_fast_z(self.jog_distance * -1)
 
     def cb_jog_distance(self, event):
         self.jog_distance = float(self.entry_jog_distance.get())
