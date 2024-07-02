@@ -25,7 +25,7 @@ class Controller:
         #attributes
         self.image_height_mm = image_height_mm
         self.image_width_mm = image_width_mm
-        self.directory = "./"
+        self.directory = "."
 
     def quit(self):
         log.info("Ending Camera Stream")
@@ -86,7 +86,7 @@ class Controller:
         for row in range(rows):
             for col in range(cols):
                 # Even rows go left
-                if col % 2 == 1:
+                if row % 2 == 1:
                     self.capture_images_multiple_distances(0.1, z_steps, cols - col -1, row)
                     self.gantry.jog_x(-x_dist)
                 # Odd rows go right
