@@ -3,7 +3,7 @@ import focus
 import cookie
 import camera
 import logging as log
-import datetime
+from datetime import datetime
 import time
 import math
 import queue
