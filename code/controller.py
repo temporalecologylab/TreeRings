@@ -40,7 +40,8 @@ class Controller:
         self.image_width_mm = width
 
     def set_directory(self, dir):
-        self.directory = dir
+        if dir != "":
+            self.directory = dir
 
     #### SERPENTINE METHODS ####
     
