@@ -1,5 +1,6 @@
 from threading import Thread
 import logging as log
+import time
 import gi
 gi.require_version('Gst', '1.0')
 from gi.repository import Gst, GObject, GLib
@@ -46,9 +47,11 @@ class Camera:
 
     def save_frame(self, path):
         self.filesink.set_property("location", path)
-        self.filesink.send_event(Gst.Event.new_eos())
-        self.reset_sink()
+        #self.filesink.send_event(Gst.Event.new_eos())
         log.info("Saving frame {}".format(path))
+
+        time.sleep(0.5)
+        self.reset_sink()
 
     def reset_sink(self):
         # Reset the filesink to not save any more frames

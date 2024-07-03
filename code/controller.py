@@ -3,7 +3,7 @@ import focus
 import cookie
 import camera
 import logging as log
-import datetime
+from datetime import datetime
 import time
 import math
 import queue
@@ -40,7 +40,8 @@ class Controller:
         self.image_width_mm = width
 
     def set_directory(self, dir):
-        self.directory = dir
+        if dir != "":
+            self.directory = dir
 
     #### SERPENTINE METHODS ####
     

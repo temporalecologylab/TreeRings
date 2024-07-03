@@ -149,6 +149,7 @@ class Gantry:
 
     def serial_disconnect_port(self):
     	#TODO: somehow make it so we dont have to reset blackbox?
-        self.s.close()
+        if self.is_connected():
+            self.s.close()
 
     
