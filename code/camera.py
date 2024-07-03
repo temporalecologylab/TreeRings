@@ -17,7 +17,7 @@ class Camera:
         )
         self.filesink = self.pipeline.get_by_name("sink")
         self.filesink.set_property("location", "/dev/null")
-        self.filesink.set_property("next-file", 4)  # 4 is the value for "max-size"
+        self.filesink.set_property("next-file", 1)  # 4 is the value for "max-size"
         self.filesink.set_property("max-file-size", 1)  # We only want one file
 
         self.stop_glib = False
@@ -47,6 +47,7 @@ class Camera:
     def save_frame(self, path):
         self.filesink.set_property("location", path)
         self.filesink.send_event(Gst.Event.new_eos())
+        self.reset_sink()
         log.info("Saving frame {}".format(path))
 
     def reset_sink(self):
