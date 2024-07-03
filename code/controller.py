@@ -102,12 +102,12 @@ class Controller:
                 focus_queue.put([row, col, z_steps])
             # Take final photo in row before jogging down
             if row % 2 == 1:
-            	file_location = f"{self.directory}/frame_{row}_{0}_{0}.jpg"
-            	self.camera.save_frame(file_location)
+                file_location = f"{self.directory}/frame_{row}_{0}_{0}.jpg"
+                self.camera.save_frame(file_location)
                 #self.capture_images_multiple_distances(0.1, z_steps, row, 0)
             else:
-            	file_location = f"{self.directory}/frame_{row}_{cols - 1}_{0}.jpg"
-            	self.camera.save_frame(file_location)
+                file_location = f"{self.directory}/frame_{row}_{cols - 1}_{0}.jpg"
+                self.camera.save_frame(file_location)
                 #self.capture_images_multiple_distances(0.1, z_steps, row, cols - 1)
             # S
             self.gantry.jog_y(-y_dist)
