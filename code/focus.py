@@ -18,10 +18,10 @@ class Focus:
                 img_pipeline.task_done()
                 break
                       
-            image_name = image_files[1].split("/")[-1]
-            extract_row = image_name[6]
-            extract_col = image_name[8]
-            filename = "focused_{}_{}.jpg".format(extract_row, extract_col) 
+            image_name = image_files[1].split("/")[-1].split("_")
+            extract_row = image_name[1]
+            extract_col = image_name[2]
+            filename = "focused_{}_{}.tiff".format(extract_row, extract_col) 
             focused_image = self.best_focused_image(image_files)
             cv2.imwrite("{}/focused_images/{}".format(directory,filename), focused_image)
             img_pipeline.task_done()

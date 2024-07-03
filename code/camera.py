@@ -15,7 +15,7 @@ class Camera:
             "nvarguscamerasrc wbmode=1 ee-mode=2 ee-strength=0.75 exposurecompensation=0.25 ! video/x-raw(memory:NVMM),width=3840,height=2160,framerate=30/1 ! "
             "nvvideoconvert flip-method=2 ! videobalance contrast=1.25 ! tee name=t "
             "t. ! queue ! autovideosink "
-            "t. ! queue  ! nvjpegenc ! multifilesink name=sink"
+            "t. ! queue  ! avenc_tiff ! multifilesink name=sink"
         )
         self.filesink = self.pipeline.get_by_name("sink")
         self.filesink.set_property("location", "/dev/null")
