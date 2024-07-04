@@ -11,8 +11,8 @@ class Gantry:
         self._serial_port = serial_port # windows should be a "COM[X]" port which will vary per device
 
         # machine settings
-        self.feed_rate_z = 10
-        self.feed_rate_xy = 300 
+        self.feed_rate_z = 15
+        self.feed_rate_xy = 200 
 
         self.feed_rate_fast_z = 100
         self.feed_rate_fast_xy = 500
@@ -149,7 +149,6 @@ class Gantry:
 
     def serial_disconnect_port(self):
     	#TODO: somehow make it so we dont have to reset blackbox?
-        if self.is_connected():
-            self.s.close()
+        self.s.close()
 
     
