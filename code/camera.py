@@ -17,7 +17,6 @@ class Camera:
             "nvvideoconvert flip-method=2 ! videobalance contrast=1.25 ! videobalance contrast=1.25 ! tee name=t "
             "t. ! queue ! autovideosink "
             "t. ! queue  ! avenc_tiff ! multifilesink name=sink"
-            "t. ! queue  ! avenc_tiff ! multifilesink name=sink"
         )
         self.filesink = self.pipeline.get_by_name("sink")
         self.filesink.set_property("location", "/dev/null")

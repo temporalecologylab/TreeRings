@@ -11,11 +11,10 @@ class Gantry:
         self._serial_port = serial_port # windows should be a "COM[X]" port which will vary per device
 
         # machine settings
+        # fast z is 100, slow z is 15
+        # fast xy is 500, slow xy is 200
         self.feed_rate_z = 15
         self.feed_rate_xy = 200 
-
-        self.feed_rate_fast_z = 100
-        self.feed_rate_fast_xy = 500
 
         # sample information
         self.cookie_samples = []
@@ -55,36 +54,6 @@ class Gantry:
         -dist moves to the -z
         '''
         cmd = "$J=G91 G21 Z{} F{}".format(dist, self.feed_rate_z)
-        self._send_command(cmd)
-        
-    def jog_fast_x(self, dist) -> None:
-        '''
-        Jog a distance (mm) from the current location in the x plane, NOT to an absolute position. 
-        +dist moves to the +x
-        -dist moves to the -x
-
-        '''
-        cmd = "$J=G91 G21 X{} F{}".format(dist, self.feed_rate_fast_xy)
-        self._send_command(cmd)
-
-    def jog_fast_y(self, dist) -> None:
-        '''
-        Jog a distance (mm) from the current location in the y plane, NOT to an absolute position. 
-
-        +dist moves to the +y
-        -dist moves to the -y
-        '''
-        cmd = "$J=G91 G21 Y{} F{}".format(dist, self.feed_rate_fast_xy)
-        self._send_command(cmd)
-
-    def jog_fast_z(self, dist) -> None:
-
-        '''
-        Jog a distance (mm) from the current location in the z plane, NOT to an absolute position. 
-        +dist moves to the +z
-        -dist moves to the -z
-        '''
-        cmd = "$J=G91 G21 Z{} F{}".format(dist, self.feed_rate_fast_z)
         self._send_command(cmd)
 
     def jog_cancel(self) -> None:

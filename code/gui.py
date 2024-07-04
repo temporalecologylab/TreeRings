@@ -50,6 +50,7 @@ class App(Frame):
         self.create_g_code_homing_button()
         self.create_capture_button()
         self.create_arrow_buttons()
+        self.create_radio_button_slow_fast()
 
         #code to properly close windows at end of program
         self.master.protocol("WM_DELETE_WINDOW", self.quit_program)
@@ -190,12 +191,12 @@ class App(Frame):
         self.frame_jogging = ttk.Frame(self.master, padding = 25)
         self.frame_jogging.grid()
         self.frame_jogging_title = ttk.Label(self.frame_jogging, text="JOGGING")
-        self.button_y_plus = ttk.Button(self.frame_jogging, text="Y+", command=lambda: self.controller.jog_y_plus(self.jog_distance))
-        self.button_y_minus = ttk.Button(self.frame_jogging, text="Y-", command=lambda: self.controller.jog_y_minus(self.jog_distance))
-        self.button_x_plus = ttk.Button(self.frame_jogging, text="X+", command=lambda: self.controller.jog_x_plus(self.jog_distance))
-        self.button_x_minus = ttk.Button(self.frame_jogging, text="X-", command=lambda: self.controller.jog_x_minus(self.jog_distance))
-        self.button_z_plus = ttk.Button(self.frame_jogging, text="Z+", command=lambda: self.controller.jog_z_plus(self.jog_distance))
-        self.button_z_minus = ttk.Button(self.frame_jogging, text="Z-", command=lambda: self.controller.jog_z_minus(self.jog_distance))
+        self.button_y_plus = ttk.Button(self.frame_jogging, text="Y+", command=lambda: self.controller.jog_y(self.jog_distance))
+        self.button_y_minus = ttk.Button(self.frame_jogging, text="Y-", command=lambda: self.controller.jog_y(-1 * self.jog_distance))
+        self.button_x_plus = ttk.Button(self.frame_jogging, text="X+", command=lambda: self.controller.jog_x(self.jog_distance))
+        self.button_x_minus = ttk.Button(self.frame_jogging, text="X-", command=lambda: self.controller.jog_x(-1 * self.jog_distance))
+        self.button_z_plus = ttk.Button(self.frame_jogging, text="Z+", command=lambda: self.controller.jog_z(self.jog_distance))
+        self.button_z_minus = ttk.Button(self.frame_jogging, text="Z-", command=lambda: self.controller.jog_z(-1 * self.jog_distance))
         
         # Entry for percent overlap between images
         self.label_jog_distance = ttk.Label(self.frame_jogging, text="Enter Jog Distance (mm):   ")
@@ -222,7 +223,18 @@ class App(Frame):
         self.button_x_minus.grid(column = 1, row = 2)
         self.button_z_plus.grid(column = 4, row = 1)
         self.button_z_minus.grid(column = 4, row = 3)
-            
+    
+    def create_radio_button_slow_fast(self):
+        self.jog_speed = IntVar()
+        radio_button_slow = Radiobutton(self.frame_jogging, text="Slow", variable=self.jog_speed, value=1, command=self.cb_speed_switch)
+        radio_button_fast = Radiobutton(self.frame_jogging, text="Fast", variable=self.jog_speed, value=2, command=self.cb_speed_switch)
+
+        radio_button_slow.grid(column=5, row=0)
+        radio_button_fast.grid(column=5, row=1)
+        
+    def cb_speed_switch(self):
+        speed = self.jog_speed.get()
+        self.controller.set_feed_rate(speed)
 
     def cb_jog_distance(self, event):
         self.jog_distance = float(self.entry_jog_distance.get())

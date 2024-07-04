@@ -50,15 +50,15 @@ class Controller:
         
         #set directories
         if self.directory == ".":
-        	dirtime = datetime.now().strftime("%H_%M_%S")
-        	Path("./cookiecapture_{}".format(dirtime)).mkdir()
-        	self.set_directory("./cookiecapture_{}".format(dirtime))
+            dirtime = datetime.now().strftime("%H_%M_%S")
+            Path("./cookiecapture_{}".format(dirtime)).mkdir()
+            self.set_directory("./cookiecapture_{}".format(dirtime))
         
         #set directories
         if self.directory == ".":
-        	dirtime = datetime.now().strftime("%H_%M_%S")
-        	Path("./cookiecapture_{}".format(dirtime)).mkdir()
-        	self.set_directory("./cookiecapture_{}".format(dirtime))
+            dirtime = datetime.now().strftime("%H_%M_%S")
+            Path("./cookiecapture_{}".format(dirtime)).mkdir()
+            self.set_directory("./cookiecapture_{}".format(dirtime))
         Path("{}/focused_images".format(self.directory)).mkdir(exist_ok=True)
 
         gantry_thread = Thread(target=self.capture_grid_photos, args=(focus_queue, rows, cols, y_dist, x_dist))
@@ -95,14 +95,14 @@ class Controller:
     
     def capture_grid_photos(self, focus_queue: queue.Queue, rows: int, cols: int, y_dist, x_dist, z_steps=9, pause=2):
         # for loop capture
+        # Change feed rate back to being slow
+        self.set_feed_rate(1)
+        
         for row in range(rows):
             # for last column, we only want to take photo, not move.
             for col in range(cols - 1):
                 # Odd rows go left
                 if row % 2 == 1:
-                    file_location = f"{self.directory}/frame_{row}_{cols - col -1}_{0}.tiff"
-                    #self.camera.save_frame(file_location)
-                    imgs = self.capture_images_multiple_distances(0.1, z_steps, row, cols - col -1)
                     file_location = f"{self.directory}/frame_{row}_{cols - col -1}_{0}.tiff"
                     #self.camera.save_frame(file_location)
                     imgs = self.capture_images_multiple_distances(0.1, z_steps, row, cols - col -1)
@@ -112,25 +112,22 @@ class Controller:
                     file_location = f"{self.directory}/frame_{row}_{col}_{0}.tiff"
                     #self.camera.save_frame(file_location)
                     imgs = self.capture_images_multiple_distances(0.1, z_steps, row, col)
-                    file_location = f"{self.directory}/frame_{row}_{col}_{0}.tiff"
-                    #self.camera.save_frame(file_location)
-                    imgs = self.capture_images_multiple_distances(0.1, z_steps, row, col)
                     self.gantry.jog_x(x_dist)
                 time.sleep(pause)
                 focus_queue.put(imgs)
                 focus_queue.put(imgs)
             # Take final photo in row before jogging down
             if row % 2 == 1:
-            	file_location = f"{self.directory}/frame_{row}_{0}_{0}.tiff"
-            	#self.camera.save_frame(file_location)
-            	self.capture_images_multiple_distances(0.1, z_steps, row, 0)
-            	file_location = f"{self.directory}/frame_{row}_{0}_{0}.tiff"
-            	#self.camera.save_frame(file_location)
-            	self.capture_images_multiple_distances(0.1, z_steps, row, 0)
+                file_location = f"{self.directory}/frame_{row}_{0}_{0}.tiff"
+                #self.camera.save_frame(file_location)
+                self.capture_images_multiple_distances(0.1, z_steps, row, 0)
+                file_location = f"{self.directory}/frame_{row}_{0}_{0}.tiff"
+                #self.camera.save_frame(file_location)
+                # self.capture_images_multiple_distances(0.1, z_steps, row, 0)
             else:
-            	file_location = f"{self.directory}/frame_{row}_{cols - 1}_{0}.tiff"
-            	#self.camera.save_frame(file_location)
-            	self.capture_images_multiple_distances(0.05, z_steps, row, cols - 1)
+                file_location = f"{self.directory}/frame_{row}_{cols - 1}_{0}.tiff"
+                #self.camera.save_frame(file_location)
+                self.capture_images_multiple_distances(0.05, z_steps, row, cols - 1)
             # S
             self.gantry.jog_y(-y_dist)
             time.sleep(pause)
@@ -171,7 +168,27 @@ class Controller:
         self.gantry.jog_z(-z_offset)
         time.sleep(pause)
         return image_filenames
-        return image_filenames
+
+    #### JOG METHODS ####
+
+    def jog_x(self, dist):
+        self.gantry.jog_x(dist)
+
+    def jog_y(self, dist):
+        self.gantry.jog_y(dist)
+
+    def jog_z(self, dist):
+        self.gantry.jog_z(dist)
+
+    def set_feed_rate(self, mode):
+        # Slow mode
+        if mode == 1:
+            self.gantry.feed_rate_xy = 200
+            self.gantry.feed_rate_z = 15
+        # Fast mode
+        if mode == 2:
+            self.gantry.feed_rate_xy = 500
+            self.gantry.feed_rate_z = 75
 
     #### CAMERA METHODS ####
 
@@ -192,30 +209,6 @@ class Controller:
 
     def serial_connect(self):
         self.gantry.serial_connect_port()
-
-    def jog_y_plus(self, dist):
-        log.info("jog +{} mm y".format(dist))
-        self.gantry.jog_fast_y(dist)
-
-    def jog_y_minus(self, dist):
-        log.info("jog -{} mm y".format(dist))
-        self.gantry.jog_fast_y(dist * -1)
-    
-    def jog_x_plus(self, dist):
-        log.info("jog +{} mm x".format(dist))
-        self.gantry.jog_fast_x(dist)
-
-    def jog_x_minus(self, dist):
-        log.info("jog -{} mm x".format(dist))
-        self.gantry.jog_fast_x(dist * -1)
-    
-    def jog_z_plus(self, dist):
-        log.info("jog +{} mm z".format(dist))
-        self.gantry.jog_fast_z(dist)
-
-    def jog_z_minus(self, dist):
-        log.info("jog -{} mm z".format(dist))
-        self.gantry.jog_fast_z(dist * -1)
 
     def cb_pause_g_code(self):
         self.gantry.pause()
