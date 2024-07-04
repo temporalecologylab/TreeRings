@@ -18,7 +18,7 @@ class Controller:
         #Objects
         #TODO: logic for when we have many cookies on one platform
         self.cookies = []
-        self.gantry = gantry.Gantry()
+        self._gantry = gantry.Gantry()
         self.camera = camera.Camera()
         self.focus = focus.Focus()
 
@@ -31,7 +31,7 @@ class Controller:
         log.info("Ending Camera Stream")
         self.camera.stop_pipeline()
         log.info("Disconnecting serial port")
-        self.gantry.serial_disconnect_port()
+        self._gantry.serial_disconnect_port()
 
     def set_image_height_mm(self, height):
         self.image_height_mm = height
@@ -97,25 +97,31 @@ class Controller:
             for col in range(cols - 1):
                 # Odd rows go left
                 if row % 2 == 1:
-                    imgs = self.capture_images_multiple_distances(0.1, z_steps, row, cols - col -1)
-                    self.gantry.jog_x(-x_dist)
+                    # imgs = self.capture_images_multiple_distances(0.1, z_steps, row, cols - col -1)
+                    imgs = self.capture_images_multiple_distances_new(20, self._gantry.feed_rate_z, 1, 0.2, row, cols - col - 1)
+                    self.jog_x(-x_dist)
                 # Even rows go right
                 else:
-                    imgs = self.capture_images_multiple_distances(0.1, z_steps, row, col)
-                    self.gantry.jog_x(x_dist)
+                    # imgs = self.capture_images_multiple_distances(0.1, z_steps, row, col)
+                    imgs = self.capture_images_multiple_distances_new(20, self._gantry.feed_rate_z, 1, 0.2, row, col)
+
+                    self.jog_x(x_dist)
                 time.sleep(pause)
                 focus_queue.put(imgs)
 
             # Take final photo in row before jogging down
             if row % 2 == 1:
-                imgs = self.capture_images_multiple_distances(0.1, z_steps, row, 0)
+                # imgs = self.capture_images_multiple_distances(0.1, z_steps, row, 0)
+                imgs = self.capture_images_multiple_distances_new(20, self._gantry.feed_rate_z, 1, 0.2, row, 0)
                 focus_queue.put(imgs)
 
             else:
-                imgs = self.capture_images_multiple_distances(0.05, z_steps, row, cols - 1)
+                # imgs = self.capture_images_multiple_distances(0.05, z_steps, row, cols - 1)
+                imgs = self.capture_images_multiple_distances_new(20, self._gantry.feed_rate_z, 1, 0.2, row, cols - 1)
+
                 focus_queue.put(imgs)
 
-            self.gantry.jog_y(-y_dist)
+            self.jog_y(-y_dist)
             time.sleep(pause)
         focus_queue.put([-1])
 
@@ -128,7 +134,7 @@ class Controller:
         z_offset = round(math.floor(image_count_odd / 2) * step_size_mm, 3)
 
         # go to the bottom of the range 
-        self.gantry.jog_z(-z_offset)
+        self.jog_z(-z_offset)
         
         #take first photo in stack
         file_location = f"{self.directory}/frame_{row}_{col}_0.tiff"
@@ -138,37 +144,89 @@ class Controller:
         
         # move upwards by a step, take a photo, then repeat
         for i in range(1, image_count_odd):
-            self.gantry.jog_z(step_size_mm)
+            self.jog_z(step_size_mm)
             time.sleep(pause)
             file_location = f"{self.directory}/frame_{row}_{col}_{i}.tiff"
             image_filenames.append(file_location)
             self.camera.save_frame(file_location)
 
         # return to original position
-        self.gantry.jog_z(-z_offset)
+        self.jog_z(-z_offset)
         time.sleep(pause)
         return image_filenames
+
+    def capture_images_multiple_distances_new(self, image_count, feed_rate, r, acceleration_buffer, row, col):
+        """A method to move the camera through a Z range to allow for multiple images to be taken. This implementation is designed to reduce motion blur by taking advantage of a slow feed rate and avoiding a deceleration then sleep cycle to get an in focus image.
+
+        Args:
+            image_count (int): How many images do you want to take throughout the range
+            feed_rate (int): What is the feed rate of the Z-axis in mm/min
+            r (float): The distance in mm between the first and last image.
+            acceleration_buffer (float): Extra distance beyond the range to allow for the z-axis to reach constant velocity
+            row (int): Row location of where on the cookie grid the images are in 
+            col (int): Col location '                                           '
+        """
+        image_filenames = []
+
+        time_between_photos_s = r / feed_rate * 60 / image_count # mm / (mm / min) * (s / min) is the dim analysis for units of seconds
+        time_zero_acceleration_s = acceleration_buffer / feed_rate * 60
+
+        # Jog to the top of the range + acceleration buffer
+        top = (r / 2) + acceleration_buffer
+        self.jog_z(top)
+        sleep_time_half = top / feed_rate * 60
+        log.info("Sleeping for {} to get to top".format(sleep_time_half))
+        time.sleep(sleep_time_half)
+        time.sleep(0.5)  # sleep to prevent excessive vibration
+
+        # Jog to the bottom of the range. Begin taking photos after exiting the acceleration buffer zone
+        bottom = -1 * (r + (acceleration_buffer * 2))
+        self.jog_z(bottom)
+        # Sleep until outside of the acceleration
+        time.sleep(time_zero_acceleration_s)
+        
+        # First photo at the top of the range 
+        for i in range(image_count):
+            file_location = f"{self.directory}/frame_{row}_{col}_{i}.tiff"
+            image_filenames.append(file_location)
+            self.camera.save_frame(file_location)
+            time.sleep(time_between_photos_s)
+            
+        time.sleep(time_zero_acceleration_s)
+        # Return to original location
+        middle = top
+        self.jog_z(middle)
+        # wait until we get back to the center 
+
+        log.info("Sleeping for {} to get back to center".format(sleep_time_half))
+        
+        time.sleep(sleep_time_half)
+
+        return image_filenames
+
+
+
 
     #### JOG METHODS ####
 
     def jog_x(self, dist):
-        self.gantry.jog_x(dist)
+        self._gantry.jog_x(dist)
 
     def jog_y(self, dist):
-        self.gantry.jog_y(dist)
+        self._gantry.jog_y(dist)
 
     def jog_z(self, dist):
-        self.gantry.jog_z(dist)
+        self._gantry.jog_z(dist)
 
     def set_feed_rate(self, mode):
         # Slow mode
         if mode == 1:
-            self.gantry.feed_rate_xy = 200
-            self.gantry.feed_rate_z = 15
+            self._gantry.feed_rate_xy = 200
+            self._gantry.feed_rate_z = 15
         # Fast mode
         if mode == 2:
-            self.gantry.feed_rate_xy = 500
-            self.gantry.feed_rate_z = 75
+            self._gantry.feed_rate_xy = 500
+            self._gantry.feed_rate_z = 75
 
     #### CAMERA METHODS ####
 
@@ -187,14 +245,14 @@ class Controller:
    #### GANTRY METHODS ####
 
     def serial_connect(self):
-        self.gantry.serial_connect_port()
+        self._gantry.serial_connect_port()
 
     def cb_pause_g_code(self):
-        self.gantry.pause()
+        self._gantry.pause()
 
     def cb_resume_g_code(self):
-        self.gantry.resume()
+        self._gantry.resume()
 
     def cb_homing_g_code(self):
-        self.gantry.homing_sequence() 
+        self._gantry.homing_sequence() 
         
