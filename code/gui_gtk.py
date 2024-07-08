@@ -131,7 +131,7 @@ class App(Gtk.Window):
 
     def create_cookie_capture_button(self, box):
         button_g_code_send = Gtk.Button(label="Capture Cookie")
-        button_g_code_send.connect("clicked", self.controller.capture_cookie)
+        button_g_code_send.connect("clicked", lambda w: self.controller.capture_cookie())
         box.pack_start(button_g_code_send, True, True, 0)
 
     def create_g_code_pause_button(self, box):
