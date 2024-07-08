@@ -151,7 +151,7 @@ class App(Gtk.Window):
 
     def create_capture_button(self, box):
         button_capture = Gtk.Button(label="CAPTURE")
-        button_capture.connect("clicked", self.controller.cb_capture_image)
+        button_capture.connect("clicked", lambda w: self.controller.cb_capture_image())
         box.pack_start(button_capture, True, True, 0)
 
     def create_arrow_buttons(self, box):
@@ -251,7 +251,7 @@ class App(Gtk.Window):
         log.info("Image Overlap: {} %".format(overlap))
 
 if __name__ == "__main__":
-    Gst.init(None)
+    #Gst.init(None)
     app = App()
     app.show_all()
     Gtk.main()
