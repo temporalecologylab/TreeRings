@@ -1,6 +1,8 @@
 import logging as log
 import serial
 import time
+from threading import Thread 
+import re
 
 log.basicConfig(format='%(process)d-%(levelname)s-%(message)s', level=log.INFO)
 
@@ -21,15 +23,56 @@ class Gantry:
         self.core_samples = []
 
         self.s = None
+        self.stop_threads = False
+
+        self.x = None
+        self.y = None
+        self.z = None
+        
+        self.thread = Thread(target=self.position_monitor)
+
+    def position_monitor(self):
+        cmd = "?"
+        while not self.stop_threads:
+            res = self._send_command(cmd)
+            res_str = res.decode("utf-8")
+            if res_str[-2:] == "ok":
+                continue
+            elif "WPos" in res_str:
+                self.x, self.y, self.z = self.parse_coordinates(res_str)
+                log.info("X {} \nY {}\nZ{}\n".format(self.x, self.y, self.z))
+            time.sleep(1)
+
+    def parse_coordinates(self, input_string):
+        # Use a regular expression to find the X, Y, and Z values
+        match = re.search(r'WPos:(-?\d+\.\d+),(-?\d+\.\d+),(-?\d+\.\d+)', input_string)
+        if match:
+            x, y, z = map(float, match.groups())
+            return x, y, z
+        else:
+            raise ValueError("The input string does not contain valid coordinates")
 
     def _send_command(self, cmd) -> str:
         log.info("Sending {}".format(cmd))
+        self.s.flush()
         self.s.write(str.encode("{}\n".format(cmd))) # Send g-code block to grbl
         grbl_out = self.s.readline() # Wait for grbl response with carriage return
         self.log_serial_out(grbl_out)
         return grbl_out
 
-    def jog_x(self, dist) -> None:
+    def jog_absolute_x(self, pos) -> None:
+        cmd = "$J=G90 G21 X{} F{}".format(pos, self.feed_rate_xy)
+        self._send_command(cmd)
+
+    def jog_absolute_y(self, pos) -> None:
+        cmd = "$J=G90 G21 Y{} F{}".format(pos, self.feed_rate_xy)
+        self._send_command(cmd)
+
+    def jog_absolute_z(self, pos) -> None:
+        cmd = "$J=G90 G21 Z{} F{}".format(pos, self.feed_rate_z)
+        self._send_command(cmd)
+
+    def jog_relative_x(self, dist) -> None:
         '''
         Jog a distance (mm) from the current location in the x plane, NOT to an absolute position. 
         +dist moves to the +x
@@ -38,7 +81,7 @@ class Gantry:
         cmd = "$J=G91 G21 X{} F{}".format(dist, self.feed_rate_xy)
         self._send_command(cmd)
 
-    def jog_y(self, dist) -> None:
+    def jog_relative_y(self, dist) -> None:
         '''
         Jog a distance (mm) from the current location in the y plane, NOT to an absolute position. 
         +dist moves to the +y
@@ -47,7 +90,7 @@ class Gantry:
         cmd = "$J=G91 G21 Y{} F{}".format(dist, self.feed_rate_xy)
         self._send_command(cmd)
 
-    def jog_z(self, dist) -> None:
+    def jog_relative_z(self, dist) -> None:
         '''
         Jog a distance (mm) from the current location in the z plane, NOT to an absolute position. 
         +dist moves to the +z
@@ -77,6 +120,10 @@ class Gantry:
         cmd = "$H"
         self._send_command(cmd)
         self.query_state()
+
+    def set_origin(self) -> None:
+        cmd = "G10 P0 L20 X0 Y0 Z0"
+        self._send_command(cmd)
 
     def query_state(self) -> None:
         """Query the state of the machine. Updates the attribute if the machine is connected
@@ -115,9 +162,16 @@ class Gantry:
         self.log_serial_out(grbl_out)
         self.s.flushInput()  # Flush startup t
         log.info("Input flushed")
+        log.info("Starting Position Monitor")
+        self.thread.start() 
+
 
     def serial_disconnect_port(self):
     	#TODO: somehow make it so we dont have to reset blackbox?
         self.s.close()
 
+    def quit(self):
+        if self.is_connected():
+            self.s.close()
+        self.stop_threads = True
     

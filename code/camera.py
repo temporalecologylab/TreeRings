@@ -8,7 +8,7 @@ from gi.repository import Gst, GObject, GLib
 log.basicConfig(format='%(process)d-%(levelname)s-%(message)s', level=log.INFO)
 
 class Camera:
-    def __init__(self):
+    def __init__(self, quiet = True):
         Gst.init(None)
         # Create the pipeline with both display and save frame functionality
         self.pipeline = Gst.parse_launch(
@@ -20,8 +20,12 @@ class Camera:
         )
 
         self.bus = self.pipeline.get_bus()
-        self.bus.add_signal_watch()
-        self.bus.connect("message", self.on_bus_message)
+
+        if quiet:
+            pass
+        else:
+            self.bus.add_signal_watch()
+            self.bus.connect("message", self.on_bus_message)
 
         # Get the tee element from the pipeline
         self.t = self.pipeline.get_by_name("t")
@@ -92,10 +96,9 @@ class Camera:
                     
                     if len(self.bins) > 0:
                     	# does the next item in the list satisfy the criteria as well? Repeat if so
-                    	bin_creation_time_ms = self.bins_creation_times[0] * 1000.0 
+                        bin_creation_time_ms = self.bins_creation_times[0] * 1000.0 
                     else:
-                    	break
-                    
+                        break
             time.sleep(0.5)
 
     def create_save_bin(self, path="./test.tiff"):

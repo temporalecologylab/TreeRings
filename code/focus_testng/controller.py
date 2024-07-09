@@ -210,13 +210,13 @@ class Controller:
     #### JOG METHODS ####
 
     def jog_x(self, dist):
-        self._gantry.jog_x(dist)
+        self._gantry.jog_relative_x(dist)
 
     def jog_y(self, dist):
-        self._gantry.jog_y(dist)
+        self._gantry.jog_relative_y(dist)
 
     def jog_z(self, dist):
-        self._gantry.jog_z(dist)
+        self._gantry.jog_relative_z(dist)
 
     def set_feed_rate(self, mode):
         # Slow mode

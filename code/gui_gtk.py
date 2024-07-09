@@ -58,7 +58,7 @@ class App(Gtk.Window):
         self.create_directory_button(box_buttons)
         self.create_serial_connect_button(box_buttons)
         self.create_cookie_capture_button(box_buttons)
-        self.create_g_code_pause_button(box_buttons)
+        self.create_g_code_absolute_test_button(box_buttons)
         self.create_g_code_resume_button(box_buttons)
         self.create_g_code_homing_button(box_buttons)
         self.create_capture_button(box_buttons)
@@ -134,19 +134,19 @@ class App(Gtk.Window):
         button_g_code_send.connect("clicked", lambda w: self.controller.capture_cookie())
         box.pack_start(button_g_code_send, True, True, 0)
 
-    def create_g_code_pause_button(self, box):
-        button_g_code_pause = Gtk.Button(label="PAUSE")
-        button_g_code_pause.connect("clicked", self.controller.cb_pause_g_code)
+    def create_g_code_absolute_test_button(self, box):
+        button_g_code_pause = Gtk.Button(label="ABSOLUTE TEST")
+        button_g_code_pause.connect("clicked", lambda w: self.controller.jog_absolute_x())
         box.pack_start(button_g_code_pause, True, True, 0)
 
     def create_g_code_resume_button(self, box):
         button_g_code_resume = Gtk.Button(label="RESUME")
-        button_g_code_resume.connect("clicked", self.controller.cb_resume_g_code)
+        button_g_code_resume.connect("clicked", lambda w: self.controller.cb_resume_g_code)
         box.pack_start(button_g_code_resume, True, True, 0)
 
     def create_g_code_homing_button(self, box):
         button_g_code_homing = Gtk.Button(label="SET HOME")
-        button_g_code_homing.connect("clicked", self.controller.cb_homing_g_code)
+        button_g_code_homing.connect("clicked", lambda w: self.controller.cb_homing_g_code)
         box.pack_start(button_g_code_homing, True, True, 0)
 
     def create_capture_button(self, box):
@@ -167,27 +167,27 @@ class App(Gtk.Window):
         self.entry_jog_distance.connect('activate', self.cb_jog_distance)
 
         button_y_plus = Gtk.Button(label="Y+")
-        button_y_plus.connect("clicked", lambda w: self.controller.jog_y(self.jog_distance))
+        button_y_plus.connect("clicked", lambda w: self.controller.jog_relative_y(self.jog_distance))
         box.pack_start(button_y_plus, True, True, 0)
 
         button_y_minus = Gtk.Button(label="Y-")
-        button_y_minus.connect("clicked", lambda w: self.controller.jog_y(-1 * self.jog_distance))
+        button_y_minus.connect("clicked", lambda w: self.controller.jog_relative_y(-1 * self.jog_distance))
         box.pack_start(button_y_minus, True, True, 0)
 
         button_x_plus = Gtk.Button(label="X+")
-        button_x_plus.connect("clicked", lambda w: self.controller.jog_x(self.jog_distance))
+        button_x_plus.connect("clicked", lambda w: self.controller.jog_relative_x(self.jog_distance))
         box.pack_start(button_x_plus, True, True, 0)
 
         button_x_minus = Gtk.Button(label="X-")
-        button_x_minus.connect("clicked", lambda w: self.controller.jog_x(-1 * self.jog_distance))
+        button_x_minus.connect("clicked", lambda w: self.controller.jog_relative_x(-1 * self.jog_distance))
         box.pack_start(button_x_minus, True, True, 0)
 
         button_z_plus = Gtk.Button(label="Z+")
-        button_z_plus.connect("clicked", lambda w: self.controller.jog_z(self.jog_distance))
+        button_z_plus.connect("clicked", lambda w: self.controller.jog_relative_z(self.jog_distance))
         box.pack_start(button_z_plus, True, True, 0)
 
         button_z_minus = Gtk.Button(label="Z-")
-        button_z_minus.connect("clicked", lambda w: self.controller.jog_z(-1 * self.jog_distance))
+        button_z_minus.connect("clicked", lambda w: self.controller.jog_relative_z(-1 * self.jog_distance))
         box.pack_start(button_z_minus, True, True, 0)
 
     def create_radio_button_slow_fast(self, box):
