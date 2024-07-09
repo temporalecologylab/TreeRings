@@ -34,8 +34,7 @@ class Gantry:
     def position_monitor(self):
         cmd = "?"
         while not self.stop_threads:
-            res = self._send_command(cmd)
-            res_str = res.decode("utf-8")
+            res_str = self._send_command(cmd)
             if res_str[-2:] == "ok":
                 continue
             elif "WPos" in res_str:
@@ -53,12 +52,16 @@ class Gantry:
             raise ValueError("The input string does not contain valid coordinates")
 
     def _send_command(self, cmd) -> str:
+        def read_response(ser):
+            response = ""
+            while ser.in_waiting > 0:
+                response += ser.readline().decode().strip() + "\n"
+            return response
+        
         log.info("Sending {}".format(cmd))
         self.s.flush()
         self.s.write(str.encode("{}\n".format(cmd))) # Send g-code block to grbl
-        grbl_out = self.s.readline() # Wait for grbl response with carriage return
-        self.log_serial_out(grbl_out)
-        return grbl_out
+        return read_response(self.s)
 
     def jog_absolute_x(self, pos) -> None:
         cmd = "$J=G90 G21 X{} F{}".format(pos, self.feed_rate_xy)
@@ -129,8 +132,7 @@ class Gantry:
         """Query the state of the machine. Updates the attribute if the machine is connected
         """
         cmd = "?"
-        res = self._send_command(cmd)
-        res_str = res.decode("utf-8")
+        res_str = self._send_command(cmd)
         if res_str[-2:] == "ok":
             self._connected = True
         else:
@@ -171,7 +173,8 @@ class Gantry:
         self.s.close()
 
     def quit(self):
-        if self.is_connected():
-            self.s.close()
-        self.stop_threads = True
+        if self.s is not None:
+            if self.s.is_open:
+                self.s.close()
+            self.stop_threads = True
     
