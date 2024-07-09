@@ -41,9 +41,9 @@ class Focus:
 
         for image_name in images:
             image = cv2.imread(image_name)
-            var = self.compute_variance(image)
-            if var.all() > best_var.all():
-                best_image_filepath = image_name
-                best_var = var
-
+            if type(image) == np.ndarray:
+                var = self.compute_variance(image)
+                if var.all() > best_var.all():
+                    best_image_filepath = image_name
+                    best_var = var
         return best_image_filepath     
