@@ -14,7 +14,7 @@ class Camera:
         self.pipeline = Gst.parse_launch(
             "nvarguscamerasrc wbmode=1 ee-mode=2 ee-strength=0.75 exposurecompensation=0.25 wbmode=1 ee-mode=2 ee-strength=0.75 exposurecompensation=0.25 ! video/x-raw(memory:NVMM),width=3840,height=2160,framerate=30/1 ! "
             ""
-            "nvvideoconvert flip-method=2 ! videobalance contrast=1.25 ! videobalance contrast=1.25 ! tee name=t "
+            "nvvideoconvert flip-method=2 ! videobalance contrast=1.25 ! tee name=t "
             "t. ! queue ! autovideosink "
             #"t. ! queue leaky=1 max-size-buffers=1 name=q ! avenc_tiff ! filesink name=sink async=false"
         )
