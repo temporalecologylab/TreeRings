@@ -8,20 +8,24 @@ from gi.repository import Gst, GObject, GLib
 log.basicConfig(format='%(process)d-%(levelname)s-%(message)s', level=log.INFO)
 
 class Camera:
-    def __init__(self):
+    def __init__(self, quiet = True):
         Gst.init(None)
         # Create the pipeline with both display and save frame functionality
         self.pipeline = Gst.parse_launch(
             "nvarguscamerasrc wbmode=1 ee-mode=2 ee-strength=0.75 exposurecompensation=0.25 wbmode=1 ee-mode=2 ee-strength=0.75 exposurecompensation=0.25 ! video/x-raw(memory:NVMM),width=3840,height=2160,framerate=30/1 ! "
             ""
-            "nvvideoconvert flip-method=2 ! videobalance contrast=1.25 ! videobalance contrast=1.25 ! tee name=t "
+            "nvvideoconvert flip-method=2 ! videobalance contrast=1.25 ! tee name=t "
             "t. ! queue ! autovideosink "
             #"t. ! queue leaky=1 max-size-buffers=1 name=q ! avenc_tiff ! filesink name=sink async=false"
         )
 
         self.bus = self.pipeline.get_bus()
-        self.bus.add_signal_watch()
-        self.bus.connect("message", self.on_bus_message)
+
+        if quiet:
+            pass
+        else:
+            self.bus.add_signal_watch()
+            self.bus.connect("message", self.on_bus_message)
 
         # Get the tee element from the pipeline
         self.t = self.pipeline.get_by_name("t")
@@ -92,10 +96,9 @@ class Camera:
                     
                     if len(self.bins) > 0:
                     	# does the next item in the list satisfy the criteria as well? Repeat if so
-                    	bin_creation_time_ms = self.bins_creation_times[0] * 1000.0 
+                        bin_creation_time_ms = self.bins_creation_times[0] * 1000.0 
                     else:
-                    	break
-                    
+                        break
             time.sleep(0.5)
 
     def create_save_bin(self, path="./test.tiff"):

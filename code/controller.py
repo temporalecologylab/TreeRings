@@ -31,7 +31,7 @@ class Controller:
         log.info("Ending Camera Stream")
         self.camera.stop_pipeline()
         log.info("Disconnecting serial port")
-        self._gantry.serial_disconnect_port()
+        self._gantry.quit()
 
     def set_image_height_mm(self, height):
         self.image_height_mm = height
@@ -91,6 +91,7 @@ class Controller:
         # for loop capture
         # Change feed rate back to being slow
         self.set_feed_rate(1)
+        IMAGES = 10
         
         for row in range(rows):
             # for last column, we only want to take photo, not move.
@@ -98,64 +99,34 @@ class Controller:
                 # Odd rows go left
                 if row % 2 == 1:
                     # imgs = self.capture_images_multiple_distances(0.1, z_steps, row, cols - col -1)
-                    imgs = self.capture_images_multiple_distances_new(20, self._gantry.feed_rate_z, 1, 0.2, row, cols - col - 1)
-                    self.jog_x(-x_dist)
+                    imgs = self.capture_images_multiple_distances(IMAGES, self._gantry.feed_rate_z, 1, 0.2, row, cols - col - 1)
+                    self.jog_relative_x(-x_dist)
                 # Even rows go right
                 else:
                     # imgs = self.capture_images_multiple_distances(0.1, z_steps, row, col)
-                    imgs = self.capture_images_multiple_distances_new(20, self._gantry.feed_rate_z, 1, 0.2, row, col)
+                    imgs = self.capture_images_multiple_distances(IMAGES, self._gantry.feed_rate_z, 1, 0.2, row, col)
 
-                    self.jog_x(x_dist)
+                    self.jog_relative_x(x_dist)
                 time.sleep(pause)
                 focus_queue.put(imgs)
 
             # Take final photo in row before jogging down
             if row % 2 == 1:
                 # imgs = self.capture_images_multiple_distances(0.1, z_steps, row, 0)
-                imgs = self.capture_images_multiple_distances_new(20, self._gantry.feed_rate_z, 1, 0.2, row, 0)
+                imgs = self.capture_images_multiple_distances(IMAGES, self._gantry.feed_rate_z, 1, 0.2, row, 0)
                 focus_queue.put(imgs)
 
             else:
                 # imgs = self.capture_images_multiple_distances(0.05, z_steps, row, cols - 1)
-                imgs = self.capture_images_multiple_distances_new(20, self._gantry.feed_rate_z, 1, 0.2, row, cols - 1)
+                imgs = self.capture_images_multiple_distances(IMAGES, self._gantry.feed_rate_z, 1, 0.2, row, cols - 1)
 
                 focus_queue.put(imgs)
 
-            self.jog_y(-y_dist)
+            self.jog_relative_y(-y_dist)
             time.sleep(pause)
         focus_queue.put([-1])
 
-    def capture_images_multiple_distances(self, step_size_mm: float, image_count_odd: int, row, col, pause = 2):
-        image_filenames = []
-
-        if image_count_odd // 2 == 0:
-            return "MUST BE ODD"
-        
-        z_offset = round(math.floor(image_count_odd / 2) * step_size_mm, 3)
-
-        # go to the bottom of the range 
-        self.jog_z(-z_offset)
-        
-        #take first photo in stack
-        file_location = f"{self.directory}/frame_{row}_{col}_0.tiff"
-        image_filenames.append(file_location)
-        time.sleep(pause)
-        self.camera.save_frame(file_location)
-        
-        # move upwards by a step, take a photo, then repeat
-        for i in range(1, image_count_odd):
-            self.jog_z(step_size_mm)
-            time.sleep(pause)
-            file_location = f"{self.directory}/frame_{row}_{col}_{i}.tiff"
-            image_filenames.append(file_location)
-            self.camera.save_frame(file_location)
-
-        # return to original position
-        self.jog_z(-z_offset)
-        time.sleep(pause)
-        return image_filenames
-
-    def capture_images_multiple_distances_new(self, image_count, feed_rate, r, acceleration_buffer, row, col):
+    def capture_images_multiple_distances(self, image_count, feed_rate, r, acceleration_buffer, row, col):
         """A method to move the camera through a Z range to allow for multiple images to be taken. This implementation is designed to reduce motion blur by taking advantage of a slow feed rate and avoiding a deceleration then sleep cycle to get an in focus image.
 
         Args:
@@ -173,7 +144,7 @@ class Controller:
 
         # Jog to the top of the range + acceleration buffer
         top = (r / 2) + acceleration_buffer
-        self.jog_z(top)
+        self.jog_relative_z(top)
         sleep_time_half = top / feed_rate * 60
         log.info("Sleeping for {} to get to top".format(sleep_time_half))
         time.sleep(sleep_time_half)
@@ -181,7 +152,7 @@ class Controller:
 
         # Jog to the bottom of the range. Begin taking photos after exiting the acceleration buffer zone
         bottom = -1 * (r + (acceleration_buffer * 2))
-        self.jog_z(bottom)
+        self.jog_relative_z(bottom)
         # Sleep until outside of the acceleration
         time.sleep(time_zero_acceleration_s)
         
@@ -195,7 +166,7 @@ class Controller:
         time.sleep(time_zero_acceleration_s)
         # Return to original location
         middle = top
-        self.jog_z(middle)
+        self.jog_relative_z(middle)
         # wait until we get back to the center 
 
         log.info("Sleeping for {} to get back to center".format(sleep_time_half))
@@ -209,14 +180,23 @@ class Controller:
 
     #### JOG METHODS ####
 
-    def jog_x(self, dist):
-        self._gantry.jog_x(dist)
+    def jog_relative_x(self, dist):
+        self._gantry.jog_relative_x(dist)
 
-    def jog_y(self, dist):
-        self._gantry.jog_y(dist)
+    def jog_relative_y(self, dist):
+        self._gantry.jog_relative_y(dist)
 
-    def jog_z(self, dist):
-        self._gantry.jog_z(dist)
+    def jog_relative_z(self, dist):
+        self._gantry.jog_relative_z(dist)
+    
+    def jog_absolute_x(self, pos = 5.0):
+        self._gantry.jog_absolute_x(pos)
+
+    def jog_absolute_y(self, pos):
+        self._gantry.jog_absolute_y(pos)
+
+    def jog_absolute_z(self, pos):
+        self._gantry.jog_absolute_z(pos)
 
     def set_feed_rate(self, mode):
         # Slow mode
@@ -254,5 +234,9 @@ class Controller:
         self._gantry.resume()
 
     def cb_homing_g_code(self):
+        # Move to the limit switches
         self._gantry.homing_sequence() 
+
+        # Set the datum to work with G90 jogs 
+        self._gantry.set_origin()
         
