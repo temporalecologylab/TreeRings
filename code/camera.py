@@ -12,11 +12,9 @@ class Camera:
         Gst.init(None)
         # Create the pipeline with both display and save frame functionality
         self.pipeline = Gst.parse_launch(
-            "nvarguscamerasrc wbmode=1 ee-mode=2 ee-strength=0.75 exposurecompensation=0.25 wbmode=1 ee-mode=2 ee-strength=0.75 exposurecompensation=0.25 ! video/x-raw(memory:NVMM),width=3840,height=2160,framerate=30/1 ! "
-            ""
+            "nvarguscamerasrc wbmode=1 ee-mode=2 ee-strength=0.5 exposurecompensation=0.5 exposuretimerange='680000000 600000000'  aelock=true ! video/x-raw(memory:NVMM),width=3840,height=2160,framerate=30/1 ! "                         #683709000
             "nvvideoconvert flip-method=2 ! videobalance contrast=1.25 ! tee name=t "
             "t. ! queue ! autovideosink "
-            #"t. ! queue leaky=1 max-size-buffers=1 name=q ! avenc_tiff ! filesink name=sink async=false"
         )
 
         self.bus = self.pipeline.get_bus()
@@ -109,27 +107,27 @@ class Camera:
         return save_bin
     
     def remove_save_bin(self, bin):
-        log.info("Selecting save bin GhostPad")
+        #log.info("Selecting save bin GhostPad")
         ghostpad = bin.get_static_pad("sink")
 
-        log.info("Selecting Tee-Pad (Peer of GhostPad)")
+        #log.info("Selecting Tee-Pad (Peer of GhostPad)")
         teepad = ghostpad.get_peer()
 
         def blocking_pad_probe(pad, info):
-            log.info("Stopping Bin")
+            #log.info("Stopping Bin")
             log.debug(bin.set_state(Gst.State.NULL))
 
-            log.info("Removing Bin from Pipeline")
+            #log.info("Removing Bin from Pipeline")
             log.debug(self.pipeline.remove(bin))
 
-            log.info("Releasing Tee-Pad")
+            #log.info("Releasing Tee-Pad")
             log.debug(self.t.release_request_pad(teepad))
 
-            log.info("Removed Save Bin from")
+            #log.info("Removed Save Bin from")
 
             return Gst.PadProbeReturn.REMOVE    
 
-        log.info("Configuring blocking probe on teepad")
+        #log.info("Configuring blocking probe on teepad")
         teepad.add_probe(Gst.PadProbeType.BLOCK, blocking_pad_probe)
 
     def queue_full_callback(self, queue):
@@ -150,13 +148,13 @@ class Camera:
         self.bins.append(bin)
         self.bins_creation_times.append(time.time())
         
-        log.info("Adding save bin to pipeline")
+        #log.info("Adding save bin to pipeline")
         self.pipeline.add(bin)
 
-        log.info("Syncing save bin to parent state")
+        #log.info("Syncing save bin to parent state")
         bin.sync_state_with_parent()
         
-        log.info("Linking tee to save bin")
+        #log.info("Linking tee to save bin")
         self.t.link(bin)
 
     def reset_sink(self):
