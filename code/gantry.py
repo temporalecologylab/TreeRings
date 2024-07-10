@@ -63,6 +63,10 @@ class Gantry:
         self.s.write(str.encode("{}\n".format(cmd))) # Send g-code block to grbl
         return read_response(self.s)
 
+    def jog_absolute_xyz(self, x, y, z) -> None:
+        cmd = "$J=G90 G21 X{} Y{} Z{} F{}".format(x, y, z, self.feed_rate_xy)
+        self._send_command(cmd)
+        
     def jog_absolute_x(self, pos) -> None:
         cmd = "$J=G90 G21 X{} F{}".format(pos, self.feed_rate_xy)
         self._send_command(cmd)

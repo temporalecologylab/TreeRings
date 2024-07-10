@@ -136,17 +136,17 @@ class App(Gtk.Window):
 
     def create_g_code_absolute_test_button(self, box):
         button_g_code_pause = Gtk.Button(label="ABSOLUTE TEST")
-        button_g_code_pause.connect("clicked", lambda w: self.controller.jog_absolute_x())
+        button_g_code_pause.connect("clicked", lambda w: self.controller.navigate_to_cookie())
         box.pack_start(button_g_code_pause, True, True, 0)
 
     def create_g_code_resume_button(self, box):
         button_g_code_resume = Gtk.Button(label="RESUME")
-        button_g_code_resume.connect("clicked", lambda w: self.controller.cb_resume_g_code)
+        button_g_code_resume.connect("clicked", lambda w: self.controller.cb_resume_g_code())
         box.pack_start(button_g_code_resume, True, True, 0)
 
     def create_g_code_homing_button(self, box):
         button_g_code_homing = Gtk.Button(label="SET HOME")
-        button_g_code_homing.connect("clicked", lambda w: self.controller.cb_homing_g_code)
+        button_g_code_homing.connect("clicked", lambda w: self.controller.cb_homing_g_code())
         box.pack_start(button_g_code_homing, True, True, 0)
 
     def create_capture_button(self, box):
@@ -226,7 +226,7 @@ class App(Gtk.Window):
         overlap = int(self.entry_overlap.get_text())
 
         self.controller.add_cookie_sample(width, height, overlap)
-        log.info("Adding Cookie \nW: {}\nH: {}\nO: {}\n".format(width, height, overlap))
+        #log.info("Adding Cookie \nW: {}\nH: {}\nO: {}\n".format(width, height, overlap))
 
     def print_cookie_height_entry(self, widget):
         height = int(self.entry_height_cookie.get_text())
