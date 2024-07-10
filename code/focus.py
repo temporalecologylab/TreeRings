@@ -28,8 +28,8 @@ class Focus:
         
     def compute_variance(self, image):
         # adapted from macro info at https://imagejdocu.list.lu/macro/normalized_variance
-        mean = np.mean(image, axis=(0,1))
-        width, height,_ = image.shape
+        mean = np.mean(image)
+        width, height = image.shape
         square_diff = (image - mean)**2
         b = np.sum(square_diff)
         normVar = b/(height * width * mean)
@@ -37,13 +37,13 @@ class Focus:
 
     def best_focused_image(self, images):
         best_image_filepath = []
-        best_var = np.array([0,0,0])
+        best_var = 0
 
         for image_name in images:
-            image = cv2.imread(image_name)
+            image = cv2.imread(image_name, cv2.IMREAD_GRAYSCALE)
             if type(image) == np.ndarray:
                 var = self.compute_variance(image)
-                if var.all() > best_var.all():
+                if var > best_var:
                     best_image_filepath = image_name
                     best_var = var
         return best_image_filepath     
