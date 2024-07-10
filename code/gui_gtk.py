@@ -226,7 +226,7 @@ class App(Gtk.Window):
         overlap = int(self.entry_overlap.get_text())
 
         self.controller.add_cookie_sample(width, height, overlap)
-        log.info("Adding Cookie \nW: {}\nH: {}\nO: {}\n".format(width, height, overlap))
+        #log.info("Adding Cookie \nW: {}\nH: {}\nO: {}\n".format(width, height, overlap))
 
     def print_cookie_height_entry(self, widget):
         height = int(self.entry_height_cookie.get_text())
