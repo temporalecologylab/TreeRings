@@ -198,6 +198,9 @@ class Controller:
     def jog_absolute_z(self, pos):
         self._gantry.jog_absolute_z(pos)
 
+    def jog_absolute_xyz(self, x, y, z):
+        self._gantry.jog_absolute_xyz(x, y, z)
+
     def set_feed_rate(self, mode):
         # Slow mode
         if mode == 1:
@@ -207,6 +210,12 @@ class Controller:
         if mode == 2:
             self._gantry.feed_rate_xy = 500
             self._gantry.feed_rate_z = 75
+
+    def navigate_to_cookie(self):
+        if len(self.cookies) > 0:
+            c = self.cookies.pop(0)
+            x, y, z = c.get_location()
+            self.jog_absolute_xyz(x, y, z)
 
     #### CAMERA METHODS ####
 
@@ -218,9 +227,9 @@ class Controller:
     #### COOKIE METHODS ####
 
     def add_cookie_sample(self, width, height, overlap):
-        ck = cookie.Cookie(width, height, overlap)
+        ck = cookie.Cookie(width, height, overlap, self._gantry.x, self._gantry.y, self._gantry.z)
         self.cookies.append(ck)
-        log.info("Adding Cookie \nW: {}\nH: {}\nO: {}\n".format(width, height,overlap))
+        log.info("Adding Cookie W: {}   H: {}   O: {}   POS:{},{},{}".format(width, height, overlap, self._gantry.x, self._gantry.y, self._gantry.z))
 
    #### GANTRY METHODS ####
 
