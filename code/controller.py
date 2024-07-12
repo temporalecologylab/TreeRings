@@ -2,12 +2,14 @@ import gantry
 import focus
 import cookie
 import camera
+import stitcher
 import logging as log
 from datetime import datetime
 import time
 import math
 import queue
 from threading import Thread
+from multiprocessing import Process
 from pathlib import Path
 
 
@@ -20,7 +22,8 @@ class Controller:
         self.cookies = []
         self._gantry = gantry.Gantry()
         self.camera = camera.Camera()
-        self.focus = focus.Focus()
+        self.focus = focus.Focus(delete_flag=False)
+        self.stitcher = stitcher.Stitcher()
 
         #attributes
         self.image_height_mm = image_height_mm
@@ -47,6 +50,7 @@ class Controller:
     def capture_cookie(self):
         rows, cols, y_dist, x_dist = self.calculate_grid()
         focus_queue = queue.Queue()
+        stitch_queue = queue.Queue()
         
         #set directories
         if self.directory == ".":
@@ -57,6 +61,7 @@ class Controller:
 
         gantry_thread = Thread(target=self.capture_grid_photos, args=(focus_queue, rows, cols, y_dist, x_dist))
         focus_thread = Thread(target=self.focus.find_focus, args=(focus_queue, self.directory))
+        stitch_process = Process(target=self.stitcher.run, args=(stitch_queue))
         gantry_thread.start()
         focus_thread.start()
         
