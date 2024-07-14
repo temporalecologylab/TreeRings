@@ -22,7 +22,7 @@ class Controller:
         self.cookies = []
         self._gantry = gantry.Gantry()
         self.camera = camera.Camera()
-        self.focus = focus.Focus(delete_flag=False)
+        self.focus = focus.Focus(delete_flag=True)
         self.stitcher = stitcher.Stitcher()
 
         #attributes
