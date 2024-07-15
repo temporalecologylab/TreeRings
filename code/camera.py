@@ -101,11 +101,24 @@ class Camera:
 
     def create_save_bin(self, path="./test.tiff"):
         log.info("Creating save bin")
-        bin_description = "queue name=q ! avenc_tiff name=encoder ! filesink name=filesink async=false location={}".format(path)
+        bin_description = "queue name=q{} leaky=1 ! avenc_tiff name=encoder ! filesink name=filesink async=false location={}".format(path,path)
         save_bin = Gst.parse_bin_from_description(bin_description, True)
+
+        # Add a flag to track buffer
+        save_bin.buffer_seen = False
+        queue = save_bin.get_by_name("q{}".format(path))
+        queue.get_static_pad("sink").add_probe(Gst.PadProbeType.BUFFER, self.drop_all_but_first_buffer_probe(save_bin))
 
         return save_bin
     
+    def drop_all_but_first_buffer_probe(self, save_bin):
+        def probe(pad, info):
+            if save_bin.buffer_seen:
+                return Gst.PadProbeReturn.DROP
+            save_bin.buffer_seen = True
+            return Gst.PadProbeReturn.OK
+        return probe
+
     def remove_save_bin(self, bin):
         #log.info("Selecting save bin GhostPad")
         ghostpad = bin.get_static_pad("sink")
