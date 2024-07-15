@@ -14,7 +14,7 @@ class App(Gtk.Window):
         self.set_default_size(900, 500)
         self.connect("destroy", self.quit_program)
         
-        self.controller = controller.Controller(3, 2)
+        self.controller = controller.Controller(image_width_mm=3, image_height_mm=2)
 
         grid = Gtk.Grid()
         self.add(grid)
