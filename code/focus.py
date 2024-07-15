@@ -26,8 +26,8 @@ class Focus:
             focused_image_name = self.best_focused_image(image_files)
             shutil.copy(focused_image_name, "{}/focused_images/{}".format(directory,filename))
             if self.DELETE_FLAG:
-                delete_images = image_files.remove(focused_image_name)
-                self.delete_unfocused(directory, delete_images)
+                image_files.remove(focused_image_name)
+                self.delete_unfocused(image_files)
 
             img_pipeline.task_done()
         
@@ -53,7 +53,6 @@ class Focus:
                     best_var = var
         return best_image_filepath     
 
-    def delete_unfocused(self, directory, images_to_delete):
+    def delete_unfocused(self, images_to_delete):
         for im_name in images_to_delete:
-            file = os.path.join(directory, im_name)
-            os.remove(file)
+            os.remove(im_name)
