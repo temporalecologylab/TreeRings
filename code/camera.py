@@ -17,6 +17,7 @@ class Camera:
             "t. ! queue ! autovideosink "
         )
 
+        self.quiet = quiet
         self.bus = self.pipeline.get_bus()
 
         if quiet:
@@ -87,7 +88,8 @@ class Camera:
                 criteria = time_now_ms - save_time_ms
                 # remove the bin if it's been longer than the save time
                 while bin_creation_time_ms < criteria:
-                    log.info("Removing bin, {} < {}".format(bin_creation_time_ms, criteria))
+                    if not self.quiet:
+                        log.info("Removing bin, {} < {}".format(bin_creation_time_ms, criteria))
                     bin = self.bins.pop(0)
                     self.bins_creation_times.pop(0)
                     self.remove_save_bin(bin)
@@ -128,13 +130,13 @@ class Camera:
 
         def blocking_pad_probe(pad, info):
             #log.info("Stopping Bin")
-            log.debug(bin.set_state(Gst.State.NULL))
+            bin.set_state(Gst.State.NULL)
 
             #log.info("Removing Bin from Pipeline")
-            log.debug(self.pipeline.remove(bin))
+            self.pipeline.remove(bin)
 
             #log.info("Releasing Tee-Pad")
-            log.debug(self.t.release_request_pad(teepad))
+            self.t.release_request_pad(teepad)
 
             #log.info("Removed Save Bin from")
 
@@ -156,7 +158,8 @@ class Camera:
         log.info("Pipeline stopped")
 
     def save_frame(self, path):
-        log.info("Saving frame {}".format(path))
+        if not self.quiet:
+            log.info("Saving frame {}".format(path))
         bin = self.create_save_bin(path)
         self.bins.append(bin)
         self.bins_creation_times.append(time.time())
@@ -169,12 +172,3 @@ class Camera:
         
         #log.info("Linking tee to save bin")
         self.t.link(bin)
-
-    def reset_sink(self):
-        # Reset the filesink to not save any more frames
-        # TODO: make this a valve that opens and closes to prevent 
-        #       needlessly encoding jpeg if we don't want to save frames
-        self.filesink.set_property("location", "/dev/null")
-        self.pipeline.seek_simple(Gst.Format.TIME, Gst.SeekFlags.FLUSH, 0)
-        log.info("Sink reset")
-

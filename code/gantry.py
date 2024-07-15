@@ -7,9 +7,10 @@ import re
 log.basicConfig(format='%(process)d-%(levelname)s-%(message)s', level=log.INFO)
 
 class Gantry:
-    def __init__(self, serial_port = "/dev/ttyUSB0"):
-        pass
+    def __init__(self, serial_port = "/dev/ttyUSB0", quiet=True):
+        
 
+        self.quiet = quiet
         self._serial_port = serial_port # windows should be a "COM[X]" port which will vary per device
 
         # machine settings
@@ -39,8 +40,10 @@ class Gantry:
                 continue
             elif "WPos" in res_str:
                 self.x, self.y, self.z = self.parse_coordinates(res_str)
-                log.info("X {} \nY {}\nZ{}\n".format(self.x, self.y, self.z))
-            time.sleep(1)
+                
+                if not self.quiet:
+                    log.info("X {} \nY {}\nZ{}\n".format(self.x, self.y, self.z))
+            time.sleep(0.2)
 
     def parse_coordinates(self, input_string):
         # Use a regular expression to find the X, Y, and Z values
@@ -58,7 +61,9 @@ class Gantry:
                 response += ser.readline().decode().strip() + "\n"
             return response
         
-        log.info("Sending {}".format(cmd))
+        if not self.quiet:
+            log.info("Sending {}".format(cmd))
+
         self.s.flush()
         self.s.write(str.encode("{}\n".format(cmd))) # Send g-code block to grbl
         return read_response(self.s)
@@ -149,7 +154,8 @@ class Gantry:
             return False
         
     def log_serial_out(self, s_out):
-        log.info(' : ' + str(s_out.strip()))
+        if not self.quiet:
+            log.info(' : ' + str(s_out.strip()))
 
     def serial_connect_port(self) -> None:
         log.info("Connecting to GRBL via serial")
