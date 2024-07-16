@@ -7,32 +7,32 @@ class AsynchronousPID:
         self.Ki = Ki
         self.Kd = Kd
         self.setpoint = setpoint
-        self.previous_error = 0.0
-        self.integral = 0.0
-        self.previous_time = time.time()
+        self._previous_error = 0.0
+        self._integral = 0.0
+        self._previous_time = time.time()
     
     def update(self, measured_value):
         current_time = time.time()
-        dt = current_time - self.previous_time
+        dt = current_time - self._previous_time
         error = self.setpoint - measured_value
         
         # Proportional term
         P = self.Kp * error
         
         # Integral term
-        self.integral += error * dt
-        I = self.Ki * self.integral
+        self._integral += error * dt
+        I = self.Ki * self._integral
         
         # Derivative term
-        derivative = (error - self.previous_error) / dt if dt > 0 else 0.0
+        derivative = (error - self._previous_error) / dt if dt > 0 else 0.0
         D = self.Kd * derivative
         
         # PID output
         output = P + I + D
         
         # Update previous values
-        self.previous_error = error
-        self.previous_time = current_time
+        self._previous_error = error
+        self._previous_time = current_time
         
         return output
 
