@@ -206,8 +206,8 @@ class Controller:
     def set_feed_rate(self, mode):
         # Slow mode
         if mode == 1:
-            self._gantry.feed_rate_xy = 200
-            self._gantry.feed_rate_z = 15
+            self._gantry.feed_rate_xy = 300
+            self._gantry.feed_rate_z = 20
         # Fast mode
         if mode == 2:
             self._gantry.feed_rate_xy = 500
