@@ -51,7 +51,10 @@ class Controller:
         rows, cols, y_dist, x_dist = self.calculate_grid()
         focus_queue = queue.Queue()
         stitch_queue = queue.Queue()
-        
+        n_images = 9
+        middle_image = n_images // 2
+        #self.pid = PID.AsynchronousPID(Kp=1.0, Ki=0.1, Kd=0.05, setpoint=middle_image)
+
         #set directories
         if self.directory == ".":
             dirtime = datetime.now().strftime("%H_%M_%S")
@@ -59,7 +62,7 @@ class Controller:
             self.set_directory("./cookiecapture_{}".format(dirtime))
         Path("{}/focused_images".format(self.directory)).mkdir(exist_ok=True)
 
-        gantry_thread = Thread(target=self.capture_grid_photos, args=(focus_queue, rows, cols, y_dist, x_dist))
+        gantry_thread = Thread(target=self.capture_grid_photos, args=(focus_queue, rows, cols, y_dist, x_dist, n_images))
         focus_thread = Thread(target=self.focus.find_focus, args=(focus_queue, self.directory))
         stitch_process = Process(target=self.stitcher.run, args=(stitch_queue))
         gantry_thread.start()
@@ -92,24 +95,21 @@ class Controller:
         
         return y_steps, x_steps, y_step_size, x_step_size
     
-    def capture_grid_photos(self, focus_queue: queue.Queue, rows: int, cols: int, y_dist, x_dist, z_steps=9, pause=2):
+    def capture_grid_photos(self, focus_queue: queue.Queue, rows: int, cols: int, y_dist, x_dist, n_images=9, pause=0):
         # for loop capture
         # Change feed rate back to being slow
         self.set_feed_rate(1)
-        IMAGES = 10
         
         for row in range(rows):
             # for last column, we only want to take photo, not move.
             for col in range(cols - 1):
                 # Odd rows go left
                 if row % 2 == 1:
-                    # imgs = self.capture_images_multiple_distances(0.1, z_steps, row, cols - col -1)
-                    imgs = self.capture_images_multiple_distances(IMAGES, self._gantry.feed_rate_z, 1, 0.2, row, cols - col - 1)
+                    imgs = self.capture_images_multiple_distances(n_images, self._gantry.feed_rate_z, 1, 0.2, row, cols - col - 1)
                     self.jog_relative_x(-x_dist)
                 # Even rows go right
                 else:
-                    # imgs = self.capture_images_multiple_distances(0.1, z_steps, row, col)
-                    imgs = self.capture_images_multiple_distances(IMAGES, self._gantry.feed_rate_z, 1, 0.2, row, col)
+                    imgs = self.capture_images_multiple_distances(n_images, self._gantry.feed_rate_z, 1, 0.2, row, col)
 
                     self.jog_relative_x(x_dist)
                 time.sleep(pause)
@@ -118,12 +118,12 @@ class Controller:
             # Take final photo in row before jogging down
             if row % 2 == 1:
                 # imgs = self.capture_images_multiple_distances(0.1, z_steps, row, 0)
-                imgs = self.capture_images_multiple_distances(IMAGES, self._gantry.feed_rate_z, 1, 0.2, row, 0)
+                imgs = self.capture_images_multiple_distances(n_images, self._gantry.feed_rate_z, 1, 0.2, row, 0)
                 focus_queue.put(imgs)
 
             else:
                 # imgs = self.capture_images_multiple_distances(0.05, z_steps, row, cols - 1)
-                imgs = self.capture_images_multiple_distances(IMAGES, self._gantry.feed_rate_z, 1, 0.2, row, cols - 1)
+                imgs = self.capture_images_multiple_distances(n_images, self._gantry.feed_rate_z, 1, 0.2, row, cols - 1)
 
                 focus_queue.put(imgs)
 
@@ -180,9 +180,6 @@ class Controller:
 
         return image_filenames
 
-
-
-
     #### JOG METHODS ####
 
     def jog_relative_x(self, dist):
@@ -220,6 +217,33 @@ class Controller:
         if len(self.cookies) > 0:
             c = self.cookies.pop(0)
             x, y, z = c.get_location()
+            self.jog_absolute_xyz(x, y, z)
+
+    def traverse_cookie_boundary(self):
+        if len(self.cookies) > 0:
+            c = self.cookies[0] # don't pop to investigate it
+            x, y, z = c.get_location()
+            l_x = x - (c.width / 2)
+            r_x = x + (c.width / 2)
+            b_y = y - (c.height / 2)
+            t_y = y + (c.height / 2)
+
+            tl = (l_x, t_y)
+            tr = (r_x, t_y)
+            bl = (l_x, b_y)
+            br = (r_x, b_y)
+
+            # Go to top left, then move clockwise until return to tl
+            self.jog_absolute_x(tl[0])
+            self.jog_absolute_y(tl[1])
+            self.jog_absolute_x(tr[0])
+            self.jog_absolute_y(br[1])
+            self.jog_absolute_x(bl[0])
+            self.jog_absolute_y(tl[1])
+
+            time.sleep(2)
+
+            # go back to center
             self.jog_absolute_xyz(x, y, z)
 
     #### CAMERA METHODS ####
