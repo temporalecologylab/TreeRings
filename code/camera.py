@@ -136,8 +136,10 @@ class Camera:
             self.pipeline.remove(bin)
 
             #log.info("Releasing Tee-Pad")
-            ret = self.t.release_request_pad(teepad)
-            log.info(ret)
+            if teepad and teepad.get_parent() == self.t:
+                self.t.release_request_pad(teepad)
+            else:
+                log.error("pad parent mismatch or teepad is None")
             #log.info("Removed Save Bin from")
 
             return Gst.PadProbeReturn.REMOVE    
