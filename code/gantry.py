@@ -16,8 +16,8 @@ class Gantry:
         # machine settings
         # fast z is 100, slow z is 15
         # fast xy is 500, slow xy is 200
-        self.feed_rate_z = 15
-        self.feed_rate_xy = 200 
+        self.feed_rate_z = 300
+        self.feed_rate_xy = 300 
 
         # sample information
         self.cookie_samples = []
@@ -157,6 +157,13 @@ class Gantry:
         if not self.quiet:
             log.info(' : ' + str(s_out.strip()))
 
+    def set_acceleration(self, acc=50):
+        # mm / sec^2
+        # set xyz feed acceleration
+        self._send_command("$120={}".format(acc))
+        self._send_command("$121={}".format(acc))
+        self._send_command("$122={}".format(acc))
+
     def serial_connect_port(self) -> None:
         log.info("Connecting to GRBL via serial")
         self.s = serial.Serial(self._serial_port, 115200) # WILL NEED TO CHANGE THIS PER DEVICE / OS
@@ -176,6 +183,7 @@ class Gantry:
         log.info("Input flushed")
         log.info("Starting Position Monitor")
         self.thread.start() 
+        self.set_acceleration(50)        
 
 
     def serial_disconnect_port(self):
