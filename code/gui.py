@@ -2,13 +2,8 @@ from tkinter import *
 from tkinter import ttk
 from tkinter import filedialog
 import logging as log
-import cv2
-import queue
-import concurrent.futures
-from threading import Thread, Event
 
-import GCodeManager 
-import time
+import controller 
 from datetime import datetime
 
 log.basicConfig(format='%(process)d-%(levelname)s-%(message)s', level=log.INFO)
@@ -24,10 +19,8 @@ class App(Frame):
         self.master.grid_rowconfigure(0, weight=1)
         self.master.grid_columnconfigure(0, weight=1)
 
-        self.controller = GCodeManager.MachineControl(3, 2)
-
-        self.PAUSED = False
-        self.SAVEFLAG = False #TODO: make this mutex
+        ##TODO: make ref to controller when it exists
+        self.controller = controller.Controller(3, 2)
 
         # Frames for entries
         self.frame_entry_cookie = ttk.Frame(self.master, padding = 25)
@@ -37,7 +30,11 @@ class App(Frame):
         self.frame_entry_machine.grid(column=0, row=1)
         # self.frame_entry.grid_rowconfigure(0, weight=1)
         # self.frame_entry.grid_columnconfigure(0, weight=1)
-        # must instantiate controller first
+        # must instantiate controller first\
+
+        # Frames for Buttons
+        self.frame_buttons = ttk.Frame(self.master, padding = 25)
+        self.frame_buttons.grid()
 
         self.create_cookie_height_entry()
         self.create_cookie_width_entry()
@@ -45,27 +42,23 @@ class App(Frame):
         self.create_img_width_entry()
         self.create_percent_overlap_entry()
         self.create_add_cookie_button()
-        self.create_calculate_grid_button()
         self.create_directory_button()
-        self.calculate_grid() # must run before create_serial_connect_button()
         self.create_serial_connect_button()
-        self.create_g_code_sender_button()
+        self.create_cookie_capture_button()
         self.create_g_code_pause_button()
         self.create_g_code_resume_button()
         self.create_g_code_homing_button()
         self.create_capture_button()
         self.create_arrow_buttons()
+        self.create_radio_button_slow_fast()
 
         #code to properly close windows at end of program
         self.master.protocol("WM_DELETE_WINDOW", self.quit_program)
 
     def quit_program(self):
-       log.info("Ending Camera Stream")
-       self.controller.end_camera_filesave()       
-       log.info("Disconnecting serial port")
-       self.controller.serial_disconnect_port()
-       log.info("Destroy tkinter window")
-       self.master.destroy()        
+        self.controller.quit()
+        log.info("Destroy tkinter window")
+        self.master.destroy()   
 
     def create_cookie_height_entry(self):
         # Entry for cookie height
@@ -136,7 +129,7 @@ class App(Frame):
         ## Create the application variable.
         self.contents_height_img = DoubleVar()
         ## Set it to some value.
-        self.contents_height_img.set("2.25")
+        self.contents_height_img.set("2.00")
         ## Tell the entry widget to watch this variable.
         self.entry_height_img["textvariable"] = self.contents_height_img
 
@@ -164,53 +157,46 @@ class App(Frame):
         self.entry_width_img.bind('<Key-Return>',
                              self.print_img_width_entry)
 
-    def create_calculate_grid_button(self):
-         # Calculate button
-        self.frame_buttons = ttk.Frame(self.master, padding = 25)
-        self.frame_buttons.grid()
-        self.button_calculate = ttk.Button(self.frame_buttons, text="Calculate Grid", command=self.calculate_grid)
-        self.button_calculate.grid(column = 1, row = 1)
-
     def create_directory_button(self):
          # Calculate button
         self.button_directory = ttk.Button(self.frame_buttons, text="Select Directory", command=self.request_directory)
         self.button_directory.grid(column = 0, row = 1)
 
     def create_serial_connect_button(self):
-        self.button_serial_connect = ttk.Button(self.frame_buttons, text="Serial Connect", command=self.controller.serial_connect_port)
-        self.button_serial_connect.grid(column = 2, row = 1)
+        self.button_serial_connect = ttk.Button(self.frame_buttons, text="Serial Connect", command=self.controller.serial_connect)
+        self.button_serial_connect.grid(column = 1, row = 1)
 
-    def create_g_code_sender_button(self):
-        self.button_g_code_send = ttk.Button(self.frame_buttons, text="Send G Code", command=self.bulk_send_g_code)
-        self.button_g_code_send.grid(column = 3, row = 1)
+    def create_cookie_capture_button(self):
+        self.button_g_code_send = ttk.Button(self.frame_buttons, text="Capture Cookie", command=self.controller.capture_cookie)
+        self.button_g_code_send.grid(column = 2, row = 1)
 
     def create_g_code_pause_button(self):
-        self.button_g_code_pause = ttk.Button(self.frame_buttons, text="PAUSE", command=self.cb_pause_g_code)
-        self.button_g_code_pause.grid(column = 3, row = 0)
+        self.button_g_code_pause = ttk.Button(self.frame_buttons, text="PAUSE", command=self.controller.cb_pause_g_code)
+        self.button_g_code_pause.grid(column = 2, row = 0)
 
     def create_g_code_resume_button(self):
-        self.button_g_code_resume = ttk.Button(self.frame_buttons, text="RESUME", command=self.cb_resume_g_code)
-        self.button_g_code_resume.grid(column = 3, row = 2)
+        self.button_g_code_resume = ttk.Button(self.frame_buttons, text="RESUME", command=self.controller.cb_resume_g_code)
+        self.button_g_code_resume.grid(column = 2, row = 2)
     
     def create_g_code_homing_button(self):
-        self.button_g_code_homing = ttk.Button(self.frame_buttons, text="SET HOME", command=self.cb_homing_g_code)
-        self.button_g_code_homing.grid(column = 3, row = 3)
+        self.button_g_code_homing = ttk.Button(self.frame_buttons, text="SET HOME", command=self.controller.cb_homing_g_code)
+        self.button_g_code_homing.grid(column = 2, row = 3)
 
     def create_capture_button(self):
-        self.button_capture = ttk.Button(self.frame_buttons, text="CAPTURE", command=self.cb_capture_image)
-        self.button_capture.grid(column = 4, row = 2)
+        self.button_capture = ttk.Button(self.frame_buttons, text="CAPTURE", command=self.controller.cb_capture_image)
+        self.button_capture.grid(column = 3, row = 2)
 
 
     def create_arrow_buttons(self):
         self.frame_jogging = ttk.Frame(self.master, padding = 25)
         self.frame_jogging.grid()
         self.frame_jogging_title = ttk.Label(self.frame_jogging, text="JOGGING")
-        self.button_y_plus = ttk.Button(self.frame_jogging, text="Y+", command=self.jog_y_plus)
-        self.button_y_minus = ttk.Button(self.frame_jogging, text="Y-", command=self.jog_y_minus)
-        self.button_x_plus = ttk.Button(self.frame_jogging, text="X+", command=self.jog_x_plus)
-        self.button_x_minus = ttk.Button(self.frame_jogging, text="X-", command=self.jog_x_minus)
-        self.button_z_plus = ttk.Button(self.frame_jogging, text="Z+", command=self.jog_z_plus)
-        self.button_z_minus = ttk.Button(self.frame_jogging, text="Z-", command=self.jog_z_minus)
+        self.button_y_plus = ttk.Button(self.frame_jogging, text="Y+", command=lambda: self.controller.jog_relative_y(self.jog_distance))
+        self.button_y_minus = ttk.Button(self.frame_jogging, text="Y-", command=lambda: self.controller.jog_relative_y(-1 * self.jog_distance))
+        self.button_x_plus = ttk.Button(self.frame_jogging, text="X+", command=lambda: self.controller.jog_relative_x(self.jog_distance))
+        self.button_x_minus = ttk.Button(self.frame_jogging, text="X-", command=lambda: self.controller.jog_relative_x(-1 * self.jog_distance))
+        self.button_z_plus = ttk.Button(self.frame_jogging, text="Z+", command=lambda: self.controller.jog_relative_z(self.jog_distance))
+        self.button_z_minus = ttk.Button(self.frame_jogging, text="Z-", command=lambda: self.controller.jog_relative_z(-1 * self.jog_distance))
         
         # Entry for percent overlap between images
         self.label_jog_distance = ttk.Label(self.frame_jogging, text="Enter Jog Distance (mm):   ")
@@ -237,53 +223,25 @@ class App(Frame):
         self.button_x_minus.grid(column = 1, row = 2)
         self.button_z_plus.grid(column = 4, row = 1)
         self.button_z_minus.grid(column = 4, row = 3)
-
-    def start_image_preview(self):
-        while True:
-            img = self.controller.capture_image()
-            cv2.imshow("window", img)
-
-            time.sleep(.2)
-            cv2.waitKey(1)
-            
-    def jog_y_plus(self):
-        log.info("jog +{} mm y".format(self.jog_distance))
-        self.controller.jog_fast_y(self.jog_distance)
-
-    def jog_y_minus(self):
-        log.info("jog -{} mm y".format(self.jog_distance))
-        self.controller.jog_fast_y(self.jog_distance * -1)
     
-    def jog_x_plus(self):
-        log.info("jog +{} mm x".format(self.jog_distance))
-        self.controller.jog_fast_x(self.jog_distance)
+    def create_radio_button_slow_fast(self):
+        self.jog_speed = IntVar()
+        radio_button_slow = Radiobutton(self.frame_jogging, text="Slow", variable=self.jog_speed, value=1, command=self.cb_speed_switch)
+        radio_button_fast = Radiobutton(self.frame_jogging, text="Fast", variable=self.jog_speed, value=2, command=self.cb_speed_switch)
 
-    def jog_x_minus(self):
-        log.info("jog -{} mm x".format(self.jog_distance))
-        self.controller.jog_fast_x(self.jog_distance * -1)
-    
-    def jog_z_plus(self):
-        log.info("jog +{} mm z".format(self.jog_distance))
-        self.controller.jog_fast_z(self.jog_distance)
-
-    def jog_z_minus(self):
-        log.info("jog -{} mm z".format(self.jog_distance))
-        self.controller.jog_fast_z(self.jog_distance * -1)
+        radio_button_slow.grid(column=5, row=0)
+        radio_button_fast.grid(column=5, row=1)
+        
+    def cb_speed_switch(self):
+        speed = self.jog_speed.get()
+        self.controller.set_feed_rate(speed)
 
     def cb_jog_distance(self, event):
         self.jog_distance = float(self.entry_jog_distance.get())
 
     def request_directory(self):
-        self.directory = filedialog.askdirectory()
-    
-    def cb_pause_g_code(self):
-        self.controller.pause()
-
-    def cb_resume_g_code(self):
-        self.controller.resume()
-
-    def cb_homing_g_code(self):
-        self.controller.homing_sequence()
+        directory = filedialog.askdirectory()
+        self.controller.set_directory(directory)
 
     def cb_add_cookie(self):
         width = self.contents_width_cookie.get()
@@ -292,13 +250,6 @@ class App(Frame):
 
         self.controller.add_cookie_sample(width, height, overlap)
         log.info("Adding Cookie \nW: {}\nH: {}\nO: {}\n".format(width, height,overlap))
-
-    def cb_capture_image(self):
-        # img = self.controller.capture_image()
-        name = "image_{}.jpg".format(datetime.now().strftime("%H_%M_%S"))
-        # cv2.imwrite(name, img)
-        self.controller.save_image(name)
-        log.info("Saving {}".format(name))
 
     def print_cookie_height_entry(self, event):
         try:
@@ -334,36 +285,13 @@ class App(Frame):
             self.entry_width_img.delete(0, END)
             log.info("Enter a double")
     
-    
     def print_overlap(self, event):
         try:
             log.info("Image Overlap: {} %".format(self.contents_overlap.get()))
         except TclError:
             self.entry_overlap.delete(0, END)
-            log.info("Enter an integer")
-
-    def calculate_grid(self): 
-        if len(self.controller.cookie_samples) > 0:
-            self.g_code = self.controller.generate_serpentine(self.controller.cookie_samples[-1]) #TODO make work with multiple samples... will be hard
-            log.info("{} overlapping images calculated".format(len(self.g_code)))
-        else:
-            log.info("ERROR: NO COOKIES ADDED... Add a cookie using the button")
-        
-
-    def bulk_send_g_code(self):
-        log.info("Starting serpentine")
-        img_pipeline = queue.Queue()
-        image_serp_thread = Thread(target=self.controller.send_serpentine, args=(img_pipeline, self.g_code, self.directory))
-        focus_thread = Thread(target=self.controller.focus_thread, args=(img_pipeline, self.directory))
-        image_serp_thread.start()
-        #focus_thread.start()
-        
-        image_serp_thread.join()	
-        img_pipeline.join()    	
-        #focus_thread.join()
-            
-
-   
+            log.info("Enter an integer")       
+               
 root = Tk()
 myapp = App(root)
 # myapp.master.maxsize(1000,500)
