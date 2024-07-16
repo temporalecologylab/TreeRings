@@ -136,14 +136,18 @@ class Camera:
             self.pipeline.remove(bin)
 
             #log.info("Releasing Tee-Pad")
-            self.t.release_request_pad(teepad)
-
+            ret = self.t.release_request_pad(teepad)
+            log.info(ret)
             #log.info("Removed Save Bin from")
 
             return Gst.PadProbeReturn.REMOVE    
 
         #log.info("Configuring blocking probe on teepad")
         teepad.add_probe(Gst.PadProbeType.BLOCK, blocking_pad_probe)
+
+        #hopefully gets rid of memory problems. Sometimes the teepad does not get the blocking probe to remove
+        time.sleep(0.5)
+        del bin
 
     def queue_full_callback(self, queue):
         log.info("\nQUEUE OVERRUN\n")
