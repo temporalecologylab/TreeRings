@@ -22,7 +22,7 @@ class Controller:
         self.cookies = []
         self._gantry = gantry.Gantry()
         self.camera = camera.Camera()
-        self.focus = focus.Focus(delete_flag=True)
+        self.focus = focus.Focus(delete_flag=True, setpoint=5)
         self.stitcher = stitcher.Stitcher()
 
         #attributes
@@ -95,7 +95,7 @@ class Controller:
         
         return y_steps, x_steps, y_step_size, x_step_size
     
-    def capture_grid_photos(self, focus_queue: queue.Queue, pid_queue: queue.Queue, rows: int, cols: int, y_dist, x_dist, n_images=9, pause=0):
+    def capture_grid_photos(self, focus_queue: queue.Queue, pid_queue: queue.Queue, pid_lock, rows: int, cols: int, y_dist, x_dist, n_images=9, pause=0):
         # for loop capture
         # Change feed rate back to being slow
         self.set_feed_rate(1)
@@ -114,7 +114,9 @@ class Controller:
                     focus_queue.put(imgs)
                     time.sleep(pause)
                     update_z = pid_queue.get()
+                    log.info(f"z move for update {update_z}")
                     self.jog_relative_z(update_z)
+                    time.sleep(0.5)
                     pid_queue.task_done()
 
 
@@ -129,6 +131,7 @@ class Controller:
                 focus_queue.put(imgs)
                 update_z = pid_queue.get()
                 self.jog_relative_z(update_z)
+                time.sleep(0.5)
                 pid_queue.task_done()
             focus_queue.put([-1])
 
