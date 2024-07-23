@@ -55,8 +55,9 @@ class Controller:
         n_images = 9
         
     
-        self.focus.set_sat_min(cookie.saturation_min)
-        self.set_background_saturation()
+        self.focus.set_sat_min(cookie.saturation_max)
+        #NOTE: Pretty sure we don't need to set a sat max based on the background - we just need to make sure the MIN for our mask is the MAX from the cookie
+        #self.set_background_saturation()
 
         #set directories
         if self.directory == ".":

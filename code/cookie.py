@@ -8,7 +8,7 @@ class Cookie:
         self._x = x
         self._y = y
         self._z = z
-        self.saturation_min = 0
+        self.saturation_max = 0
         self.cookie_path = cookie_path
 
         self.autoset_sat_min()
@@ -26,4 +26,4 @@ class Cookie:
         blurred = cv2.GaussianBlur(image, (777,777), 0)
         image_hsl = cv2.cvtColor(blurred, cv2.COLOR_BGR2HSV)
         s_channel = image_hsl[:,:,1]
-        self.saturation_min = s_channel.min()
+        self.saturation_max = s_channel.max()
