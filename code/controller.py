@@ -75,6 +75,8 @@ class Controller:
     def calculate_grid(self): 
         if len(self.cookies) > 0:
             cookie = self.cookies[-1]
+            self.focus.set_sat_min(cookie.saturation_min)
+
             overlap_x = round(self.image_width_mm * cookie.percent_overlap / 100, 3)
             overlap_y = round(self.image_height_mm * cookie.percent_overlap / 100, 3)
 
@@ -129,6 +131,7 @@ class Controller:
                     imgs = self.capture_images_multiple_distances(n_images, self._gantry.feed_rate_z, 1, 0.2, row, cols - 1)
                 
                 focus_queue.put(imgs)
+                self.jog_relative_y(-y_dist)
                 update_z = pid_queue.get()
                 self.jog_relative_z(update_z)
                 time.sleep(0.5)
@@ -260,7 +263,9 @@ class Controller:
     #### COOKIE METHODS ####
 
     def add_cookie_sample(self, width, height, overlap):
-        ck = cookie.Cookie(width, height, overlap, self._gantry.x, self._gantry.y, self._gantry.z)
+        name = "{}/cookie_{}.tiff".format(self.directory, datetime.now().strftime("%H_%M_%S_%f"))
+        self.camera.save_frame(name)
+        ck = cookie.Cookie(width, height, overlap, self._gantry.x, self._gantry.y, self._gantry.z, cookie_path=name)
         self.cookies.append(ck)
         log.info("Adding Cookie W: {}   H: {}   O: {}   POS:{},{},{}".format(width, height, overlap, self._gantry.x, self._gantry.y, self._gantry.z))
 

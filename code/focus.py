@@ -11,7 +11,7 @@ class Focus:
 
     def __init__(self, delete_flag, setpoint):
         self.DELETE_FLAG = delete_flag
-        self.sat_min = 27
+        self.sat_min = 0
         self.sat_max = 255
         self.PID = AsynchronousPID(Kp=1.0, Ki=0, Kd=0.05, setpoint=setpoint) # Setpoint?? depends on camera i think
 
@@ -42,7 +42,7 @@ class Focus:
                 shutil.copy(focused_image_name, "{}/focused_images/{}".format(directory,filename))
                 
             image = cv2.imread(focused_image_name)
-            if self.is_background(image):
+            if not self.is_background(image):
                 control_variable = self.PID.update(int(stack_number))
                 log.info(f"focused image: {stack_number} control variable = {control_variable}")
                 update_z = self.adjust_focus(control_variable, 0.01)
@@ -94,7 +94,7 @@ class Focus:
         nan_image[nan_image==0]=np.nan
 
         # if 25% of image is nan, count as a background image
-        if np.count_nonzero(np.isnan(nan_image)) > (nan_image.size * 0.25):
+        if np.count_nonzero(np.isnan(nan_image)) >= (nan_image.size * 0.25):
             return True
         return False
     
