@@ -53,8 +53,10 @@ class Controller:
         pid_queue = queue.Queue()
         pid_lock = Lock()
         n_images = 9
-        middle_image = n_images // 2
-        #self.pid = PID.AsynchronousPID(Kp=1.0, Ki=0.1, Kd=0.05, setpoint=middle_image)
+        
+    
+        self.focus.set_sat_min(cookie.saturation_min)
+        self.set_background_saturation()
 
         #set directories
         if self.directory == ".":
@@ -72,10 +74,17 @@ class Controller:
         focus_queue.join()    	
         focus_thread.join()
 
+    def set_background_saturation(self):
+        name = self.cb_capture_image()
+        image = cv2.imread(name)
+        blurred = cv2.GaussianBlur(image, (777,777), 0)
+        image_hsl = cv2.cvtColor(blurred, cv2.COLOR_BGR2HSV)
+        s_channel = image_hsl[:,:,1]
+        focus.set_sat_max(s_channel.max())
+
     def calculate_grid(self): 
         if len(self.cookies) > 0:
             cookie = self.cookies[-1]
-            self.focus.set_sat_min(cookie.saturation_min)
 
             overlap_x = round(self.image_width_mm * cookie.percent_overlap / 100, 3)
             overlap_y = round(self.image_height_mm * cookie.percent_overlap / 100, 3)
@@ -259,12 +268,12 @@ class Controller:
         name = "{}/image_{}.tiff".format(self.directory, datetime.now().strftime("%H_%M_%S_%f"))
         self.camera.save_frame(name)
         log.info("Saving {}".format(name))
+        return name
     
     #### COOKIE METHODS ####
 
     def add_cookie_sample(self, width, height, overlap):
-        name = "{}/cookie_{}.tiff".format(self.directory, datetime.now().strftime("%H_%M_%S_%f"))
-        self.camera.save_frame(name)
+        name = self.cb_capture_image
         ck = cookie.Cookie(width, height, overlap, self._gantry.x, self._gantry.y, self._gantry.z, cookie_path=name)
         self.cookies.append(ck)
         log.info("Adding Cookie W: {}   H: {}   O: {}   POS:{},{},{}".format(width, height, overlap, self._gantry.x, self._gantry.y, self._gantry.z))
