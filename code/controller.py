@@ -11,6 +11,7 @@ import queue
 from threading import Thread
 from multiprocessing import Process
 from pathlib import Path
+import json
 
 
 class Controller:
@@ -48,19 +49,18 @@ class Controller:
     #### SERPENTINE METHODS ####
     
     def capture_cookie(self):
-        rows, cols, y_dist, x_dist = self.calculate_grid()
+        cookie, rows, cols, y_dist, x_dist = self.calculate_grid()
         focus_queue = queue.Queue()
         stitch_queue = queue.Queue()
         n_images = 9
-        middle_image = n_images // 2
-        #self.pid = PID.AsynchronousPID(Kp=1.0, Ki=0.1, Kd=0.05, setpoint=middle_image)
 
         #set directories
         if self.directory == ".":
             dirtime = datetime.now().strftime("%H_%M_%S")
             Path("./cookiecapture_{}".format(dirtime)).mkdir()
             self.set_directory("./cookiecapture_{}".format(dirtime))
-        Path("{}/focused_images".format(self.directory)).mkdir(exist_ok=True)
+
+        start_time = time.time()
 
         gantry_thread = Thread(target=self.capture_grid_photos, args=(focus_queue, rows, cols, y_dist, x_dist, n_images))
         focus_thread = Thread(target=self.focus.find_focus, args=(focus_queue, self.directory))
@@ -71,6 +71,13 @@ class Controller:
         gantry_thread.join()	
         focus_queue.join()    	
         focus_thread.join()
+
+        end_time = time.time()
+        elapsed_time = end_time - start_time
+        num_images = rows * cols
+
+        self.create_metadata(cookie, elapsed_time, num_images)
+
 
     def calculate_grid(self): 
         if len(self.cookies) > 0:
@@ -93,7 +100,7 @@ class Controller:
             log.info("x_steps: {}".format(x_steps))
             log.info("y_steps: {}".format(y_steps))
         
-        return y_steps, x_steps, y_step_size, x_step_size
+        return cookie, y_steps, x_steps, y_step_size, x_step_size
     
     def capture_grid_photos(self, focus_queue: queue.Queue, rows: int, cols: int, y_dist, x_dist, n_images=9, pause=0):
         # for loop capture
@@ -179,6 +186,27 @@ class Controller:
         time.sleep(sleep_time_half)
 
         return image_filenames
+    
+    def create_metadata(self, cookie, elapsed_time, image_count):
+        cookie_size = cookie.height * cookie.width
+        camera_fov = self.image_height_mm * self.image_width_mm
+        pixels = self.camera.H_PIXELS * self.camera.W_PIXELS
+        dpi = self.camera.W_PIXELS/self.image_width_mm * 25.4  
+        metadata = {
+            "species": cookie.species,
+            "size": cookie_size,
+            "id1": cookie.id1,
+            "id2": cookie.id2,
+            "elapsed_time": elapsed_time,
+            "DPI": dpi,
+            "photo_count": image_count,
+            "camera_fov": camera_fov, 
+            "camera_pixels": pixels,
+            "notes": cookie.notes
+        }
+
+        with open ("{}/metadata.json".format(self.directory), "w", encoding="utf-8") as f:
+            json.dump(metadata, f, ensure_ascii=False, indent=4)
 
     #### JOG METHODS ####
 
@@ -255,10 +283,9 @@ class Controller:
     
     #### COOKIE METHODS ####
 
-    def add_cookie_sample(self, width, height, overlap):
-        ck = cookie.Cookie(width, height, overlap, self._gantry.x, self._gantry.y, self._gantry.z)
+    def add_cookie_sample(self, width, height, overlap, species, id1, id2, notes):
+        ck = cookie.Cookie(width, height, species, id1, id2, notes, overlap, self._gantry.x, self._gantry.y, self._gantry.z)
         self.cookies.append(ck)
-        log.info("Adding Cookie W: {}   H: {}   O: {}   POS:{},{},{}".format(width, height, overlap, self._gantry.x, self._gantry.y, self._gantry.z))
 
    #### GANTRY METHODS ####
 

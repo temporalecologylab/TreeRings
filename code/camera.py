@@ -8,17 +8,27 @@ from gi.repository import Gst, GObject, GLib
 log.basicConfig(format='%(process)d-%(levelname)s-%(message)s', level=log.INFO)
 
 class Camera:
+
     def __init__(self, quiet = True):
+        # Adding hardcoded image size, will need to update to update DPI
+        W_PIXELS = 3840
+        H_PIXELS = 2160
+
         Gst.init(None)
         # Create the pipeline with both display and save frame functionality
+        
         self.pipeline = Gst.parse_launch(
-            "nvarguscamerasrc wbmode=1 ee-mode=2 ee-strength=0.5 exposurecompensation=0.5 exposuretimerange='680000000 600000000'  aelock=true ! video/x-raw(memory:NVMM),width=3840,height=2160,framerate=30/1 ! "                         #683709000
+            "nvarguscamerasrc wbmode=1 ee-mode=2 ee-strength=0.5 exposurecompensation=0.5 exposuretimerange='680000000 600000000'  aelock=true ! video/x-raw(memory:NVMM),width={},height={},framerate=30/1 ! videorate ! video/x-raw(memory:NVMM),width=3840,height=2160,framerate=15/1 !".format(W_PIXELS, H_PIXELS)                         #683709000
             "nvvideoconvert flip-method=2 ! videobalance contrast=1.25 ! tee name=t "
             "t. ! queue ! autovideosink "
+            #"t. ! fakesink "
+            "t. ! queue max-size-buffers=10 leaky=2 ! avenc_tiff name=encoder ! tee name=t_bin ! fakesink"
         )
 
         self.quiet = quiet
         self.bus = self.pipeline.get_bus()
+        self.w_pixels = W_PIXELS
+        self.h_pixels = H_PIXELS
 
         if quiet:
             pass
@@ -27,7 +37,7 @@ class Camera:
             self.bus.connect("message", self.on_bus_message)
 
         # Get the tee element from the pipeline
-        self.t = self.pipeline.get_by_name("t")
+        self.t = self.pipeline.get_by_name("t_bin")
 
         # Storage for all the save bins, needs timestamp when added 
         self.bins = []
@@ -102,8 +112,8 @@ class Camera:
             time.sleep(0.5)
 
     def create_save_bin(self, path="./test.tiff"):
-        log.info("Creating save bin")
-        bin_description = "queue name=q{} leaky=1 ! avenc_tiff name=encoder ! filesink name=filesink async=false location={}".format(path,path)
+        #log.info("Creating save bin")
+        bin_description = "queue name=q{} leaky=1 ! filesink name=filesink async=false location={}".format(path,path)
         save_bin = Gst.parse_bin_from_description(bin_description, True)
 
         # Add a flag to track buffer
@@ -139,17 +149,21 @@ class Camera:
             if teepad and teepad.get_parent() == self.t:
                 self.t.release_request_pad(teepad)
             else:
-                log.error("pad parent mismatch or teepad is None")
+                log.error("Pad parent mismatch or teepad is None")
+                
             #log.info("Removed Save Bin from")
 
             return Gst.PadProbeReturn.REMOVE    
 
         #log.info("Configuring blocking probe on teepad")
-        teepad.add_probe(Gst.PadProbeType.BLOCK, blocking_pad_probe)
-
+        if teepad is not None:
+            teepad.add_probe(Gst.PadProbeType.BLOCK, blocking_pad_probe)
+        else:
+            del bin
+            
         #hopefully gets rid of memory problems. Sometimes the teepad does not get the blocking probe to remove
-        time.sleep(0.5)
-        del bin
+        #time.sleep(1)
+        #del bin
 
     def queue_full_callback(self, queue):
         log.info("\nQUEUE OVERRUN\n")

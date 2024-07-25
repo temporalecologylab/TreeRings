@@ -3,6 +3,8 @@ import logging as log
 import shutil
 import numpy as np
 import os
+from pathlib import Path
+
 
 log.basicConfig(format='%(process)d-%(levelname)s-%(message)s', level=log.INFO)
 
@@ -24,10 +26,13 @@ class Focus:
             extract_col = image_name[2]
             filename = "focused_{}_{}.tiff".format(extract_row, extract_col) 
             focused_image_name = self.best_focused_image(image_files)
-            shutil.copy(focused_image_name, "{}/focused_images/{}".format(directory,filename))
             if self.DELETE_FLAG:
                 image_files.remove(focused_image_name)
                 self.delete_unfocused(image_files)
+            else: 
+                Path("{}/focused_images".format(self.directory)).mkdir(exist_ok=True)
+                shutil.copy(focused_image_name, "{}/focused_images/{}".format(directory,filename))
+
 
             img_pipeline.task_done()
         
