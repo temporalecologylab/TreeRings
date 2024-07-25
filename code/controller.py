@@ -53,11 +53,9 @@ class Controller:
         pid_queue = queue.Queue()
         pid_lock = Lock()
         n_images = 9
-        
-    
+
+
         self.focus.set_sat_min(cookie.saturation_max)
-        #NOTE: Pretty sure we don't need to set a sat max based on the background - we just need to make sure the MIN for our mask is the MAX from the cookie
-        #self.set_background_saturation()
 
         #set directories
         if self.directory == ".":
@@ -75,18 +73,9 @@ class Controller:
         focus_queue.join()    	
         focus_thread.join()
 
-    def set_background_saturation(self):
-        name = self.cb_capture_image()
-        image = cv2.imread(name)
-        blurred = cv2.GaussianBlur(image, (777,777), 0)
-        image_hsl = cv2.cvtColor(blurred, cv2.COLOR_BGR2HSV)
-        s_channel = image_hsl[:,:,1]
-        focus.set_sat_max(s_channel.max())
-
     def calculate_grid(self): 
         if len(self.cookies) > 0:
             cookie = self.cookies[-1]
-
             overlap_x = round(self.image_width_mm * cookie.percent_overlap / 100, 3)
             overlap_y = round(self.image_height_mm * cookie.percent_overlap / 100, 3)
 
@@ -107,46 +96,71 @@ class Controller:
         
         return y_steps, x_steps, y_step_size, x_step_size
     
-    def capture_grid_photos(self, focus_queue: queue.Queue, pid_queue: queue.Queue, pid_lock, rows: int, cols: int, y_dist, x_dist, n_images=9, pause=0):
+    def capture_grid_photos(self, focus_queue: queue.Queue, pid_queue: queue.Queue, pid_lock, rows: int, cols: int, y_dist, x_dist, n_images=20, pause=0):
         # for loop capture
         # Change feed rate back to being slow
         self.set_feed_rate(1)
         while True: 
             for row in range(rows):
+                
                 # for last column, we only want to take photo, not move.
                 for col in range(cols - 1):
                     # Odd rows go left
                     if row % 2 == 1:
                         imgs = self.capture_images_multiple_distances(n_images, self._gantry.feed_rate_z, 1, 0.2, row, cols - col - 1)
+                        pid_lock.acquire()
                         self.jog_relative_x(-x_dist)
+                        pid_lock.release()
                     # Even rows go right
                     else:
                         imgs = self.capture_images_multiple_distances(n_images, self._gantry.feed_rate_z, 1, 0.2, row, col)
+                        pid_lock.acquire()
                         self.jog_relative_x(x_dist)
+                        pid_lock.release()
                     focus_queue.put(imgs)
-                    time.sleep(pause)
+                    time_0 = time.time()
                     update_z = pid_queue.get()
+                    time_1 = time.time()
+
                     log.info(f"z move for update {update_z}")
+                    pid_lock.acquire()
                     self.jog_relative_z(update_z)
-                    time.sleep(0.5)
-                    pid_queue.task_done()
+                    pid_lock.release()
+                    
+                    sleep_time = (x_dist / self._gantry.feed_rate_xy + update_z / self._gantry.feed_rate_z) * 60 - (time_1 - time_0)
+                    log.info(sleep_time)
+                    if sleep_time > 0:
+                        time.sleep(sleep_time)
+                    #pid_queue.task_done()
 
 
                 # Take final photo in row before jogging down
                 if row % 2 == 1:
                     # imgs = self.capture_images_multiple_distances(0.1, z_steps, row, 0)
                     imgs = self.capture_images_multiple_distances(n_images, self._gantry.feed_rate_z, 1, 0.2, row, 0)
+                    focus_queue.put(imgs)
                 else:
                     # imgs = self.capture_images_multiple_distances(0.05, z_steps, row, cols - 1)
                     imgs = self.capture_images_multiple_distances(n_images, self._gantry.feed_rate_z, 1, 0.2, row, cols - 1)
-                
-                focus_queue.put(imgs)
+                    focus_queue.put(imgs)
+                    
+                pid_lock.acquire()    
                 self.jog_relative_y(-y_dist)
+                pid_lock.release()
+                time_0 = time.time()
                 update_z = pid_queue.get()
+                time_1 = time.time()
+                pid_lock.acquire()
                 self.jog_relative_z(update_z)
-                time.sleep(0.5)
+                pid_lock.release()
+                sleep_time = (y_dist / self._gantry.feed_rate_xy + update_z / self._gantry.feed_rate_z) * 60 - (time_1 - time_0)
+
+                if sleep_time > 0:
+                    time.sleep(sleep_time)
+
                 pid_queue.task_done()
             focus_queue.put([-1])
+            break
 
     def capture_images_multiple_distances(self, image_count, feed_rate, r, acceleration_buffer, row, col):
         """A method to move the camera through a Z range to allow for multiple images to be taken. This implementation is designed to reduce motion blur by taking advantage of a slow feed rate and avoiding a deceleration then sleep cycle to get an in focus image.
@@ -269,7 +283,6 @@ class Controller:
         name = "{}/image_{}.tiff".format(self.directory, datetime.now().strftime("%H_%M_%S_%f"))
         self.camera.save_frame(name)
         log.info("Saving {}".format(name))
-        return name
     
     #### COOKIE METHODS ####
 
