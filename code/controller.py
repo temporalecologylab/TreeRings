@@ -255,8 +255,8 @@ class Controller:
     
     #### COOKIE METHODS ####
 
-    def add_cookie_sample(self, width, height, overlap):
-        ck = cookie.Cookie(width, height, overlap, self._gantry.x, self._gantry.y, self._gantry.z)
+    def add_cookie_sample(self, width, height, overlap, species, id1, id2, notes):
+        ck = cookie.Cookie(width, height, species, id1, id2, notes, overlap, self._gantry.x, self._gantry.y, self._gantry.z)
         self.cookies.append(ck)
         log.info("Adding Cookie W: {}   H: {}   O: {}   POS:{},{},{}".format(width, height, overlap, self._gantry.x, self._gantry.y, self._gantry.z))
 
