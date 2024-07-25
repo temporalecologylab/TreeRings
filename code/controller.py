@@ -53,9 +53,6 @@ class Controller:
         focus_queue = queue.Queue()
         stitch_queue = queue.Queue()
         n_images = 9
-        middle_image = n_images // 2
-        #self.pid = PID.AsynchronousPID(Kp=1.0, Ki=0.1, Kd=0.05, setpoint=middle_image)
-
 
         #set directories
         if self.directory == ".":
@@ -194,7 +191,7 @@ class Controller:
         cookie_size = cookie.height * cookie.width
         camera_fov = self.image_height_mm * self.image_width_mm
         pixels = self.camera.H_PIXELS * self.camera.W_PIXELS
-        dpi = (self.camera.W_PIXELS/self.image_width_mm + self.camera.H_PIXELS/self.image_height_mm) / 2 * 25.4  
+        dpi = self.camera.W_PIXELS/self.image_width_mm * 25.4  
         metadata = {
             "species": cookie.species,
             "size": cookie_size,
@@ -289,7 +286,6 @@ class Controller:
     def add_cookie_sample(self, width, height, overlap, species, id1, id2, notes):
         ck = cookie.Cookie(width, height, species, id1, id2, notes, overlap, self._gantry.x, self._gantry.y, self._gantry.z)
         self.cookies.append(ck)
-        log.info("Adding Cookie W: {}   H: {}   O: {}   POS:{},{},{}".format(width, height, overlap, self._gantry.x, self._gantry.y, self._gantry.z))
 
    #### GANTRY METHODS ####
 
