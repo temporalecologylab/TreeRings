@@ -48,17 +48,17 @@ class Controller:
 
     #### SERPENTINE METHODS ####
     
-    def capture_cookie(self):
-        cookie, rows, cols, y_dist, x_dist = self.calculate_grid()
+    def capture_cookie(self, cookie):
+        rows, cols, y_dist, x_dist = self.calculate_grid(cookie)
         focus_queue = queue.Queue()
         stitch_queue = queue.Queue()
         n_images = 9
 
         #set directories
-        if self.directory == ".":
-            dirtime = datetime.now().strftime("%H_%M_%S")
-            Path("./cookiecapture_{}".format(dirtime)).mkdir()
-            self.set_directory("./cookiecapture_{}".format(dirtime))
+
+        dirtime = datetime.now().strftime("%H_%M_%S")
+        Path("./cookiecapture_{}".format(dirtime)).mkdir()
+        self.set_directory("./cookiecapture_{}".format(dirtime))
 
         start_time = time.time()
 
@@ -77,29 +77,32 @@ class Controller:
 
         self.create_metadata(cookie, elapsed_time, num_images)
 
+    def capture_all_cookies(self):
+        for i in range(len(self.cookies)):
+            cookie = self.cookies.pop(-1)
+            self.navigate_to_cookie(cookie)
+            self.capture_cookie(cookie)
 
-    def calculate_grid(self): 
-        if len(self.cookies) > 0:
-            cookie = self.cookies[-1]
-            overlap_x = round(self.image_width_mm * cookie.percent_overlap / 100, 3)
-            overlap_y = round(self.image_height_mm * cookie.percent_overlap / 100, 3)
+    def calculate_grid(self, cookie): 
+        overlap_x = round(self.image_width_mm * cookie.percent_overlap / 100, 3)
+        overlap_y = round(self.image_height_mm * cookie.percent_overlap / 100, 3)
 
-            log.info("overlap x: {}".format(overlap_x))
-            log.info("overlap y: {}".format(overlap_y))
-            
-            x_step_size = self.image_width_mm - overlap_x
-            y_step_size = self.image_height_mm - overlap_y 
-
-            log.info("x_step_size x: {}".format(x_step_size))
-            log.info("y_step_size y: {}".format(y_step_size))
-
-            x_steps = math.ceil(cookie.width / x_step_size)
-            y_steps = math.ceil(cookie.height / y_step_size)
-
-            log.info("x_steps: {}".format(x_steps))
-            log.info("y_steps: {}".format(y_steps))
+        log.info("overlap x: {}".format(overlap_x))
+        log.info("overlap y: {}".format(overlap_y))
         
-        return cookie, y_steps, x_steps, y_step_size, x_step_size
+        x_step_size = self.image_width_mm - overlap_x
+        y_step_size = self.image_height_mm - overlap_y 
+
+        log.info("x_step_size x: {}".format(x_step_size))
+        log.info("y_step_size y: {}".format(y_step_size))
+
+        x_steps = math.ceil(cookie.width / x_step_size)
+        y_steps = math.ceil(cookie.height / y_step_size)
+
+        log.info("x_steps: {}".format(x_steps))
+        log.info("y_steps: {}".format(y_steps))
+        
+        return y_steps, x_steps, y_step_size, x_step_size
     
     def capture_grid_photos(self, focus_queue: queue.Queue, rows: int, cols: int, y_dist, x_dist, n_images=9, pause=0):
         # for loop capture
@@ -237,14 +240,21 @@ class Controller:
             self._gantry.feed_rate_z = 20
         # Fast mode
         if mode == 2:
-            self._gantry.feed_rate_xy = 500
+            self._gantry.feed_rate_xy = 1250
             self._gantry.feed_rate_z = 75
 
-    def navigate_to_cookie(self):
-        if len(self.cookies) > 0:
-            c = self.cookies.pop(0)
-            x, y, z = c.get_location()
-            self.jog_absolute_xyz(x, y, z)
+    def navigate_to_cookie(self, cookie):
+        x, y, z = cookie.get_location()
+        self.jog_absolute_xyz(x, y, z)
+        rel_x = abs(self._gantry.x - x) 
+        rel_y = abs(self._gantry.y - y)
+        rel_z = abs(self._gantry.z - z)
+        log.info("Navigating to {}, X{}Y{}Z{}".format(cookie.species, x, y, z))
+        # Wait until we get to the cookie location
+        if rel_z > rel_x and rel_z > rel_y:
+            time.sleep(rel_z / self._gantry.feed_rate_z * 60) #seconds
+        else:
+            time.sleep(max([rel_x, rel_y]) / self._gantry.feed_rate_xy * 60) # seconds
 
     def traverse_cookie_boundary(self):
         if len(self.cookies) > 0:

@@ -63,7 +63,7 @@ class App(Gtk.Window):
         self.create_directory_button(box_buttons)
         self.create_serial_connect_button(box_buttons)
         self.create_cookie_capture_button(box_buttons)
-        self.create_g_code_absolute_test_button(box_buttons)
+        self.create_g_code_capture_all_cookies_button(box_buttons)
         self.create_g_code_resume_button(box_buttons)
         self.create_g_code_homing_button(box_buttons)
         self.create_capture_button(box_buttons)
@@ -170,14 +170,14 @@ class App(Gtk.Window):
         button_g_code_send.connect("clicked", lambda w: self.controller.capture_cookie())
         box.pack_start(button_g_code_send, True, True, 0)
 
-    def create_g_code_absolute_test_button(self, box):
-        button_g_code_pause = Gtk.Button(label="ABSOLUTE TEST")
-        button_g_code_pause.connect("clicked", lambda w: self.controller.navigate_to_cookie())
+    def create_g_code_capture_all_cookies_button(self, box):
+        button_g_code_pause = Gtk.Button(label="Capture All Cookies")
+        button_g_code_pause.connect("clicked", lambda w: self.controller.capture_all_cookies())
         box.pack_start(button_g_code_pause, True, True, 0)
 
     def create_g_code_resume_button(self, box):
         button_g_code_resume = Gtk.Button(label="RESUME")
-        button_g_code_resume.connect("clicked", lambda w: self.controller.cb_resume_g_code)
+        button_g_code_resume.connect("clicked", lambda w: self.controller.cb_resume_g_code())
         box.pack_start(button_g_code_resume, True, True, 0)
 
     def create_g_code_homing_button(self, box):
