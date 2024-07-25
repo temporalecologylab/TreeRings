@@ -18,7 +18,7 @@ class Camera:
         # Create the pipeline with both display and save frame functionality
         
         self.pipeline = Gst.parse_launch(
-            "nvarguscamerasrc wbmode=1 ee-mode=2 ee-strength=0.5 exposurecompensation=0.5 exposuretimerange='680000000 600000000'  aelock=true ! video/x-raw(memory:NVMM),width={},height={},framerate=30/1 ! videorate ! video/x-raw(memory:NVMM),width=3840,height=2160,framerate=15/1 !".format(W_PIXELS, H_PIXELS)                         #683709000
+            "nvarguscamerasrc wbmode=1 ee-mode=2 ee-strength=0.5 exposurecompensation=0.5 exposuretimerange='680000000 600000000'  aelock=true ! video/x-raw(memory:NVMM),width={},height={},framerate=30/1 ! videorate ! video/x-raw(memory:NVMM),width=3840,height=2160,framerate=15/1 !".format(W_PIXELS, H_PIXELS) +                        #683709000
             "nvvideoconvert flip-method=2 ! videobalance contrast=1.25 ! tee name=t "
             "t. ! queue ! autovideosink "
             #"t. ! fakesink "
