@@ -305,8 +305,8 @@ class Controller:
         center_y = self._gantry.y
         center_z = self._gantry.z
 
-        tl_x = center_x/2
-        tl_y = center_y/2
+        tl_x = center_x - (width/2)
+        tl_y = center_y + (height/2)
         tl_z = center_z
 
         ck = cookie.Cookie(width, height, species, id1, id2, notes, overlap, center_x, center_y, center_z, tl_x, tl_y, tl_z)
