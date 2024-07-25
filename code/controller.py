@@ -193,8 +193,8 @@ class Controller:
     def create_metadata(self, cookie, elapsed_time, image_count):
         cookie_size = cookie.height * cookie.width
         camera_fov = self.image_height_mm * self.image_width_mm
-        pixels = self.camera.H_PIXELS * self.camera.   W_PIXELS
-        dpi = (self.camera.W_PIXELS/cookie.width + self.camera.H_PIXELS/cookie.height) / 25.4
+        pixels = self.camera.H_PIXELS * self.camera.W_PIXELS
+        dpi = (self.camera.W_PIXELS/self.image_width_mm + self.camera.H_PIXELS/self.image_height_mm) / 2 * 25.4  
         metadata = {
             "species": cookie.species,
             "size": cookie_size,
