@@ -64,7 +64,6 @@ class Controller:
 
         gantry_thread = Thread(target=self.capture_grid_photos, args=(focus_queue, rows, cols, y_dist, x_dist, n_images))
         focus_thread = Thread(target=self.focus.find_focus, args=(focus_queue, self.directory))
-        stitch_process = Process(target=self.stitcher.run, args=(stitch_queue))
         gantry_thread.start()
         focus_thread.start()
         
@@ -190,8 +189,8 @@ class Controller:
     def create_metadata(self, cookie, elapsed_time, image_count):
         cookie_size = cookie.height * cookie.width
         camera_fov = self.image_height_mm * self.image_width_mm
-        pixels = self.camera.H_PIXELS * self.camera.W_PIXELS
-        dpi = self.camera.W_PIXELS/self.image_width_mm * 25.4  
+        pixels = self.camera.h_pixels * self.camera.w_pixels
+        dpi = self.camera.w_pixels/self.image_width_mm * 25.4  
         metadata = {
             "species": cookie.species,
             "size": cookie_size,
