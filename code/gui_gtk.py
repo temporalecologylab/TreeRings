@@ -68,6 +68,7 @@ class App(Gtk.Window):
         self.create_g_code_homing_button(box_buttons)
         self.create_capture_button(box_buttons)
         self.create_add_cookie_button(box_buttons)
+        self.create_test_boundaries_button(box_buttons)
 
     def create_jogging_controls(self, grid):
         frame_jogging = Gtk.Frame(label="Jogging Controls")
@@ -153,6 +154,11 @@ class App(Gtk.Window):
     def create_add_cookie_button(self, box):
         button_calculate = Gtk.Button(label="Add Cookie")
         button_calculate.connect("clicked", self.cb_add_cookie)
+        box.pack_start(button_calculate, True, True, 0)
+
+    def create_test_boundaries_button(self, box):
+        button_calculate = Gtk.Button(label="Test Cookie Dimensions")
+        button_calculate.connect("clicked", self.controller.traverse_cookie_boundary())
         box.pack_start(button_calculate, True, True, 0)
 
     def create_directory_button(self, box):

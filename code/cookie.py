@@ -1,20 +1,23 @@
 class Cookie:
-    def __init__(self, cookie_width_mm: int, cookie_height_mm: int, species:str, id1:str, id2:str, notes:str, percent_overlap:int = 20, x:float = None, y:float = None, z:float = None):
+    def __init__(self, cookie_width_mm: int, cookie_height_mm: int, species:str, id1:str, id2:str, notes:str, percent_overlap:int = 20, x:float = None, y:float = None, z:float = None, x_tl:float = None, y_tl:float = None, z_tl:float = None):
         self.width = cookie_width_mm
         self.height = cookie_height_mm
         self.percent_overlap = percent_overlap
-        self._x = x
-        self._y = y
-        self._z = z
+        self._center = (x,y,z)
+        self._top_left = (x_tl, y_tl, z_tl)
         self.species = species
         self.id1 = id1
         self.id2 = id2
         self.notes = notes
 
-    def set_location(self, x, y, z):
-        self._x = x
-        self._y = y
-        self._z = z
+    def set_center_location(self, x, y, z):
+        self._center = (x,y,z)
 
-    def get_location(self):
-        return self._x, self._y, self._z
+    def set_top_left_location(self, x, y, z):
+        self._top_left = (x,y,z)
+
+    def get_center_location(self):
+        return self._center
+    
+    def get_top_left_location(self):
+        return self._top_left
