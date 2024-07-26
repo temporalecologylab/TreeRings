@@ -3,6 +3,7 @@ import logging as log
 import shutil
 import numpy as np
 import os
+from pathlib import Path
 from PID import AsynchronousPID 
 
 log.basicConfig(format='%(process)d-%(levelname)s-%(message)s', level=log.INFO)
@@ -38,7 +39,8 @@ class Focus:
             if self.DELETE_FLAG:
                 image_files.remove(focused_image_name)
                 self.delete_unfocused(image_files)
-            else:
+            else: 
+                Path("{}/focused_images".format(self.directory)).mkdir(exist_ok=True)
                 shutil.copy(focused_image_name, "{}/focused_images/{}".format(directory,filename))
             
             image = cv2.imread(focused_image_name)

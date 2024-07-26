@@ -14,7 +14,7 @@ class App(Gtk.Window):
         self.set_default_size(900, 500)
         self.connect("destroy", self.quit_program)
         
-        self.controller = controller.Controller(image_width_mm=3, image_height_mm=2)
+        self.controller = controller.Controller(3, 2)
 
         grid = Gtk.Grid()
         self.add(grid)
@@ -29,15 +29,20 @@ class App(Gtk.Window):
         Gtk.main_quit()
 
     def create_entries(self, grid):
+        ## Cookie
+        
         frame_entry_cookie = Gtk.Frame(label="Cookie Entries")
         grid.attach(frame_entry_cookie, 0, 0, 1, 1)
         
-        box_cookie = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
+        box_cookie = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=7)
         frame_entry_cookie.add(box_cookie)
         
         self.create_cookie_height_entry(box_cookie)
         self.create_cookie_width_entry(box_cookie)
         self.create_percent_overlap_entry(box_cookie)
+        self.create_species_entries(box_cookie)
+        
+        ## Machine 
         
         frame_entry_machine = Gtk.Frame(label="Machine Entries")
         grid.attach(frame_entry_machine, 0, 1, 1, 1)
@@ -97,7 +102,38 @@ class App(Gtk.Window):
         self.entry_overlap.set_text("20")
         box.pack_start(self.entry_overlap, True, True, 0)
         self.entry_overlap.connect('activate', self.print_overlap)
+    
+    def create_species_entries(self, box):
 
+        label_species = Gtk.Label(label="Enter Species:   ")
+        box.pack_start(label_species, True, True, 0)
+        self.entry_species = Gtk.Entry()
+        self.entry_species.set_text("REQUIRED")
+        box.pack_start(self.entry_species, True, True, 0)
+        self.entry_species.connect('activate', self.print_species_id)
+        
+        label_id1 = Gtk.Label(label="Enter ID1:   ")
+        box.pack_start(label_id1, True, True, 0)
+        self.entry_id1 = Gtk.Entry()
+        self.entry_id1.set_text("REQUIRED")
+        box.pack_start(self.entry_id1, True, True, 0)
+        self.entry_id1.connect('activate', self.print_id1)
+        
+        label_id2 = Gtk.Label(label="Enter ID2:   ")
+        box.pack_start(label_id2, True, True, 0)
+        self.entry_id2 = Gtk.Entry()
+        self.entry_id2.set_text("REQUIRED")
+        box.pack_start(self.entry_id2, True, True, 0)
+        self.entry_id2.connect('activate', self.print_id2)
+        
+        label_notes = Gtk.Label(label="Enter Notes:   ")
+        box.pack_start(label_notes, True, True, 0)
+        self.entry_notes = Gtk.Entry()
+        self.entry_notes.set_text("")
+        box.pack_start(self.entry_notes, True, True, 0)
+        self.entry_notes.connect('activate', self.print_notes)
+        
+        
     def create_img_height_entry(self, box):
         label_height_img = Gtk.Label(label="Enter Image Height (mm):   ")
         box.pack_start(label_height_img, True, True, 0)
@@ -141,7 +177,7 @@ class App(Gtk.Window):
 
     def create_g_code_resume_button(self, box):
         button_g_code_resume = Gtk.Button(label="RESUME")
-        button_g_code_resume.connect("clicked", lambda w: self.controller.cb_resume_g_code())
+        button_g_code_resume.connect("clicked", lambda w: self.controller.cb_resume_g_code)
         box.pack_start(button_g_code_resume, True, True, 0)
 
     def create_g_code_homing_button(self, box):
@@ -224,9 +260,14 @@ class App(Gtk.Window):
         width = int(self.entry_width_cookie.get_text())
         height = int(self.entry_height_cookie.get_text())
         overlap = int(self.entry_overlap.get_text())
+        species = self.entry_species.get_text()
+        id1 = self.entry_id1.get_text()
+        id2 = self.entry_id2.get_text()
+        notes = self.entry_notes.get_text()
+        
 
-        self.controller.add_cookie_sample(width, height, overlap)
-        #log.info("Adding Cookie \nW: {}\nH: {}\nO: {}\n".format(width, height, overlap))
+        self.controller.add_cookie_sample(width, height, overlap, species, id1, id2, notes)
+        log.info("Adding Cookie \nW: {}\nH: {}\nO: {}\nS:  {}\nID1:  {}\nID2:  {}\nNotes:  {}\n".format(width, height, overlap, species, id1, id2, notes))
 
     def print_cookie_height_entry(self, widget):
         height = int(self.entry_height_cookie.get_text())
@@ -245,11 +286,28 @@ class App(Gtk.Window):
         width = float(self.entry_width_img.get_text())
         self.controller.image_width_mm = width
         log.info("Update Image Width: {} mm".format(width))
-
+    
     def print_overlap(self, widget):
-        overlap = int(self.entry_overlap.get_text())
-        log.info("Image Overlap: {} %".format(overlap))
+        text = widget.get_text()
+        log.info("Percent Overlap: {} %".format(text))
+    
+    def print_species_id(self, widget):
+        text = widget.get_text()
+        log.info("Species: {} ".format(text))
+    
+    def print_id1(self, widget):
+        text = widget.get_text()
+        log.info("ID1: {} ".format(text))
+        
+    def print_id2(self, widget):
+        text = widget.get_text()
+        log.info("ID2: {} ".format(text))
 
+    def print_notes(self, widget):
+        text = widget.get_text()
+        log.info("Notes: {} ".format(text))
+        
+        
 if __name__ == "__main__":
     #Gst.init(None)
     app = App()
