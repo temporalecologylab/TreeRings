@@ -324,8 +324,9 @@ class Controller:
 
     #### CAMERA METHODS ####
 
-    def cb_capture_image(self):
-        name = "{}/image_{}.tiff".format(self.directory, datetime.now().strftime("%H_%M_%S_%f"))
+    def cb_capture_image(self, name = None):
+        if name is None:
+    	     name = "{}/image_{}.tiff".format(self.directory, datetime.now().strftime("%H_%M_%S_%f"))
         self.camera.save_frame(name)
         log.info("Saving {}".format(name))
         return name
