@@ -13,7 +13,6 @@ class Cookie:
         self.id2 = id2
         self.notes = notes
         self.cookie_path = path
-        self.autoset_sat_min()
 
 
     def set_center_location(self, x, y, z):
@@ -28,7 +27,7 @@ class Cookie:
     def get_top_left_location(self):
         return self._top_left
     
-    def autoset_sat_min(self):
+    def autoset_sat_max(self):
 
         time.sleep(2) # wait for image to save for sure
         image = cv2.imread(self.cookie_path)
