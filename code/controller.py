@@ -54,7 +54,9 @@ class Controller:
         pid_queue = queue.Queue()
         pid_lock = Lock()
         n_images = 9
-
+        
+        # This takes a few seconds to run
+        self.cookie.autoset_sat_max()
 
         self.focus.set_sat_min(cookie.saturation_max)
 
@@ -277,16 +279,12 @@ class Controller:
         # Wait until we get to the cookie location
         self._gantry.block_for_jog()
 
-    def traverse_cookie_boundary(self):
+    def traverse_cookie_boundary(self, cookie_width, cookie_height):
         
         try: 
             x = self._gantry.x
             y = self._gantry.y
             z = self._gantry.z
-
-            cookie = self.cookies[-1]
-            cookie_width = cookie.width
-            cookie_height = cookie.height
 
             l_x = x - (cookie_width / 2)
             r_x = x + (cookie_width / 2)
@@ -327,6 +325,7 @@ class Controller:
         name = "{}/image_{}.tiff".format(self.directory, datetime.now().strftime("%H_%M_%S_%f"))
         self.camera.save_frame(name)
         log.info("Saving {}".format(name))
+        return name
     
     #### COOKIE METHODS ####
 
@@ -339,8 +338,8 @@ class Controller:
         tl_y = center_y + (height/2)
         tl_z = center_z
 
-        name = self.cb_capture_image
-        ck = cookie.Cookie(width, height, species, id1, id2, notes, overlap, center_x, center_y, center_z, tl_x, tl_y, tl_z, cookie_path=name)
+        path_name = self.cb_capture_image()
+        ck = cookie.Cookie(width, height, species, id1, id2, notes, path_name, overlap, center_x, center_y, center_z, tl_x, tl_y, tl_z)
         self.cookies.append(ck)
 
    #### GANTRY METHODS ####
