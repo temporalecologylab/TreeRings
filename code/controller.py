@@ -317,6 +317,8 @@ class Controller:
             # go back to center
             self.jog_absolute_xyz(x, y, z)
             self._gantry.block_for_jog()
+        except:
+            log.info("cookie not defined")
 
 
     #### CAMERA METHODS ####
