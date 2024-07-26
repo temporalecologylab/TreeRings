@@ -8,7 +8,7 @@ from datetime import datetime
 import time
 import math
 import queue
-from threading import Thread
+from threading import Thread, Lock
 from multiprocessing import Process
 from pathlib import Path
 import json
@@ -23,7 +23,7 @@ class Controller:
         self.cookies = []
         self._gantry = gantry.Gantry()
         self.camera = camera.Camera()
-        self.focus = focus.Focus(delete_flag=True)
+        self.focus = focus.Focus(delete_flag=True, setpoint=5)
         self.stitcher = stitcher.Stitcher()
 
         #attributes
@@ -51,8 +51,12 @@ class Controller:
     def capture_cookie(self):
         cookie, rows, cols, y_dist, x_dist = self.calculate_grid()
         focus_queue = queue.Queue()
-        stitch_queue = queue.Queue()
+        pid_queue = queue.Queue()
+        pid_lock = Lock()
         n_images = 9
+
+
+        self.focus.set_sat_min(cookie.saturation_max)
 
         #set directories
         if self.directory == ".":
@@ -62,8 +66,8 @@ class Controller:
 
         start_time = time.time()
 
-        gantry_thread = Thread(target=self.capture_grid_photos, args=(focus_queue, rows, cols, y_dist, x_dist, n_images))
-        focus_thread = Thread(target=self.focus.find_focus, args=(focus_queue, self.directory))
+        gantry_thread = Thread(target=self.capture_grid_photos, args=(focus_queue, pid_queue, pid_lock, rows, cols, y_dist, x_dist, n_images))
+        focus_thread = Thread(target=self.focus.find_focus, args=(focus_queue, pid_queue, pid_lock, self.directory))
         gantry_thread.start()
         focus_thread.start()
         
@@ -101,41 +105,72 @@ class Controller:
         
         return cookie, y_steps, x_steps, y_step_size, x_step_size
     
-    def capture_grid_photos(self, focus_queue: queue.Queue, rows: int, cols: int, y_dist, x_dist, n_images=9, pause=0):
+    def capture_grid_photos(self, focus_queue: queue.Queue, pid_queue: queue.Queue, pid_lock, rows: int, cols: int, y_dist, x_dist, n_images=20, pause=0):
         # for loop capture
         # Change feed rate back to being slow
         self.set_feed_rate(1)
-        
-        for row in range(rows):
-            # for last column, we only want to take photo, not move.
-            for col in range(cols - 1):
-                # Odd rows go left
+        while True: 
+            for row in range(rows):
+                
+                # for last column, we only want to take photo, not move.
+                for col in range(cols - 1):
+                    # Odd rows go left
+                    if row % 2 == 1:
+                        imgs = self.capture_images_multiple_distances(n_images, self._gantry.feed_rate_z, 1, 0.2, row, cols - col - 1)
+                        pid_lock.acquire()
+                        self.jog_relative_x(-x_dist)
+                        pid_lock.release()
+                    # Even rows go right
+                    else:
+                        imgs = self.capture_images_multiple_distances(n_images, self._gantry.feed_rate_z, 1, 0.2, row, col)
+                        pid_lock.acquire()
+                        self.jog_relative_x(x_dist)
+                        pid_lock.release()
+                    focus_queue.put(imgs)
+                    time_0 = time.time()
+                    update_z = pid_queue.get()
+                    time_1 = time.time()
+
+                    log.info(f"z move for update {update_z}")
+                    pid_lock.acquire()
+                    self.jog_relative_z(update_z)
+                    pid_lock.release()
+                    pid_queue.task_done()
+                    
+                    sleep_time = (x_dist / self._gantry.feed_rate_xy + update_z / self._gantry.feed_rate_z) * 60 - (time_1 - time_0)
+                    log.info(sleep_time)
+                    if sleep_time > 0:
+                        time.sleep(sleep_time)
+                    #pid_queue.task_done()
+
+
+                # Take final photo in row before jogging down
                 if row % 2 == 1:
-                    imgs = self.capture_images_multiple_distances(n_images, self._gantry.feed_rate_z, 1, 0.2, row, cols - col - 1)
-                    self.jog_relative_x(-x_dist)
-                # Even rows go right
+                    # imgs = self.capture_images_multiple_distances(0.1, z_steps, row, 0)
+                    imgs = self.capture_images_multiple_distances(n_images, self._gantry.feed_rate_z, 1, 0.2, row, 0)
+                    focus_queue.put(imgs)
                 else:
-                    imgs = self.capture_images_multiple_distances(n_images, self._gantry.feed_rate_z, 1, 0.2, row, col)
+                    # imgs = self.capture_images_multiple_distances(0.05, z_steps, row, cols - 1)
+                    imgs = self.capture_images_multiple_distances(n_images, self._gantry.feed_rate_z, 1, 0.2, row, cols - 1)
+                    focus_queue.put(imgs)
+                    
+                pid_lock.acquire()    
+                self.jog_relative_y(-y_dist)
+                pid_lock.release()
+                time_0 = time.time()
+                update_z = pid_queue.get()
+                time_1 = time.time()
+                pid_lock.acquire()
+                self.jog_relative_z(update_z)
+                pid_lock.release()
+                sleep_time = (y_dist / self._gantry.feed_rate_xy + update_z / self._gantry.feed_rate_z) * 60 - (time_1 - time_0)
+                pid_queue.task_done()
 
-                    self.jog_relative_x(x_dist)
-                time.sleep(pause)
-                focus_queue.put(imgs)
+                if sleep_time > 0:
+                    time.sleep(sleep_time)
 
-            # Take final photo in row before jogging down
-            if row % 2 == 1:
-                # imgs = self.capture_images_multiple_distances(0.1, z_steps, row, 0)
-                imgs = self.capture_images_multiple_distances(n_images, self._gantry.feed_rate_z, 1, 0.2, row, 0)
-                focus_queue.put(imgs)
-
-            else:
-                # imgs = self.capture_images_multiple_distances(0.05, z_steps, row, cols - 1)
-                imgs = self.capture_images_multiple_distances(n_images, self._gantry.feed_rate_z, 1, 0.2, row, cols - 1)
-
-                focus_queue.put(imgs)
-
-            self.jog_relative_y(-y_dist)
-            time.sleep(pause)
-        focus_queue.put([-1])
+            focus_queue.put([-1])
+            break
 
     def capture_images_multiple_distances(self, image_count, feed_rate, r, acceleration_buffer, row, col):
         """A method to move the camera through a Z range to allow for multiple images to be taken. This implementation is designed to reduce motion blur by taking advantage of a slow feed rate and avoiding a deceleration then sleep cycle to get an in focus image.
@@ -283,7 +318,8 @@ class Controller:
     #### COOKIE METHODS ####
 
     def add_cookie_sample(self, width, height, overlap, species, id1, id2, notes):
-        ck = cookie.Cookie(width, height, species, id1, id2, notes, overlap, self._gantry.x, self._gantry.y, self._gantry.z)
+        name = self.cb_capture_image
+        ck = cookie.Cookie(width, height, species, id1, id2, notes, overlap, self._gantry.x, self._gantry.y, self._gantry.z, cookie_path=name)
         self.cookies.append(ck)
 
    #### GANTRY METHODS ####

@@ -4,37 +4,56 @@ import shutil
 import numpy as np
 import os
 from pathlib import Path
-
+from PID import AsynchronousPID 
 
 log.basicConfig(format='%(process)d-%(levelname)s-%(message)s', level=log.INFO)
 
 class Focus:
 
-    def __init__(self, delete_flag):
+    def __init__(self, delete_flag, setpoint):
         self.DELETE_FLAG = delete_flag
+        self.sat_min = 27
+        self.sat_max = 255
+        self.PID = AsynchronousPID(Kp=1.0, Ki=0, Kd=0.05, setpoint=setpoint) # Setpoint?? depends on camera i think
 
-    def find_focus(self, img_pipeline, directory):
+    def set_sat_min(self, saturation_min):
+        self.sat_min = saturation_min
+    
+    def set_sat_max(self, saturation_max):
+        self.sat_max = saturation_max
+
+    def find_focus(self, focus_queue, pid_queue, pid_lock, directory):
         while True:
-            image_files = img_pipeline.get()
+            image_files = focus_queue.get()
+            pid_lock.acquire()
             log.info("Images For focus finding: {}".format(image_files))
             if image_files == [-1]:
-                img_pipeline.task_done()
+                focus_queue.task_done()
                 break
-                      
-            image_name = image_files[0].split("/")[-1].split("_")
+            focused_image_name = self.best_focused_image(image_files)
+            image_name = focused_image_name.split("/")[-1].split("_")
             extract_row = image_name[1]
             extract_col = image_name[2]
-            filename = "focused_{}_{}.tiff".format(extract_row, extract_col) 
-            focused_image_name = self.best_focused_image(image_files)
+            stack_number = image_name[3].split(".")[0]
+            filename = "focused_{}_{}.tiff".format(extract_row, extract_col)
             if self.DELETE_FLAG:
                 image_files.remove(focused_image_name)
                 self.delete_unfocused(image_files)
             else: 
                 Path("{}/focused_images".format(self.directory)).mkdir(exist_ok=True)
                 shutil.copy(focused_image_name, "{}/focused_images/{}".format(directory,filename))
-
-
-            img_pipeline.task_done()
+            
+            image = cv2.imread(focused_image_name)
+            if not self.is_background(image):
+                control_variable = self.PID.update(int(stack_number))
+                log.info(f"focused image: {stack_number} control variable = {control_variable}")
+                update_z = self.adjust_focus(control_variable, 0.01)
+                pid_queue.put(update_z)
+            else:
+                pid_queue.put(0)
+            focus_queue.task_done()
+            pid_lock.release()
+	    
         
     def compute_variance(self, image):
         # adapted from macro info at https://imagejdocu.list.lu/macro/normalized_variance
@@ -59,5 +78,33 @@ class Focus:
         return best_image_filepath     
 
     def delete_unfocused(self, images_to_delete):
-        for im_name in images_to_delete:
-            os.remove(im_name)
+        for file_name in images_to_delete:
+            os.remove(file_name)
+
+    def hsv_mask(self, image):
+        imgHSV = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
+
+        s_channel = imgHSV[:,:,1]
+        mask = cv2.inRange(s_channel, self.sat_min, self.sat_max)
+        res =cv2.bitwise_and(image, image, mask=mask)
+        return res
+    
+    def is_background(self, image):
+        #masked_image = self.hsv_mask(image)
+
+        #nan_image=masked_image.astype('float')
+        #nan_image[nan_image==0]=np.nan
+
+        # if 25% of image is nan, count as a background image
+        #if np.count_nonzero(np.isnan(nan_image)) > (nan_image.size * 0.25):
+            #return True
+        #return False
+        return True
+    
+    def adjust_focus(self, control_signal, scale_factor):
+        # Convert the control signal to millimeters of movement using the scale factor
+        movement_mm = control_signal * scale_factor
+        return movement_mm  
+
+    ''' pid moment:
+        need to update from controller, methods go in focus? '''
