@@ -54,14 +54,19 @@ class Controller:
         pid_queue = queue.Queue()
         pid_lock = Lock()
         n_images = 9
-
+        
+        # This takes a few seconds to run
+        self.cookie.autoset_sat_max()
 
         self.focus.set_sat_min(cookie.saturation_max)
 
         #set directories
+        species = cookie.species
+        id1 = cookie.id1
+        id2 = cookie.id2
 
         dirtime = datetime.now().strftime("%H_%M_%S")
-        Path("./cookiecapture_{}".format(dirtime)).mkdir()
+        Path("./{}_{}_{}_{}".format(species, id1, id2, dirtime)).mkdir()
         self.set_directory("./cookiecapture_{}".format(dirtime))
 
         start_time = time.time()
@@ -277,49 +282,54 @@ class Controller:
         # Wait until we get to the cookie location
         self._gantry.block_for_jog()
 
-    def traverse_cookie_boundary(self, cookie_height, cookie_width):
+    def traverse_cookie_boundary(self, cookie_width, cookie_height):
         
-        x = self._gantry.x
-        y = self._gantry.y
-        z = self._gantry.z
+        try: 
+            x = self._gantry.x
+            y = self._gantry.y
+            z = self._gantry.z
 
-        l_x = x - (cookie_width / 2)
-        r_x = x + (cookie_width / 2)
-        b_y = y - (cookie_height/ 2)
-        t_y = y + (cookie_height / 2)
+            l_x = x - (cookie_width / 2)
+            r_x = x + (cookie_width / 2)
+            b_y = y - (cookie_height/ 2)
+            t_y = y + (cookie_height / 2)
 
-        tl = (l_x, t_y)
-        tr = (r_x, t_y)
-        bl = (l_x, b_y)
-        br = (r_x, b_y)
+            tl = (l_x, t_y)
+            tr = (r_x, t_y)
+            bl = (l_x, b_y)
+            br = (r_x, b_y)
 
-        # Go to top left, then move clockwise until return to tl
-        self.jog_absolute_x(tl[0])
-        self._gantry.block_for_jog()
-        self.jog_absolute_y(tl[1])
-        self._gantry.block_for_jog()
-        self.jog_absolute_x(tr[0])
-        self._gantry.block_for_jog()
-        self.jog_absolute_y(br[1])
-        self._gantry.block_for_jog()
-        self.jog_absolute_x(bl[0])
-        self._gantry.block_for_jog()
-        self.jog_absolute_y(tl[1])
-        self._gantry.block_for_jog()
+            # Go to top left, then move clockwise until return to tl
+            self.jog_absolute_x(tl[0])
+            self._gantry.block_for_jog()
+            self.jog_absolute_y(tl[1])
+            self._gantry.block_for_jog()
+            self.jog_absolute_x(tr[0])
+            self._gantry.block_for_jog()
+            self.jog_absolute_y(br[1])
+            self._gantry.block_for_jog()
+            self.jog_absolute_x(bl[0])
+            self._gantry.block_for_jog()
+            self.jog_absolute_y(tl[1])
+            self._gantry.block_for_jog()
 
-        time.sleep(2)
+            time.sleep(2)
 
-        # go back to center
-        self.jog_absolute_xyz(x, y, z)
-        self._gantry.block_for_jog()
+            # go back to center
+            self.jog_absolute_xyz(x, y, z)
+            self._gantry.block_for_jog()
+        except:
+            log.info("cookie not defined")
 
 
     #### CAMERA METHODS ####
 
-    def cb_capture_image(self):
-        name = "{}/image_{}.tiff".format(self.directory, datetime.now().strftime("%H_%M_%S_%f"))
+    def cb_capture_image(self, name = None):
+        if name is None:
+    	     name = "{}/image_{}.tiff".format(self.directory, datetime.now().strftime("%H_%M_%S_%f"))
         self.camera.save_frame(name)
         log.info("Saving {}".format(name))
+        return name
     
     #### COOKIE METHODS ####
 
@@ -332,8 +342,17 @@ class Controller:
         tl_y = center_y + (height/2)
         tl_z = center_z
 
-        name = self.cb_capture_image
-        ck = cookie.Cookie(width, height, species, id1, id2, notes, overlap, center_x, center_y, center_z, tl_x, tl_y, tl_z, cookie_path=name)
+        if overlap == '':
+            overlap = 50
+        if species == '':
+            species = "na"
+        if id1 == '':
+            id1 = "na"
+        if id2 == '':
+            id2 = "na"
+
+        path_name = self.cb_capture_image()
+        ck = cookie.Cookie(width, height, species, id1, id2, notes, path_name, overlap, center_x, center_y, center_z, tl_x, tl_y, tl_z)
         self.cookies.append(ck)
 
    #### GANTRY METHODS ####

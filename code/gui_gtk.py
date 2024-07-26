@@ -11,12 +11,16 @@ log.basicConfig(format='%(process)d-%(levelname)s-%(message)s', level=log.INFO)
 class App(Gtk.Window):
     def __init__(self):
         super().__init__(title="Cookie Capture")
-        self.set_default_size(900, 500)
+        self.set_default_size(600, 400)
+        self.set_size_request(-1,-1)
         self.connect("destroy", self.quit_program)
         
         self.controller = controller.Controller(3, 2)
 
         grid = Gtk.Grid()
+        grid.set_row_homogeneous(False)
+        grid.set_column_homogeneous(False)
+        
         self.add(grid)
 
         self.create_entries(grid)
@@ -32,6 +36,11 @@ class App(Gtk.Window):
         ## Cookie
         
         frame_entry_cookie = Gtk.Frame(label="Cookie Entries")
+        frame_entry_cookie.set_size_request(-1,-1)
+        frame_entry_cookie.set_hexpand(True)
+        frame_entry_cookie.set_vexpand(True)
+        frame_entry_cookie.set_halign(Gtk.Align.FILL)
+        frame_entry_cookie.set_valign(Gtk.Align.FILL)
         grid.attach(frame_entry_cookie, 0, 0, 1, 1)
         
         box_cookie = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=7)
@@ -39,12 +48,15 @@ class App(Gtk.Window):
         
         self.create_cookie_height_entry(box_cookie)
         self.create_cookie_width_entry(box_cookie)
-        self.create_percent_overlap_entry(box_cookie)
-        self.create_species_entries(box_cookie)
         
         ## Machine 
         
         frame_entry_machine = Gtk.Frame(label="Machine Entries")
+        frame_entry_machine.set_size_request(-1,-1)
+        frame_entry_machine.set_hexpand(True)
+        frame_entry_machine.set_vexpand(True)
+        frame_entry_machine.set_halign(Gtk.Align.FILL)
+        frame_entry_machine.set_valign(Gtk.Align.FILL)
         grid.attach(frame_entry_machine, 0, 1, 1, 1)
         
         box_machine = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
@@ -55,6 +67,11 @@ class App(Gtk.Window):
 
     def create_buttons(self, grid):
         frame_buttons = Gtk.Frame(label="Actions")
+        frame_buttons.set_size_request(-1,-1)
+        frame_buttons.set_hexpand(True)
+        frame_buttons.set_vexpand(True)
+        frame_buttons.set_halign(Gtk.Align.FILL)
+        frame_buttons.set_valign(Gtk.Align.FILL)
         grid.attach(frame_buttons, 0, 2, 1, 1)
         
         box_buttons = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=6)
@@ -67,11 +84,16 @@ class App(Gtk.Window):
         self.create_g_code_resume_button(box_buttons)
         self.create_g_code_homing_button(box_buttons)
         self.create_capture_button(box_buttons)
-        self.create_add_cookie_button(box_buttons)
+        self.create_add_cookie_dialog_button(box_buttons)
         self.create_test_boundaries_button(box_buttons)
 
     def create_jogging_controls(self, grid):
         frame_jogging = Gtk.Frame(label="Jogging Controls")
+        frame_jogging.set_size_request(-1,-1)
+        frame_jogging.set_hexpand(True)
+        frame_jogging.set_vexpand(True)
+        frame_jogging.set_halign(Gtk.Align.FILL)
+        frame_jogging.set_valign(Gtk.Align.FILL)
         grid.attach(frame_jogging, 1, 0, 1, 1)
         
         box_jogging = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
@@ -86,7 +108,7 @@ class App(Gtk.Window):
         self.entry_height_cookie = Gtk.Entry()
         self.entry_height_cookie.set_text("45")
         box.pack_start(self.entry_height_cookie, True, True, 0)
-        self.entry_height_cookie.connect('activate', self.print_cookie_height_entry)
+        self.entry_height_cookie.connect('focus-out-event', self.print_cookie_height_entry)
 
     def create_cookie_width_entry(self, box):
         label_width_cookie = Gtk.Label(label="Enter Cookie Width (mm):   ")
@@ -94,54 +116,15 @@ class App(Gtk.Window):
         self.entry_width_cookie = Gtk.Entry()
         self.entry_width_cookie.set_text("45")
         box.pack_start(self.entry_width_cookie, True, True, 0)
-        self.entry_width_cookie.connect('activate', self.print_cookie_width_entry)
-
-    def create_percent_overlap_entry(self, box):
-        label_overlap = Gtk.Label(label="Enter Percent Overlap (%):   ")
-        box.pack_start(label_overlap, True, True, 0)
-        self.entry_overlap = Gtk.Entry()
-        self.entry_overlap.set_text("20")
-        box.pack_start(self.entry_overlap, True, True, 0)
-        self.entry_overlap.connect('activate', self.print_overlap)
+        self.entry_width_cookie.connect('focus-out-event', self.print_cookie_width_entry)
     
-    def create_species_entries(self, box):
-
-        label_species = Gtk.Label(label="Enter Species:   ")
-        box.pack_start(label_species, True, True, 0)
-        self.entry_species = Gtk.Entry()
-        self.entry_species.set_text("REQUIRED")
-        box.pack_start(self.entry_species, True, True, 0)
-        self.entry_species.connect('activate', self.print_species_id)
-        
-        label_id1 = Gtk.Label(label="Enter ID1:   ")
-        box.pack_start(label_id1, True, True, 0)
-        self.entry_id1 = Gtk.Entry()
-        self.entry_id1.set_text("REQUIRED")
-        box.pack_start(self.entry_id1, True, True, 0)
-        self.entry_id1.connect('activate', self.print_id1)
-        
-        label_id2 = Gtk.Label(label="Enter ID2:   ")
-        box.pack_start(label_id2, True, True, 0)
-        self.entry_id2 = Gtk.Entry()
-        self.entry_id2.set_text("REQUIRED")
-        box.pack_start(self.entry_id2, True, True, 0)
-        self.entry_id2.connect('activate', self.print_id2)
-        
-        label_notes = Gtk.Label(label="Enter Notes:   ")
-        box.pack_start(label_notes, True, True, 0)
-        self.entry_notes = Gtk.Entry()
-        self.entry_notes.set_text("")
-        box.pack_start(self.entry_notes, True, True, 0)
-        self.entry_notes.connect('activate', self.print_notes)
-        
-        
     def create_img_height_entry(self, box):
         label_height_img = Gtk.Label(label="Enter Image Height (mm):   ")
         box.pack_start(label_height_img, True, True, 0)
         self.entry_height_img = Gtk.Entry()
         self.entry_height_img.set_text("2.00")
         box.pack_start(self.entry_height_img, True, True, 0)
-        self.entry_height_img.connect('activate', self.print_img_height_entry)
+        self.entry_height_img.connect('focus-out-event', self.print_img_height_entry)
 
     def create_img_width_entry(self, box):
         label_width_img = Gtk.Label(label="Enter Image Width (mm):   ")
@@ -149,17 +132,17 @@ class App(Gtk.Window):
         self.entry_width_img = Gtk.Entry()
         self.entry_width_img.set_text("3.00")
         box.pack_start(self.entry_width_img, True, True, 0)
-        self.entry_width_img.connect('activate', self.print_img_width_entry)
+        self.entry_width_img.connect('focus-out-event', self.print_img_width_entry)
 
-    def create_add_cookie_button(self, box):
-        button_calculate = Gtk.Button(label="Add Cookie")
-        button_calculate.connect("clicked", self.cb_add_cookie)
-        box.pack_start(button_calculate, True, True, 0)
+    def create_add_cookie_dialog_button(self, box):
+        button_add_dialog = Gtk.Button(label="Add Cookie")
+        button_add_dialog.connect("clicked", self.cb_add_cookie_dialog)
+        box.pack_start(button_add_dialog, True, True, 0)
 
     def create_test_boundaries_button(self, box):
-        button_calculate = Gtk.Button(label="Test Cookie Dimensions")
-        button_calculate.connect("clicked", self.controller.traverse_cookie_boundary())
-        box.pack_start(button_calculate, True, True, 0)
+        button_test_dims = Gtk.Button(label="Test Cookie Dimensions")
+        button_test_dims.connect("clicked", self.cb_traverse_cookie)
+        box.pack_start(button_test_dims, True, True, 0)
 
     def create_directory_button(self, box):
         button_directory = Gtk.Button(label="Select Directory")
@@ -206,7 +189,7 @@ class App(Gtk.Window):
         self.jog_distance=2.0
         self.entry_jog_distance.set_text("".format(self.jog_distance))
         box.pack_start(self.entry_jog_distance, True, True, 0)
-        self.entry_jog_distance.connect('activate', self.cb_jog_distance)
+        self.entry_jog_distance.connect('focus-out-event', self.cb_jog_distance)
 
         button_y_plus = Gtk.Button(label="Y+")
         button_y_plus.connect("clicked", lambda w: self.controller.jog_relative_y(self.jog_distance))
@@ -245,7 +228,7 @@ class App(Gtk.Window):
         if button.get_active():
             self.controller.set_feed_rate(speed)
 
-    def cb_jog_distance(self, widget):
+    def cb_jog_distance(self, widget, event):
         self.jog_distance = float(self.entry_jog_distance.get_text())
 
     def request_directory(self, widget):
@@ -262,57 +245,116 @@ class App(Gtk.Window):
             self.controller.set_directory(dialog.get_filename())
         dialog.destroy()
 
-    def cb_add_cookie(self, widget):
+    def cb_traverse_cookie(self, widget):
         width = int(self.entry_width_cookie.get_text())
         height = int(self.entry_height_cookie.get_text())
-        overlap = int(self.entry_overlap.get_text())
-        species = self.entry_species.get_text()
-        id1 = self.entry_id1.get_text()
-        id2 = self.entry_id2.get_text()
-        notes = self.entry_notes.get_text()
-        
 
+        self.controller.traverse_cookie_boundary(width, height)
+
+    def cb_add_cookie_dialog(self, widget):
+        width = int(self.entry_width_cookie.get_text())
+        height = int(self.entry_height_cookie.get_text())
+        overlap, species, id1, id2, notes = self.show_metadata_dialog()
+        log.info(species)
+        log.info(id1)
+        log.info(id2)
+        log.info(notes)
+        if species == False:
+            return
+        
         self.controller.add_cookie_sample(width, height, overlap, species, id1, id2, notes)
         log.info("Adding Cookie \nW: {}\nH: {}\nO: {}\nS:  {}\nID1:  {}\nID2:  {}\nNotes:  {}\n".format(width, height, overlap, species, id1, id2, notes))
+    
+    def show_metadata_dialog(self):
+        dialog = Gtk.Dialog(title="Add Cookie", parent=self, flags=0)
+        dialog.add_buttons(
+            Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL,
+            Gtk.STOCK_OK, Gtk.ResponseType.OK
+        )
 
-    def print_cookie_height_entry(self, widget):
+        # Add required entries
+        box = dialog.get_content_area()
+        overlap_label = Gtk.Label(label="Image Overlap (%)")
+        overlap_entry = Gtk.Entry()
+        species_label = Gtk.Label(label="Species")
+        species_entry = Gtk.Entry()
+        id1_label = Gtk.Label(label="ID 1")
+        id1_entry = Gtk.Entry()
+        id2_label = Gtk.Label(label="ID 2")
+        id2_entry = Gtk.Entry()
+        notes_label = Gtk.Label(label="Notes")
+        
+        #Create larger text box for notes 
+        text_view = Gtk.TextView()
+        text_view.set_wrap_mode(Gtk.WrapMode.WORD)
+        text_view.set_size_request(300,200)
+
+        notes_window = Gtk.ScrolledWindow()
+        notes_window.set_policy(Gtk.PolicyType.AUTOMATIC, Gtk.PolicyType.AUTOMATIC)
+        notes_window.add(text_view)
+
+        box.add(overlap_label)
+        box.add(overlap_entry)
+        box.add(species_label)
+        box.add(species_entry)
+        box.add(id1_label)
+        box.add(id1_entry)
+        box.add(id2_label)
+        box.add(id2_entry)
+        box.add(notes_label)
+        box.add(notes_window)
+
+        overlap_label.show()
+        overlap_entry.show()
+        species_label.show()
+        species_entry.show()
+        id1_label.show()
+        id1_entry.show()
+        id2_label.show()
+        id2_entry.show()
+        notes_label.show()
+        notes_window.show_all()
+
+        # Run the dialog and capture the response
+        response = dialog.run()
+
+        if response == Gtk.ResponseType.OK:
+            overlap = overlap_entry.get_text()
+            species = species_entry.get_text()
+            id1 = id1_entry.get_text()
+            id2 = id2_entry.get_text()
+            buffer = text_view.get_buffer()
+            notes = buffer.get_text(buffer.get_start_iter(), buffer.get_end_iter(), True)
+            log.info("Adding Cookie")
+        else:
+            overlap = False
+            species = False
+            id1 =  False
+            id2 = False
+            notes = False
+            log.info("Cancel Cookie Add")
+
+        dialog.destroy()
+        return overlap, species, id1, id2, notes
+        
+
+    def print_cookie_height_entry(self, widget, event):
         height = int(self.entry_height_cookie.get_text())
         log.info("Update Cookie Height: {} mm".format(height))
 
-    def print_cookie_width_entry(self, widget):
+    def print_cookie_width_entry(self, widget, event):
         width = int(self.entry_width_cookie.get_text())
         log.info("Update Cookie Width: {} mm".format(width))
 
-    def print_img_height_entry(self, widget):
+    def print_img_height_entry(self, widget, event):
         height = float(self.entry_height_img.get_text())
         self.controller.image_height_mm = height
         log.info("Update Image Height: {} mm".format(height))
 
-    def print_img_width_entry(self, widget):
+    def print_img_width_entry(self, widget, event):
         width = float(self.entry_width_img.get_text())
         self.controller.image_width_mm = width
-        log.info("Update Image Width: {} mm".format(width))
-    
-    def print_overlap(self, widget):
-        text = widget.get_text()
-        log.info("Percent Overlap: {} %".format(text))
-    
-    def print_species_id(self, widget):
-        text = widget.get_text()
-        log.info("Species: {} ".format(text))
-    
-    def print_id1(self, widget):
-        text = widget.get_text()
-        log.info("ID1: {} ".format(text))
-        
-    def print_id2(self, widget):
-        text = widget.get_text()
-        log.info("ID2: {} ".format(text))
-
-    def print_notes(self, widget):
-        text = widget.get_text()
-        log.info("Notes: {} ".format(text))
-        
+        log.info("Update Image Width: {} mm".format(width))        
         
 if __name__ == "__main__":
     #Gst.init(None)
