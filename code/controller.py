@@ -61,9 +61,12 @@ class Controller:
         self.focus.set_sat_min(cookie.saturation_max)
 
         #set directories
+        species = cookie.species
+        id1 = cookie.id1
+        id2 = cookie.id2
 
         dirtime = datetime.now().strftime("%H_%M_%S")
-        Path("./cookiecapture_{}".format(dirtime)).mkdir()
+        Path("./{}_{}_{}_{}".format(species, id1, id2, dirtime)).mkdir()
         self.set_directory("./cookiecapture_{}".format(dirtime))
 
         start_time = time.time()
@@ -337,6 +340,15 @@ class Controller:
         tl_x = center_x - (width/2)
         tl_y = center_y + (height/2)
         tl_z = center_z
+
+        if overlap == '':
+            overlap = 50
+        if species == '':
+            species = "na"
+        if id1 == '':
+            id1 = "na"
+        if id2 == '':
+            id2 = "na"
 
         path_name = self.cb_capture_image()
         ck = cookie.Cookie(width, height, species, id1, id2, notes, path_name, overlap, center_x, center_y, center_z, tl_x, tl_y, tl_z)
