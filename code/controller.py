@@ -291,40 +291,47 @@ class Controller:
         else:
             time.sleep(max([rel_x, rel_y]) / self._gantry.feed_rate_xy * 60) # seconds
 
-    def traverse_cookie_boundary(self, cookie_height, cookie_width):
+    def traverse_cookie_boundary(self):
         
-        x = self._gantry.x
-        y = self._gantry.y
-        z = self._gantry.z
+        try: 
+            x = self._gantry.x
+            y = self._gantry.y
+            z = self._gantry.z
 
-        l_x = x - (cookie_width / 2)
-        r_x = x + (cookie_width / 2)
-        b_y = y - (cookie_height/ 2)
-        t_y = y + (cookie_height / 2)
+            cookie = self.cookies[-1]
+            cookie_width = cookie.width
+            cookie_height = cookie.height
 
-        tl = (l_x, t_y)
-        tr = (r_x, t_y)
-        bl = (l_x, b_y)
-        br = (r_x, b_y)
+            l_x = x - (cookie_width / 2)
+            r_x = x + (cookie_width / 2)
+            b_y = y - (cookie_height/ 2)
+            t_y = y + (cookie_height / 2)
 
-        # Go to top left, then move clockwise until return to tl
-        self.jog_absolute_x(tl[0])
-        time.sleep(tl[0] * self._gantry.feed_rate_xy)
-        self.jog_absolute_y(tl[1])
-        time.sleep(tl[1] * self._gantry.feed_rate_xy)
-        self.jog_absolute_x(tr[0])
-        time.sleep(tr[0] * self._gantry.feed_rate_xy)
-        self.jog_absolute_y(br[1])
-        time.sleep(br[1] * self._gantry.feed_rate_xy)
-        self.jog_absolute_x(bl[0])
-        time.sleep(bl[0] * self._gantry.feed_rate_xy)
-        self.jog_absolute_y(tl[1])
-        time.sleep(tl[1] * self._gantry.feed_rate_xy)
+            tl = (l_x, t_y)
+            tr = (r_x, t_y)
+            bl = (l_x, b_y)
+            br = (r_x, b_y)
 
-        time.sleep(2)
+            # Go to top left, then move clockwise until return to tl
+            self.jog_absolute_x(tl[0])
+            time.sleep(tl[0] * self._gantry.feed_rate_xy)
+            self.jog_absolute_y(tl[1])
+            time.sleep(tl[1] * self._gantry.feed_rate_xy)
+            self.jog_absolute_x(tr[0])
+            time.sleep(tr[0] * self._gantry.feed_rate_xy)
+            self.jog_absolute_y(br[1])
+            time.sleep(br[1] * self._gantry.feed_rate_xy)
+            self.jog_absolute_x(bl[0])
+            time.sleep(bl[0] * self._gantry.feed_rate_xy)
+            self.jog_absolute_y(tl[1])
+            time.sleep(tl[1] * self._gantry.feed_rate_xy)
 
-        # go back to center
-        self.jog_absolute_xyz(x, y, z)
+            time.sleep(2)
+
+            # go back to center
+            self.jog_absolute_xyz(x, y, z)
+        except:
+            log.info("cookie not yet defined")
 
     #### CAMERA METHODS ####
 
