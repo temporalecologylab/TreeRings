@@ -48,7 +48,7 @@ class Controller:
 
     #### SERPENTINE METHODS ####
     
-    def capture_cookie(self, cookie):
+    def capture_cookie(self, cookie: cookie.Cookie):
         rows, cols, y_dist, x_dist = self.calculate_grid(cookie)
         focus_queue = queue.Queue()
         pid_queue = queue.Queue()
@@ -66,7 +66,8 @@ class Controller:
 
         start_time = time.time()
 
-        gantry_thread = Thread(target=self.capture_grid_photos, args=(focus_queue, pid_queue, pid_lock, rows, cols, y_dist, x_dist, n_images))
+        x, y, z = cookie.get_center_location()
+        gantry_thread = Thread(target=self.capture_grid_photos, args=(focus_queue, pid_queue, pid_lock, rows, cols, y_dist, x_dist, z, n_images))
         focus_thread = Thread(target=self.focus.find_focus, args=(focus_queue, pid_queue, pid_lock, self.directory))
         gantry_thread.start()
         focus_thread.start()
@@ -108,7 +109,7 @@ class Controller:
         
         return y_steps, x_steps, y_step_size, x_step_size
     
-    def capture_grid_photos(self, focus_queue: queue.Queue, pid_queue: queue.Queue, pid_lock, rows: int, cols: int, y_dist, x_dist, n_images=20, pause=0):
+    def capture_grid_photos(self, focus_queue: queue.Queue, pid_queue: queue.Queue, pid_lock, rows: int, cols: int, y_dist, x_dist, z_start, n_images=20, pause=0):
         # for loop capture
         # Change feed rate back to being slow
         self.set_feed_rate(1)
@@ -119,63 +120,52 @@ class Controller:
                 for col in range(cols - 1):
                     # Odd rows go left
                     if row % 2 == 1:
-                        imgs = self.capture_images_multiple_distances(n_images, self._gantry.feed_rate_z, 1, 0.2, row, cols - col - 1)
+                        imgs = self.capture_images_multiple_distances(n_images, self._gantry.feed_rate_z, 1, 0.2, row, cols - col - 1, z_start)
                         pid_lock.acquire()
                         self.jog_relative_x(-x_dist)
                         pid_lock.release()
                     # Even rows go right
                     else:
-                        imgs = self.capture_images_multiple_distances(n_images, self._gantry.feed_rate_z, 1, 0.2, row, col)
+                        imgs = self.capture_images_multiple_distances(n_images, self._gantry.feed_rate_z, 1, 0.2, row, col, z_start)
                         pid_lock.acquire()
                         self.jog_relative_x(x_dist)
                         pid_lock.release()
+
                     focus_queue.put(imgs)
-                    time_0 = time.time()
+
                     update_z = pid_queue.get()
-                    time_1 = time.time()
-
                     log.info(f"z move for update {update_z}")
-                    pid_lock.acquire()
-                    self.jog_relative_z(update_z)
-                    pid_lock.release()
+                    z_start+=update_z
                     pid_queue.task_done()
-                    
-                    sleep_time = (x_dist / self._gantry.feed_rate_xy + update_z / self._gantry.feed_rate_z) * 60 - (time_1 - time_0)
-                    log.info(sleep_time)
-                    if sleep_time > 0:
-                        time.sleep(sleep_time)
-                    #pid_queue.task_done()
 
+                    # Allow for PID calculations to continue while x is still jogging. Imagine a very large x jog which takes a  while.
+                    self._gantry.block_for_jog()
 
                 # Take final photo in row before jogging down
                 if row % 2 == 1:
                     # imgs = self.capture_images_multiple_distances(0.1, z_steps, row, 0)
-                    imgs = self.capture_images_multiple_distances(n_images, self._gantry.feed_rate_z, 1, 0.2, row, 0)
-                    focus_queue.put(imgs)
+                    imgs = self.capture_images_multiple_distances(n_images, self._gantry.feed_rate_z, 1, 0.2, row, 0, z_start)
                 else:
                     # imgs = self.capture_images_multiple_distances(0.05, z_steps, row, cols - 1)
-                    imgs = self.capture_images_multiple_distances(n_images, self._gantry.feed_rate_z, 1, 0.2, row, cols - 1)
-                    focus_queue.put(imgs)
+                    imgs = self.capture_images_multiple_distances(n_images, self._gantry.feed_rate_z, 1, 0.2, row, cols - 1, z_start)
                     
+                focus_queue.put(imgs)
+
                 pid_lock.acquire()    
                 self.jog_relative_y(-y_dist)
                 pid_lock.release()
-                time_0 = time.time()
+
                 update_z = pid_queue.get()
-                time_1 = time.time()
-                pid_lock.acquire()
-                self.jog_relative_z(update_z)
-                pid_lock.release()
-                sleep_time = (y_dist / self._gantry.feed_rate_xy + update_z / self._gantry.feed_rate_z) * 60 - (time_1 - time_0)
+                log.info(f"z move for update {update_z}")
+                z_start += update_z
                 pid_queue.task_done()
 
-                if sleep_time > 0:
-                    time.sleep(sleep_time)
+                self._gantry.block_for_jog()
 
             focus_queue.put([-1])
             break
 
-    def capture_images_multiple_distances(self, image_count, feed_rate, r, acceleration_buffer, row, col):
+    def capture_images_multiple_distances(self, image_count, feed_rate, r, acceleration_buffer, row, col, z_start):
         """A method to move the camera through a Z range to allow for multiple images to be taken. This implementation is designed to reduce motion blur by taking advantage of a slow feed rate and avoiding a deceleration then sleep cycle to get an in focus image.
 
         Args:
@@ -186,6 +176,12 @@ class Controller:
             row (int): Row location of where on the cookie grid the images are in 
             col (int): Col location '                                           '
         """
+        # adding absolute jogging to start point because there is slight stochasticity between relative jogs. Resulting in drift
+        start_z = self._gantry.z
+
+        self.jog_absolute_z(start_z)
+        self._gantry.block_for_jog()
+
         image_filenames = []
 
         time_between_photos_s = r / feed_rate * 60 / image_count # mm / (mm / min) * (s / min) is the dim analysis for units of seconds
@@ -194,9 +190,8 @@ class Controller:
         # Jog to the top of the range + acceleration buffer
         top = (r / 2) + acceleration_buffer
         self.jog_relative_z(top)
-        sleep_time_half = top / feed_rate * 60
-        log.info("Sleeping for {} to get to top".format(sleep_time_half))
-        time.sleep(sleep_time_half)
+        self._gantry.block_for_jog()
+
         time.sleep(0.5)  # sleep to prevent excessive vibration
 
         # Jog to the bottom of the range. Begin taking photos after exiting the acceleration buffer zone
@@ -211,16 +206,12 @@ class Controller:
             image_filenames.append(file_location)
             self.camera.save_frame(file_location)
             time.sleep(time_between_photos_s)
-            
-        time.sleep(time_zero_acceleration_s)
-        # Return to original location
-        middle = top
-        self.jog_relative_z(middle)
-        # wait until we get back to the center 
-
-        log.info("Sleeping for {} to get back to center".format(sleep_time_half))
         
-        time.sleep(sleep_time_half)
+        # This might take a while so do not send the next jog until we finish the previous
+        self._gantry.block_for_jog()
+        # Return to original location
+        self.jog_absolute_z(z_start)
+        self._gantry.block_for_jog()        
 
         return image_filenames
     
@@ -281,15 +272,10 @@ class Controller:
     def navigate_to_cookie(self, cookie):
         x, y, z = cookie.get_top_left_location()
         self.jog_absolute_xyz(x, y, z)
-        rel_x = abs(self._gantry.x - x) 
-        rel_y = abs(self._gantry.y - y)
-        rel_z = abs(self._gantry.z - z)
+
         log.info("Navigating to {}, X{}Y{}Z{}".format(cookie.species, x, y, z))
         # Wait until we get to the cookie location
-        if rel_z > rel_x and rel_z > rel_y:
-            time.sleep(rel_z / self._gantry.feed_rate_z * 60) #seconds
-        else:
-            time.sleep(max([rel_x, rel_y]) / self._gantry.feed_rate_xy * 60) # seconds
+        self._gantry.block_for_jog()
 
     def traverse_cookie_boundary(self):
         
@@ -314,24 +300,24 @@ class Controller:
 
             # Go to top left, then move clockwise until return to tl
             self.jog_absolute_x(tl[0])
-            time.sleep(tl[0] * self._gantry.feed_rate_xy)
+            self._gantry.block_for_jog()
             self.jog_absolute_y(tl[1])
-            time.sleep(tl[1] * self._gantry.feed_rate_xy)
+            self._gantry.block_for_jog()
             self.jog_absolute_x(tr[0])
-            time.sleep(tr[0] * self._gantry.feed_rate_xy)
+            self._gantry.block_for_jog()
             self.jog_absolute_y(br[1])
-            time.sleep(br[1] * self._gantry.feed_rate_xy)
+            self._gantry.block_for_jog()
             self.jog_absolute_x(bl[0])
-            time.sleep(bl[0] * self._gantry.feed_rate_xy)
+            self._gantry.block_for_jog()
             self.jog_absolute_y(tl[1])
-            time.sleep(tl[1] * self._gantry.feed_rate_xy)
+            self._gantry.block_for_jog()
 
             time.sleep(2)
 
             # go back to center
             self.jog_absolute_xyz(x, y, z)
-        except:
-            log.info("cookie not yet defined")
+            self._gantry.block_for_jog()
+
 
     #### CAMERA METHODS ####
 
