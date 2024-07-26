@@ -1,7 +1,7 @@
 import cv2
 
 class Cookie:
-    def __init__(self, cookie_width_mm: int, cookie_height_mm: int, species:str, id1:str, id2:str, notes:str, percent_overlap:int = 20, x:float = None, y:float = None, z:float = None, x_tl:float = None, y_tl:float = None, z_tl:float = None):
+    def __init__(self, cookie_width_mm: int, cookie_height_mm: int, species:str, id1:str, id2:str, notes:str, cookie_path:str, percent_overlap:int = 20, x:float = None, y:float = None, z:float = None, x_tl:float = None, y_tl:float = None, z_tl:float = None):
         self.width = cookie_width_mm
         self.height = cookie_height_mm
         self.percent_overlap = percent_overlap
@@ -11,6 +11,7 @@ class Cookie:
         self.id1 = id1
         self.id2 = id2
         self.notes = notes
+        self.cookie_path = cookie_path
         self.autoset_sat_min()
 
 
