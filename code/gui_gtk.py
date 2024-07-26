@@ -164,10 +164,16 @@ class App(Gtk.Window):
         button_calculate.connect("clicked", self.cb_add_cookie)
         box.pack_start(button_calculate, True, True, 0)
 
+    def create_add_cookie_dialog_button(self, box):
+        button_add_dialog = Gtk.Button(label="Add Cookie Dialog")
+        button_add_dialog.connect("clicked", self.cb_add_cookie_dialog)
+        box.pack_start(button_add_dialog, True, True, 0)
+
+
     def create_test_boundaries_button(self, box):
-        button_calculate = Gtk.Button(label="Test Cookie Dimensions")
-        button_calculate.connect("clicked", self.controller.traverse_cookie_boundary())
-        box.pack_start(button_calculate, True, True, 0)
+        button_test_dims = Gtk.Button(label="Test Cookie Dimensions")
+        button_test_dims.connect("clicked", self.controller.traverse_cookie_boundary())
+        box.pack_start(button_test_dims, True, True, 0)
 
     def create_directory_button(self, box):
         button_directory = Gtk.Button(label="Select Directory")
@@ -282,6 +288,130 @@ class App(Gtk.Window):
 
         self.controller.add_cookie_sample(width, height, overlap, species, id1, id2, notes)
         log.info("Adding Cookie \nW: {}\nH: {}\nO: {}\nS:  {}\nID1:  {}\nID2:  {}\nNotes:  {}\n".format(width, height, overlap, species, id1, id2, notes))
+
+    def cb_add_cookie_dialog(self, widget):
+        width, height, overlap = self.show_dims_dialog()
+        if width == False:
+            return
+        species, id1, id2, notes = self.show_metadata_dialog()
+        if species == False:
+            return
+        
+        self.controller.add_cookie_sample(width, height, overlap, species, id1, id2, notes)
+        log.info("Adding Cookie \nW: {}\nH: {}\nO: {}\nS:  {}\nID1:  {}\nID2:  {}\nNotes:  {}\n".format(width, height, overlap, species, id1, id2, notes))
+
+    def show_dims_dialog(self, widget):
+        dialog = Gtk.Dialog(title="Add Cookie", parent=self, flags=0)
+        dialog.add_buttons(
+            Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL,
+            Gtk.STOCK_OK, Gtk.ResponseType.OK
+        )
+
+        # Add some content to the dialog
+        box = dialog.get_content_area()
+        width_label = Gtk.Label(label="Cookie Width (mm)")
+        width_entry = Gtk.Entry()
+        height_label = Gtk.Label(label="Cookie Height (mm)")
+        height_entry = Gtk.Entry()
+        overlap_label = Gtk.Label(label="Image Overlap (%)")
+        overlap_entry = Gtk.Entry()
+       
+
+        box.add(width_label)
+        box.add(width_entry)
+        box.add(height_label)
+        box.add(height_entry)
+        box.add(overlap_label)
+        box.add(overlap_entry)
+
+        width_label.show()
+        width_entry.show()
+        height_label.show()
+        height_entry.show()
+        overlap_label.show()
+        overlap_entry.show()
+
+        # Run the dialog and capture the response
+        response = dialog.run()
+
+        if response == Gtk.ResponseType.OK:
+            width = int(width_entry.get_text())
+            height = int(height_entry.get_text())
+            overlap = int(overlap_entry.get_text())
+            log.info("OK button clicked")
+        elif response == Gtk.ResponseType.CANCEL:
+            width = False
+            height =  False
+            overlap = False
+            log.info("Cancel button clicked")
+
+        dialog.destroy()
+        return width, height, overlap
+    
+    def show_metadata_dialog(self, widget):
+        dialog = Gtk.Dialog(title="Add Cookie", parent=self, flags=0)
+        dialog.add_buttons(
+            Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL,
+            Gtk.STOCK_OK, Gtk.ResponseType.OK
+        )
+
+        # Add some content to the dialog
+        box = dialog.get_content_area()
+        species_label = Gtk.Label(label="Species")
+        species_entry = Gtk.Entry()
+        id1_label = Gtk.Label(label="ID 1")
+        id1_entry = Gtk.Entry()
+        id2_label = Gtk.Label(label="Image Overlap (%)")
+        id2_entry = Gtk.Entry()
+        notes_label = Gtk.Label(label="Notes")
+        
+        #Create larger text box for notes 
+        text_view = Gtk.TextView()
+        text_view.set_wrap_mode(Gtk.WrapMode.WORD)
+        text_view.set_size_request(300,200)
+
+        notes_window = Gtk.ScrolledWindow()
+        notes_window.set_policy(Gtk.PolicyType.AUTOMATIC, Gtk.PolicyType.AUTOMATIC)
+        notes_window.add(text_view)
+
+        box.add(species_label)
+        box.add(species_entry)
+        box.add(id1_label)
+        box.add(id1_entry)
+        box.add(id2_label)
+        box.add(id2_entry)
+        box.add(notes_label)
+        box.add(notes_window)
+
+        species_label.show()
+        species_entry.show()
+        id1_label.show()
+        id1_entry.show()
+        id2_label.show()
+        id2_entry.show()
+        notes_label.show()
+        notes_window.show_all()
+
+        # Run the dialog and capture the response
+        response = dialog.run()
+
+        if response == Gtk.ResponseType.OK:
+            species = species_entry.get_text()
+            id1 = id1_entry.get_text()
+            id2 = id2_entry.get_text()
+            buffer = text_view.get_buffer()
+            notes = buffer.get_text(buffer.get_start_iter(), buffer.get_end_iter(), True)
+            log.info("OK button clicked")
+        elif response == Gtk.ResponseType.CANCEL:
+            species = False
+            id1 =  False
+            id2 = False
+            notes = False
+            log.info("Cancel button clicked")
+
+        dialog.destroy()
+        return species, id1, id2, notes
+        
 
     def print_cookie_height_entry(self, widget):
         height = int(self.entry_height_cookie.get_text())
