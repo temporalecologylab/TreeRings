@@ -60,6 +60,7 @@ class Gantry:
 
     def parse_state(self, input_string):
         # Use a regular expression to find the X, Y, and Z values
+        print("STATE {}".format(self.state))
         if "Idle" in input_string:
             return "Idle"
         
@@ -67,10 +68,10 @@ class Gantry:
             return "Jog"
     
     def block_for_jog(self):
-        # Block while jog waits to complete
+        # Block while jog waits to complete. Make sure that the monitor can update its state before trying to test state
+        time.sleep(0.5)
         while self.state == "Jog":
-            time.sleep(0.2)
-
+            time.sleep(0.5)
         return None
     
     def _send_command(self, cmd) -> str:

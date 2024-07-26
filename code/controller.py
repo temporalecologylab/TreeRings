@@ -316,10 +316,13 @@ class Controller:
 
     #### CAMERA METHODS ####
 
-    def cb_capture_image(self):
-        name = "{}/image_{}.tiff".format(self.directory, datetime.now().strftime("%H_%M_%S_%f"))
+    def cb_capture_image(self, name = None):
+        if name is None:
+    	     name = "{}/image_{}.tiff".format(self.directory, datetime.now().strftime("%H_%M_%S_%f"))
         self.camera.save_frame(name)
         log.info("Saving {}".format(name))
+        
+        return name
     
     #### COOKIE METHODS ####
 
@@ -332,8 +335,8 @@ class Controller:
         tl_y = center_y + (height/2)
         tl_z = center_z
 
-        name = self.cb_capture_image
-        ck = cookie.Cookie(width, height, species, id1, id2, notes, overlap, center_x, center_y, center_z, tl_x, tl_y, tl_z, cookie_path=name)
+        name = self.cb_capture_image("center_{}_{}_{}.tiff".format(species, id1, id2))
+        ck = cookie.Cookie(width, height, species, id1, id2, notes, name, overlap, center_x, center_y, center_z, tl_x, tl_y, tl_z)
         self.cookies.append(ck)
 
    #### GANTRY METHODS ####
