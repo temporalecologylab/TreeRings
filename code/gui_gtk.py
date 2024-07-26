@@ -32,6 +32,8 @@ class App(Gtk.Window):
         ## Cookie
         
         frame_entry_cookie = Gtk.Frame(label="Cookie Entries")
+        frame_entry_cookie.set_hexpand(True)
+        frame_entry_cookie.set_vexpand(True)
         grid.attach(frame_entry_cookie, 0, 0, 1, 1)
         
         box_cookie = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=7)
@@ -45,6 +47,8 @@ class App(Gtk.Window):
         ## Machine 
         
         frame_entry_machine = Gtk.Frame(label="Machine Entries")
+        frame_entry_machine.set_hexpand(True)
+        frame_entry_machine.set_vexpand(True)
         grid.attach(frame_entry_machine, 0, 1, 1, 1)
         
         box_machine = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
@@ -55,6 +59,8 @@ class App(Gtk.Window):
 
     def create_buttons(self, grid):
         frame_buttons = Gtk.Frame(label="Actions")
+        frame_buttons.set_hexpand(True)
+        frame_buttons.set_vexpand(True)
         grid.attach(frame_buttons, 0, 2, 1, 1)
         
         box_buttons = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=6)
@@ -72,6 +78,8 @@ class App(Gtk.Window):
 
     def create_jogging_controls(self, grid):
         frame_jogging = Gtk.Frame(label="Jogging Controls")
+        frame_jogging.set_hexpand(True)
+        frame_jogging.set_vexpand(True)
         grid.attach(frame_jogging, 1, 0, 1, 1)
         
         box_jogging = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
