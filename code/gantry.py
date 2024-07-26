@@ -29,18 +29,22 @@ class Gantry:
         self.x = None
         self.y = None
         self.z = None
+
+        self.state = None
         
         self.thread = Thread(target=self.position_monitor)
 
     def position_monitor(self):
         cmd = "?"
+        # Set WPos status reports
+        self._send_command("$10=2")
         while not self.stop_threads:
             res_str = self._send_command(cmd)
             if res_str[-2:] == "ok":
                 continue
             elif "WPos" in res_str:
                 self.x, self.y, self.z = self.parse_coordinates(res_str)
-                
+                self.state = self.parse_state(res_str)
                 if not self.quiet:
                     log.info("X {} \nY {}\nZ{}\n".format(self.x, self.y, self.z))
             time.sleep(0.2)
@@ -54,6 +58,21 @@ class Gantry:
         else:
             raise ValueError("The input string does not contain valid coordinates")
 
+    def parse_state(self, input_string):
+        # Use a regular expression to find the X, Y, and Z values
+        if "Idle" in input_string:
+            return "Idle"
+        
+        elif "Jog" in input_string:
+            return "Jog"
+    
+    def block_for_jog(self):
+        # Block while jog waits to complete
+        while self.state == "Jog":
+            time.sleep(0.2)
+
+        return None
+    
     def _send_command(self, cmd) -> str:
         def read_response(ser):
             response = ""
