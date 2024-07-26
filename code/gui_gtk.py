@@ -11,12 +11,16 @@ log.basicConfig(format='%(process)d-%(levelname)s-%(message)s', level=log.INFO)
 class App(Gtk.Window):
     def __init__(self):
         super().__init__(title="Cookie Capture")
-        self.set_default_size(900, 500)
+        self.set_default_size(600, 400)
+        self.set_size_request(-1,-1)
         self.connect("destroy", self.quit_program)
         
         self.controller = controller.Controller(3, 2)
 
         grid = Gtk.Grid()
+        grid.set_row_homogeneous(False)
+        grid.set_column_homogeneous(False)
+        
         self.add(grid)
 
         self.create_entries(grid)
@@ -32,6 +36,7 @@ class App(Gtk.Window):
         ## Cookie
         
         frame_entry_cookie = Gtk.Frame(label="Cookie Entries")
+        frame_entry_cookie.set_size_request(-1,-1)
         frame_entry_cookie.set_hexpand(True)
         frame_entry_cookie.set_vexpand(True)
         frame_entry_cookie.set_halign(Gtk.Align.FILL)
@@ -47,6 +52,7 @@ class App(Gtk.Window):
         ## Machine 
         
         frame_entry_machine = Gtk.Frame(label="Machine Entries")
+        frame_entry_machine.set_size_request(-1,-1)
         frame_entry_machine.set_hexpand(True)
         frame_entry_machine.set_vexpand(True)
         frame_entry_machine.set_halign(Gtk.Align.FILL)
@@ -61,6 +67,7 @@ class App(Gtk.Window):
 
     def create_buttons(self, grid):
         frame_buttons = Gtk.Frame(label="Actions")
+        frame_buttons.set_size_request(-1,-1)
         frame_buttons.set_hexpand(True)
         frame_buttons.set_vexpand(True)
         frame_buttons.set_halign(Gtk.Align.FILL)
@@ -82,6 +89,7 @@ class App(Gtk.Window):
 
     def create_jogging_controls(self, grid):
         frame_jogging = Gtk.Frame(label="Jogging Controls")
+        frame_jogging.set_size_request(-1,-1)
         frame_jogging.set_hexpand(True)
         frame_jogging.set_vexpand(True)
         frame_jogging.set_halign(Gtk.Align.FILL)
@@ -126,13 +134,8 @@ class App(Gtk.Window):
         box.pack_start(self.entry_width_img, True, True, 0)
         self.entry_width_img.connect('focus-out-event', self.print_img_width_entry)
 
-    def create_add_cookie_button(self, box):
-        button_calculate = Gtk.Button(label="Add Cookie")
-        button_calculate.connect("clicked", self.cb_add_cookie)
-        box.pack_start(button_calculate, True, True, 0)
-
     def create_add_cookie_dialog_button(self, box):
-        button_add_dialog = Gtk.Button(label="Add Cookie Dialog")
+        button_add_dialog = Gtk.Button(label="Add Cookie")
         button_add_dialog.connect("clicked", self.cb_add_cookie_dialog)
         box.pack_start(button_add_dialog, True, True, 0)
 
@@ -351,28 +354,7 @@ class App(Gtk.Window):
     def print_img_width_entry(self, widget, event):
         width = float(self.entry_width_img.get_text())
         self.controller.image_width_mm = width
-        log.info("Update Image Width: {} mm".format(width))
-    
-    def print_overlap(self, widget):
-        text = widget.get_text()
-        log.info("Percent Overlap: {} %".format(text))
-    
-    def print_species_id(self, widget):
-        text = widget.get_text()
-        log.info("Species: {} ".format(text))
-    
-    def print_id1(self, widget):
-        text = widget.get_text()
-        log.info("ID1: {} ".format(text))
-        
-    def print_id2(self, widget):
-        text = widget.get_text()
-        log.info("ID2: {} ".format(text))
-
-    def print_notes(self, widget):
-        text = widget.get_text()
-        log.info("Notes: {} ".format(text))
-        
+        log.info("Update Image Width: {} mm".format(width))        
         
 if __name__ == "__main__":
     #Gst.init(None)
