@@ -14,6 +14,7 @@ class Focus:
         self.DELETE_FLAG = delete_flag
         self.sat_min = 27
         self.sat_max = 255
+        self.scale_factor = 0.05
         self.PID = AsynchronousPID(Kp=1.0, Ki=0, Kd=0.05, setpoint=setpoint) # Setpoint?? depends on camera i think
         self.TESTINGLOG = []
 
@@ -50,7 +51,7 @@ class Focus:
             if not self.is_background(std):
                 control_variable = self.PID.update(int(stack_number))
                 log.info(f"focused image: {stack_number} control variable = {control_variable}")
-                update_z = self.adjust_focus(control_variable, 0.01)
+                update_z = self.adjust_focus(control_variable, self.scale_factor)
                 pid_queue.put(update_z)
             else:
                 pid_queue.put(0)
