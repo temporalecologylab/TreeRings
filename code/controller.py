@@ -91,7 +91,7 @@ class Controller:
         elapsed_time = end_time - start_time
         num_images = rows * cols
 
-        self.create_metadata(cookie, elapsed_time, num_images)
+        self.create_metadata(cookie, elapsed_time, num_images, rows, cols)
 
     def capture_all_cookies(self):
         for i in range(len(self.cookies)):
@@ -155,10 +155,10 @@ class Controller:
                 # Take final photo in row before jogging down
                 if row % 2 == 1:
                     # imgs = self.capture_images_multiple_distances(0.1, z_steps, row, 0)
-                    imgs = self.capture_images_multiple_distances(n_images, self._gantry.feed_rate_z, 1, 0.2, row, 0, z_start)
+                    imgs = self.capture_images_multiple_distances(n_images, self._gantry.feed_rate_z, height_range, 0.2, row, 0, z_start)
                 else:
                     # imgs = self.capture_images_multiple_distances(0.05, z_steps, row, cols - 1)
-                    imgs = self.capture_images_multiple_distances(n_images, self._gantry.feed_rate_z, 1, 0.2, row, cols - 1, z_start)
+                    imgs = self.capture_images_multiple_distances(n_images, self._gantry.feed_rate_z, height_range, 0.2, row, cols - 1, z_start)
                     
                 focus_queue.put(imgs)
 
@@ -227,14 +227,16 @@ class Controller:
 
         return image_filenames
     
-    def create_metadata(self, cookie, elapsed_time, image_count):
+    def create_metadata(self, cookie, elapsed_time, image_count, rows, cols):
         cookie_size = cookie.height * cookie.width
         camera_fov = self.image_height_mm * self.image_width_mm
         pixels = self.camera.h_pixels * self.camera.w_pixels
         dpi = self.camera.w_pixels/self.image_width_mm * 25.4  
         metadata = {
             "species": cookie.species,
-            "size": cookie_size,
+            "rows": rows,
+            "cols": cols,
+            "size": rows * cols,
             "id1": cookie.id1,
             "id2": cookie.id2,
             "elapsed_time": elapsed_time,
