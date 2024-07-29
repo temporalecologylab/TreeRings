@@ -261,11 +261,7 @@ class App(Gtk.Window):
         log.info(notes)
         if species == False:
             return
-        if overlap == '':
-            overlap = 50
-        else:
-            overlap = float(overlap)
-            
+        
         self.controller.add_cookie_sample(width, height, overlap, species, id1, id2, notes)
         log.info("Adding Cookie \nW: {}\nH: {}\nO: {}\nS:  {}\nID1:  {}\nID2:  {}\nNotes:  {}\n".format(width, height, overlap, species, id1, id2, notes))
     
@@ -323,7 +319,7 @@ class App(Gtk.Window):
         response = dialog.run()
 
         if response == Gtk.ResponseType.OK:
-            overlap = overlap_entry
+            overlap = overlap_entry.get_text()
             species = species_entry.get_text()
             id1 = id1_entry.get_text()
             id2 = id2_entry.get_text()

@@ -57,11 +57,8 @@ class Controller:
         
         # This takes a few seconds to run
         self.cookie.autoset_sat_max()
-        
-        self.focus.set_sat_min(cookie.saturation_max)
-        self.focus.set_setpoint(round(n_images/2))
 
-        log.info(f"saturation min: {cookie.saturation_max}")
+        self.focus.set_sat_min(cookie.saturation_max)
 
         #set directories
         species = cookie.species
@@ -117,7 +114,7 @@ class Controller:
         
         return y_steps, x_steps, y_step_size, x_step_size
     
-    def capture_grid_photos(self, focus_queue: queue.Queue, pid_queue: queue.Queue, pid_lock, rows: int, cols: int, y_dist, x_dist, z_start, n_images=20):
+    def capture_grid_photos(self, focus_queue: queue.Queue, pid_queue: queue.Queue, pid_lock, rows: int, cols: int, y_dist, x_dist, z_start, n_images=20, pause=0):
         # for loop capture
         # Change feed rate back to being slow
         self.set_feed_rate(1)
@@ -315,6 +312,8 @@ class Controller:
             self._gantry.block_for_jog()
             self.jog_absolute_y(tl[1])
             self._gantry.block_for_jog()
+
+            time.sleep(2)
 
             # go back to center
             self.jog_absolute_xyz(x, y, z)
