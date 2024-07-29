@@ -185,7 +185,8 @@ class Controller:
             col (int): Col location '                                           '
         """
         # adding absolute jogging to start point because there is slight stochasticity between relative jogs. Resulting in drift
-        start_z = self._gantry.z
+        _, _, z = self._gantry.get_xyz()
+        start_z = z
 
         self.jog_absolute_z(start_z)
         self._gantry.block_for_jog()
@@ -288,9 +289,7 @@ class Controller:
     def traverse_cookie_boundary(self, cookie_width, cookie_height):
         
         try: 
-            x = self._gantry.x
-            y = self._gantry.y
-            z = self._gantry.z
+            x, y, z = self._gantry.get_xyz()
 
             l_x = x - (cookie_width / 2)
             r_x = x + (cookie_width / 2)
@@ -335,9 +334,7 @@ class Controller:
     #### COOKIE METHODS ####
 
     def add_cookie_sample(self, width, height, overlap, species, id1, id2, notes):
-        center_x = self._gantry.x
-        center_y = self._gantry.y
-        center_z = self._gantry.z
+        center_x, center_y, center_z = self._gantry.get_xyz()
 
         tl_x = center_x - (width/2)
         tl_y = center_y + (height/2)

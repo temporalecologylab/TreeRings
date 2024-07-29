@@ -1,7 +1,7 @@
 import logging as log
 import serial
 import time
-from threading import Thread 
+from threading import Thread, Lock
 import re
 
 log.basicConfig(format='%(process)d-%(levelname)s-%(message)s', level=log.INFO)
@@ -26,10 +26,11 @@ class Gantry:
         self.s = None
         self.stop_threads = False
 
-        self.x = None
-        self.y = None
-        self.z = None
+        self._x = None
+        self._y = None
+        self._z = None
 
+        self.position_lock = Lock()
         self.state = None
         
         self.thread = Thread(target=self.position_monitor)
@@ -43,12 +44,24 @@ class Gantry:
             if res_str[-2:] == "ok":
                 continue
             elif "WPos" in res_str:
-                self.x, self.y, self.z = self.parse_coordinates(res_str)
+                self.position_lock.acquire()
+                _x, _y, _z = self.parse_coordinates(res_str)
+                self._x = _x
+                self._y = _y
+                self._z = _z
+                self.position_lock.release()
                 self.state = self.parse_state(res_str)
                 if not self.quiet:
-                    log.info("X {} \nY {}\nZ{}\n".format(self.x, self.y, self.z))
+                    log.info("X {} \nY {}\nZ{}\n".format(_x, _y, _z))
             time.sleep(0.2)
 
+    def get_xyz(self):
+        self.position_lock.acquire()
+        x, y, z = self._x, self._y, self._z
+        self.position_lock.release()
+
+        return x, y, z
+    
     def parse_coordinates(self, input_string):
         # Use a regular expression to find the X, Y, and Z values
         match = re.search(r'WPos:(-?\d+\.\d+),(-?\d+\.\d+),(-?\d+\.\d+)', input_string)
