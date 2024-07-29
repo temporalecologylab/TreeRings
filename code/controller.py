@@ -31,6 +31,10 @@ class Controller:
         self.image_width_mm = image_width_mm
         self.directory = "."
 
+        #Settings for capturing images from multiple distances
+        self.n_images = 15
+        self.height_range = 2
+
     def quit(self):
         log.info("Ending Camera Stream")
         self.camera.stop_pipeline()
@@ -53,13 +57,12 @@ class Controller:
         focus_queue = queue.Queue()
         pid_queue = queue.Queue()
         pid_lock = Lock()
-        n_images = 9
         
         # This takes a few seconds to run
         self.cookie.autoset_sat_max()
         
         self.focus.set_sat_min(cookie.saturation_max)
-        self.focus.set_setpoint(round(n_images/2))
+        self.focus.set_setpoint(round(self.n_images/2))
 
         log.info(f"saturation min: {cookie.saturation_max}")
 
@@ -75,7 +78,7 @@ class Controller:
         start_time = time.time()
 
         x, y, z = cookie.get_center_location()
-        gantry_thread = Thread(target=self.capture_grid_photos, args=(focus_queue, pid_queue, pid_lock, rows, cols, y_dist, x_dist, z, n_images))
+        gantry_thread = Thread(target=self.capture_grid_photos, args=(focus_queue, pid_queue, pid_lock, rows, cols, y_dist, x_dist, z, self.n_images, self.height_range))
         focus_thread = Thread(target=self.focus.find_focus, args=(focus_queue, pid_queue, pid_lock, self.directory))
         gantry_thread.start()
         focus_thread.start()
@@ -117,7 +120,7 @@ class Controller:
         
         return y_steps, x_steps, y_step_size, x_step_size
     
-    def capture_grid_photos(self, focus_queue: queue.Queue, pid_queue: queue.Queue, pid_lock, rows: int, cols: int, y_dist, x_dist, z_start, n_images=20):
+    def capture_grid_photos(self, focus_queue: queue.Queue, pid_queue: queue.Queue, pid_lock, rows: int, cols: int, y_dist, x_dist, z_start, n_images, height_range):
         # for loop capture
         # Change feed rate back to being slow
         self.set_feed_rate(1)
@@ -128,13 +131,13 @@ class Controller:
                 for col in range(cols - 1):
                     # Odd rows go left
                     if row % 2 == 1:
-                        imgs = self.capture_images_multiple_distances(n_images, self._gantry.feed_rate_z, 1, 0.2, row, cols - col - 1, z_start)
+                        imgs = self.capture_images_multiple_distances(n_images, self._gantry.feed_rate_z, height_range, 0.2, row, cols - col - 1, z_start)
                         pid_lock.acquire()
                         self.jog_relative_x(-x_dist)
                         pid_lock.release()
                     # Even rows go right
                     else:
-                        imgs = self.capture_images_multiple_distances(n_images, self._gantry.feed_rate_z, 1, 0.2, row, col, z_start)
+                        imgs = self.capture_images_multiple_distances(n_images, self._gantry.feed_rate_z, height_range, 0.2, row, col, z_start)
                         pid_lock.acquire()
                         self.jog_relative_x(x_dist)
                         pid_lock.release()
