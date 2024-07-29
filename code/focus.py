@@ -15,6 +15,7 @@ class Focus:
         self.sat_min = 27
         self.sat_max = 255
         self.PID = AsynchronousPID(Kp=1.0, Ki=0, Kd=0.05, setpoint=setpoint) # Setpoint?? depends on camera i think
+        self.TESTINGLOG = []
 
     def set_sat_min(self, saturation_min):
         self.sat_min = saturation_min
@@ -30,7 +31,7 @@ class Focus:
             if image_files == [-1]:
                 focus_queue.task_done()
                 break
-            focused_image_name = self.best_focused_image(image_files)
+            focused_image_name, std = self.best_focused_image(image_files)
             image_name = focused_image_name.split("/")[-1].split("_")
             extract_row = image_name[1]
             extract_col = image_name[2]
@@ -43,8 +44,10 @@ class Focus:
                 Path("{}/focused_images".format(self.directory)).mkdir(exist_ok=True)
                 shutil.copy(focused_image_name, "{}/focused_images/{}".format(directory,filename))
             
-            image = cv2.imread(focused_image_name)
-            if not self.is_background(image):
+            self.TESTINGLOG.append(std)
+            np.savetxt("stdlog.csv", self.TESTINGLOG, delimiter=",")
+            
+            if not self.is_background(std):
                 control_variable = self.PID.update(int(stack_number))
                 log.info(f"focused image: {stack_number} control variable = {control_variable}")
                 update_z = self.adjust_focus(control_variable, 0.01)
@@ -67,15 +70,20 @@ class Focus:
     def best_focused_image(self, images):
         best_image_filepath = []
         best_var = 0
+        vars = []
 
         for image_name in images:
             image = cv2.imread(image_name, cv2.IMREAD_GRAYSCALE)
             if type(image) == np.ndarray:
                 var = self.compute_variance(image)
+                vars.append(var)
                 if var > best_var:
                     best_image_filepath = image_name
                     best_var = var
-        return best_image_filepath     
+
+        std = np.std(vars)
+
+        return best_image_filepath, std
 
     def delete_unfocused(self, images_to_delete):
         for file_name in images_to_delete:
@@ -89,17 +97,11 @@ class Focus:
         res =cv2.bitwise_and(image, image, mask=mask)
         return res
     
-    def is_background(self, image):
-        #masked_image = self.hsv_mask(image)
-
-        #nan_image=masked_image.astype('float')
-        #nan_image[nan_image==0]=np.nan
-
-        # if 25% of image is nan, count as a background image
-        #if np.count_nonzero(np.isnan(nan_image)) > (nan_image.size * 0.25):
-            #return True
-        #return False
-        return True
+    def is_background(self, std):
+        if std > 0.125:
+            return False
+        else:
+            return True
     
     def adjust_focus(self, control_signal, scale_factor):
         # Convert the control signal to millimeters of movement using the scale factor

@@ -31,6 +31,10 @@ class Controller:
         self.image_width_mm = image_width_mm
         self.directory = "."
 
+        #Settings for capturing images from multiple distances
+        self.n_images = 15
+        self.height_range = 2
+
     def quit(self):
         log.info("Ending Camera Stream")
         self.camera.stop_pipeline()
@@ -53,12 +57,14 @@ class Controller:
         focus_queue = queue.Queue()
         pid_queue = queue.Queue()
         pid_lock = Lock()
-        n_images = 9
         
         # This takes a few seconds to run
         self.cookie.autoset_sat_max()
 
         self.focus.set_sat_min(cookie.saturation_max)
+        self.focus.set_setpoint(round(self.n_images/2))
+
+        log.info(f"saturation min: {cookie.saturation_max}")
 
         #set directories
         species = cookie.species
@@ -72,7 +78,7 @@ class Controller:
         start_time = time.time()
 
         x, y, z = cookie.get_center_location()
-        gantry_thread = Thread(target=self.capture_grid_photos, args=(focus_queue, pid_queue, pid_lock, rows, cols, y_dist, x_dist, z, n_images))
+        gantry_thread = Thread(target=self.capture_grid_photos, args=(focus_queue, pid_queue, pid_lock, rows, cols, y_dist, x_dist, z, self.n_images, self.height_range))
         focus_thread = Thread(target=self.focus.find_focus, args=(focus_queue, pid_queue, pid_lock, self.directory))
         gantry_thread.start()
         focus_thread.start()
@@ -85,7 +91,7 @@ class Controller:
         elapsed_time = end_time - start_time
         num_images = rows * cols
 
-        self.create_metadata(cookie, elapsed_time, num_images)
+        self.create_metadata(cookie, elapsed_time, num_images, rows, cols)
 
     def capture_all_cookies(self):
         for i in range(len(self.cookies)):
@@ -114,7 +120,7 @@ class Controller:
         
         return y_steps, x_steps, y_step_size, x_step_size
     
-    def capture_grid_photos(self, focus_queue: queue.Queue, pid_queue: queue.Queue, pid_lock, rows: int, cols: int, y_dist, x_dist, z_start, n_images=20, pause=0):
+    def capture_grid_photos(self, focus_queue: queue.Queue, pid_queue: queue.Queue, pid_lock, rows: int, cols: int, y_dist, x_dist, z_start, n_images, height_range):
         # for loop capture
         # Change feed rate back to being slow
         self.set_feed_rate(1)
@@ -125,13 +131,13 @@ class Controller:
                 for col in range(cols - 1):
                     # Odd rows go left
                     if row % 2 == 1:
-                        imgs = self.capture_images_multiple_distances(n_images, self._gantry.feed_rate_z, 1, 0.2, row, cols - col - 1, z_start)
+                        imgs = self.capture_images_multiple_distances(n_images, self._gantry.feed_rate_z, height_range, 0.2, row, cols - col - 1, z_start)
                         pid_lock.acquire()
                         self.jog_relative_x(-x_dist)
                         pid_lock.release()
                     # Even rows go right
                     else:
-                        imgs = self.capture_images_multiple_distances(n_images, self._gantry.feed_rate_z, 1, 0.2, row, col, z_start)
+                        imgs = self.capture_images_multiple_distances(n_images, self._gantry.feed_rate_z, height_range, 0.2, row, col, z_start)
                         pid_lock.acquire()
                         self.jog_relative_x(x_dist)
                         pid_lock.release()
@@ -149,10 +155,10 @@ class Controller:
                 # Take final photo in row before jogging down
                 if row % 2 == 1:
                     # imgs = self.capture_images_multiple_distances(0.1, z_steps, row, 0)
-                    imgs = self.capture_images_multiple_distances(n_images, self._gantry.feed_rate_z, 1, 0.2, row, 0, z_start)
+                    imgs = self.capture_images_multiple_distances(n_images, self._gantry.feed_rate_z, height_range, 0.2, row, 0, z_start)
                 else:
                     # imgs = self.capture_images_multiple_distances(0.05, z_steps, row, cols - 1)
-                    imgs = self.capture_images_multiple_distances(n_images, self._gantry.feed_rate_z, 1, 0.2, row, cols - 1, z_start)
+                    imgs = self.capture_images_multiple_distances(n_images, self._gantry.feed_rate_z, height_range, 0.2, row, cols - 1, z_start)
                     
                 focus_queue.put(imgs)
 
@@ -182,7 +188,8 @@ class Controller:
             col (int): Col location '                                           '
         """
         # adding absolute jogging to start point because there is slight stochasticity between relative jogs. Resulting in drift
-        start_z = self._gantry.z
+        _, _, z = self._gantry.get_xyz()
+        start_z = z
 
         self.jog_absolute_z(start_z)
         self._gantry.block_for_jog()
@@ -220,14 +227,16 @@ class Controller:
 
         return image_filenames
     
-    def create_metadata(self, cookie, elapsed_time, image_count):
+    def create_metadata(self, cookie, elapsed_time, image_count, rows, cols):
         cookie_size = cookie.height * cookie.width
         camera_fov = self.image_height_mm * self.image_width_mm
         pixels = self.camera.h_pixels * self.camera.w_pixels
         dpi = self.camera.w_pixels/self.image_width_mm * 25.4  
         metadata = {
             "species": cookie.species,
-            "size": cookie_size,
+            "rows": rows,
+            "cols": cols,
+            "size": rows * cols,
             "id1": cookie.id1,
             "id2": cookie.id2,
             "elapsed_time": elapsed_time,
@@ -285,9 +294,7 @@ class Controller:
     def traverse_cookie_boundary(self, cookie_width, cookie_height):
         
         try: 
-            x = self._gantry.x
-            y = self._gantry.y
-            z = self._gantry.z
+            x, y, z = self._gantry.get_xyz()
 
             l_x = x - (cookie_width / 2)
             r_x = x + (cookie_width / 2)
@@ -334,9 +341,7 @@ class Controller:
     #### COOKIE METHODS ####
 
     def add_cookie_sample(self, width, height, overlap, species, id1, id2, notes):
-        center_x = self._gantry.x
-        center_y = self._gantry.y
-        center_z = self._gantry.z
+        center_x, center_y, center_z = self._gantry.get_xyz()
 
         tl_x = center_x - (width/2)
         tl_y = center_y + (height/2)
