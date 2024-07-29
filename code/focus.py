@@ -10,9 +10,9 @@ log.basicConfig(format='%(process)d-%(levelname)s-%(message)s', level=log.INFO)
 
 class Focus:
 
-    def __init__(self, delete_flag, setpoint):
+    def __init__(self, delete_flag, setpoint=5):
         self.DELETE_FLAG = delete_flag
-        self.sat_min = 27
+        self.sat_min = 0
         self.sat_max = 255
         self.PID = AsynchronousPID(Kp=1.0, Ki=0, Kd=0.05, setpoint=setpoint) # Setpoint?? depends on camera i think
 
@@ -21,6 +21,9 @@ class Focus:
     
     def set_sat_max(self, saturation_max):
         self.sat_max = saturation_max
+
+    def set_setpoint(self, setpoint):
+        self.PID.set_setpoint(setpoint)
 
     def find_focus(self, focus_queue, pid_queue, pid_lock, directory):
         while True:
@@ -90,16 +93,15 @@ class Focus:
         return res
     
     def is_background(self, image):
-        #masked_image = self.hsv_mask(image)
+        masked_image = self.hsv_mask(image)
 
-        #nan_image=masked_image.astype('float')
-        #nan_image[nan_image==0]=np.nan
+        nan_image=masked_image.astype('float')
+        nan_image[nan_image==0]=np.nan
 
         # if 25% of image is nan, count as a background image
-        #if np.count_nonzero(np.isnan(nan_image)) > (nan_image.size * 0.25):
-            #return True
-        #return False
-        return True
+        if np.count_nonzero(np.isnan(nan_image)) > (nan_image.size * 0.25):
+            return True
+        return False
     
     def adjust_focus(self, control_signal, scale_factor):
         # Convert the control signal to millimeters of movement using the scale factor
