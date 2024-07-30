@@ -32,8 +32,8 @@ class Controller:
         self.directory = "."
 
         #Settings for capturing images from multiple distances
-        self.n_images = 15
-        self.height_range = 2
+        self.n_images = 15 #make sure you're not going faster than the frame rate of the GStreamer feed... 
+        self.height_range = 1
 
     def quit(self):
         log.info("Ending Camera Stream")
