@@ -263,16 +263,16 @@ class App(Gtk.Window):
         box = dialog.get_content_area()
 
         self.progressbar = Gtk.ProgressBar()
-        self.progressbar.set_size_request(50,-1)
-        self.images_left_label = Gtk.Label(label="Image 0 of 0")
+        self.progressbar.set_size_request(-1, 100)
+        self.images_left_label = Gtk.Label(label="Image 0 of ...")
         self.time_remaining_label = Gtk.Label(label="Estimated time remaining: calculating ....")
         
         box.add(self.progressbar)
-        #box.add(self.images_left_label)
+        box.add(self.images_left_label)
         box.add(self.time_remaining_label)
         
         self.progressbar.show()
-        #self.images_left_label.show()
+        self.images_left_label.show()
         self.time_remaining_label.show()
 	
         self.continue_running = True
@@ -285,32 +285,38 @@ class App(Gtk.Window):
         dialog.connect("response", on_response)
         dialog.show_all()
         
-        capture_thread = Thread(target=self.controller.capture_all_cookies, args = (self.update_progress,))
+        capture_thread = Thread(target=self.controller.capture_all_cookies, args = (self.update_progress, ))
         capture_thread.start()
         
         start_time = time.time()
    	
         def update_progress_bar():
             if self.continue_running:
-                elapsed_time = time.time() - start_time
-                estimated_total_time = elapsed_time / (self.progressbar.get_fraction() + 0.001)
-                remaining_time = estimated_total_time - elapsed_time
-                remaining_minutes = int(remaining_time/60)
-                remaining_seconds = int(remaining_time % 60)
-                remaining_time_text = "Estimated time remaining: {}min {}sec".format(remaining_minutes, remaining_seconds)
-                GLib.idle_add(self.time_remaining_label.set_text, remaining_time_text)
                 return True
             else:
                 capture_thread.join()
                 return False
         
-        GLib.timeout_add(5000, update_progress_bar)
+        GLib.timeout_add(100, update_progress_bar)
+
+        dialog.run()
+        capture_thread.join()
         
             
         
     def update_progress(self, value):
         log.info(value)
-        GLib.idle_add(self.progressbar.set_fraction, value)
+        elapsed_time, img_num, total_imgs = value
+        fraction = img_num/total_imgs
+        estimated_total_time = elapsed_time / fraction
+        remaining_time = estimated_total_time - elapsed_time
+        remaining_minutes = int(remaining_time/60)
+        remaining_seconds = int(remaining_time % 60)
+        remaining_time_text = "Estimated time remaining: {}min {}sec".format(remaining_minutes, remaining_seconds)
+        image_left_text = "Image {} of {}".format(img_num, total_imgs)
+        GLib.idle_add(self.images_left_label.set_text, image_left_text)
+        GLib.idle_add(self.time_remaining_label.set_text, remaining_time_text)
+        GLib.idle_add(self.progressbar.set_fraction, fraction)
 
     def cb_add_cookie_dialog(self, widget):
         width = int(self.entry_width_cookie.get_text())

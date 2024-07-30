@@ -124,6 +124,7 @@ class Controller:
                 
                 # for last column, we only want to take photo, not move.
                 for col in range(cols - 1):
+                    start_stack = time.time()
                     # Odd rows go left
                     if row % 2 == 1:
                         imgs = self.capture_images_multiple_distances(n_images, self._gantry.feed_rate_z, height_range, 0.2, row, cols - col - 1, z_start)
@@ -147,8 +148,10 @@ class Controller:
                     # Allow for PID calculations to continue while x is still jogging. Imagine a very large x jog which takes a  while.
                     self._gantry.block_for_jog()
                     img_num=img_num+1
-                    progress_callback(img_num / (rows*cols))
+                    elapsed_time = time.time - start_stack
+                    progress_callback((elapsed_time, img_num, rows*cols))
 
+                start_stack = time.time()
                 # Take final photo in row before jogging down
                 if row % 2 == 1:
                     # imgs = self.capture_images_multiple_distances(0.1, z_steps, row, 0)
@@ -169,7 +172,8 @@ class Controller:
 
                 self._gantry.block_for_jog()
                 img_num=img_num+1
-                progress_callback(img_num / (rows*cols))    
+                elapsed_time = time.time - start_stack
+                progress_callback((elapsed_time, img_num, rows*cols))    
 
             focus_queue.put([-1])
             break
