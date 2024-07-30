@@ -260,7 +260,7 @@ class App(Gtk.Window):
 
         cookies = self.controller.get_cookies()
 
-        for index, cookie in enumerate(cookies)
+        for index, cookie in enumerate(cookies):
             hbox = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=6)
 
             entry = Gtk.Entry()
