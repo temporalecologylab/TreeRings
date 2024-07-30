@@ -13,6 +13,9 @@ class AsynchronousPID:
         self._previous_error = 0.0
         self._integral = 0.0
         self._previous_time = time.time()
+
+    def set_setpoint(self, setpoint):
+        self.setpoint = setpoint
     
     def update(self, measured_value):
         current_time = time.time()
