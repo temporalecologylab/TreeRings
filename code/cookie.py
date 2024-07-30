@@ -34,4 +34,3 @@ class Cookie:
         blurred = cv2.GaussianBlur(image, (777,777), 0)
         image_hsl = cv2.cvtColor(blurred, cv2.COLOR_BGR2HSV)
         s_channel = image_hsl[:,:,1]
-        self.saturation_max = s_channel.max()

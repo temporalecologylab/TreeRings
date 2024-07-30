@@ -12,16 +12,8 @@ class Focus:
 
     def __init__(self, delete_flag, setpoint):
         self.DELETE_FLAG = delete_flag
-        self.sat_min = 27
-        self.sat_max = 255
         self.PID = AsynchronousPID(Kp=1.0, Ki=0, Kd=0.05, setpoint=setpoint) # Setpoint?? depends on camera i think
         self.TESTINGLOG = []
-
-    def set_sat_min(self, saturation_min):
-        self.sat_min = saturation_min
-    
-    def set_sat_max(self, saturation_max):
-        self.sat_max = saturation_max
 
     def find_focus(self, focus_queue, pid_queue, pid_lock, directory):
         while True:
@@ -46,7 +38,7 @@ class Focus:
             
             self.TESTINGLOG.append(std)
             np.savetxt("stdlog.csv", self.TESTINGLOG, delimiter=",")
-            
+
             if not self.is_background(std):
                 control_variable = self.PID.update(int(stack_number))
                 log.info(f"focused image: {stack_number} control variable = {control_variable}")
@@ -88,14 +80,6 @@ class Focus:
     def delete_unfocused(self, images_to_delete):
         for file_name in images_to_delete:
             os.remove(file_name)
-
-    def hsv_mask(self, image):
-        imgHSV = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
-
-        s_channel = imgHSV[:,:,1]
-        mask = cv2.inRange(s_channel, self.sat_min, self.sat_max)
-        res =cv2.bitwise_and(image, image, mask=mask)
-        return res
     
     def is_background(self, std):
         if std > 0.125:

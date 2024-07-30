@@ -57,11 +57,7 @@ class Controller:
         focus_queue = queue.Queue()
         pid_queue = queue.Queue()
         pid_lock = Lock()
-        
-        # This takes a few seconds to run
-        self.cookie.autoset_sat_max()
-
-        self.focus.set_sat_min(cookie.saturation_max)
+    
         self.focus.set_setpoint(round(self.n_images/2))
 
         log.info(f"saturation min: {cookie.saturation_max}")
