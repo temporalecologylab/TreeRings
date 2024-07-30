@@ -261,6 +261,9 @@ class Controller:
     def jog_absolute_z(self, pos):
         self._gantry.jog_absolute_z(pos)
 
+    def jog_absolute_xy(self, x, y):
+        self._gantry.jog_absolute_xy(x, y)
+
     def jog_absolute_xyz(self, x, y, z):
         self._gantry.jog_absolute_xyz(x, y, z)
 
@@ -298,10 +301,9 @@ class Controller:
             br = (r_x, b_y)
 
             # Go to top left, then move clockwise until return to tl
-            self.jog_absolute_x(tl[0])
+            self.jog_absolute_xy(tl[0], tl[1])
             self._gantry.block_for_jog()
-            self.jog_absolute_y(tl[1])
-            self._gantry.block_for_jog()
+
             self.jog_absolute_x(tr[0])
             self._gantry.block_for_jog()
             self.jog_absolute_y(br[1])
