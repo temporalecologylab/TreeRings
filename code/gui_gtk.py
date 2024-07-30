@@ -2,9 +2,11 @@ import gi
 gi.require_version('Gtk', '3.0')
 gi.require_version('Gst', '1.0')
 from gi.repository import Gtk, Gst, GObject, GLib
+from threading import Thread
 import logging as log
 import controller
 from datetime import datetime
+import time
 
 log.basicConfig(format='%(process)d-%(levelname)s-%(message)s', level=log.INFO)
 
@@ -79,8 +81,7 @@ class App(Gtk.Window):
 
         self.create_directory_button(box_buttons)
         self.create_serial_connect_button(box_buttons)
-        self.create_cookie_capture_button(box_buttons)
-        self.create_g_code_capture_all_cookies_button(box_buttons)
+        self.create_capture_all_cookies_button(box_buttons)
         self.create_g_code_resume_button(box_buttons)
         self.create_g_code_homing_button(box_buttons)
         self.create_capture_button(box_buttons)
@@ -154,15 +155,10 @@ class App(Gtk.Window):
         button_serial_connect.connect("clicked", lambda w: self.controller.serial_connect())
         box.pack_start(button_serial_connect, True, True, 0)
 
-    def create_cookie_capture_button(self, box):
-        button_g_code_send = Gtk.Button(label="Capture Cookie")
-        button_g_code_send.connect("clicked", lambda w: self.controller.capture_cookie())
-        box.pack_start(button_g_code_send, True, True, 0)
-
-    def create_g_code_capture_all_cookies_button(self, box):
-        button_g_code_pause = Gtk.Button(label="Capture All Cookies")
-        button_g_code_pause.connect("clicked", lambda w: self.controller.capture_all_cookies())
-        box.pack_start(button_g_code_pause, True, True, 0)
+    def create_capture_all_cookies_button(self, box):
+        button_capture_all_cookies = Gtk.Button(label="Capture All Cookies")
+        button_capture_all_cookies.connect("clicked", self.capture_all_cookies)
+        box.pack_start(button_capture_all_cookies, True, True, 0)
 
     def create_g_code_resume_button(self, box):
         button_g_code_resume = Gtk.Button(label="RESUME")
@@ -251,6 +247,85 @@ class App(Gtk.Window):
 
         self.controller.traverse_cookie_boundary(width, height)
 
+    def capture_all_cookies(self, widget):
+    
+    
+        self.capture_cookies_progress_bar()
+        
+        
+        
+    def capture_cookies_progress_bar(self):
+        dialog = Gtk.Dialog(title="Capturing Cookies", parent=self, flags=0)
+        dialog.add_buttons(
+            Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL
+        )
+        
+        box = dialog.get_content_area()
+        
+        self.cookie_counter = Gtk.Label(label="Capturing Cookie: ")
+        self.progressbar = Gtk.ProgressBar()
+        self.images_left_label = Gtk.Label(label="Image 1 of ")
+        self.time_remaining_label = Gtk.Label(label="Estimated time remaining: calculating...")
+        
+        box.add(self.cookie_counter)
+        box.add(self.progressbar)
+        box.add(self.images_left_label)
+        box.add(self.time_remaining_label)
+        
+        self.cookie_counter.show()
+        self.progressbar.show()
+        self.images_left_label.show()
+        self.time_remaining_label.show()
+	
+        self.continue_running = True
+        
+        def on_response(dialog, response_id):
+            if response_id == Gtk.ResponseType.CANCEL:
+                self.continue_running = False
+            dialog.destroy()
+            
+        dialog.connect("response", on_response)
+        dialog.show_all()
+        
+        capture_thread = Thread(target=self.controller.capture_all_cookies, args = (self.update_progress, ))
+        capture_thread.start()
+        
+        start_time = time.time()
+   	
+        def update_progress_bar():
+            if self.continue_running:
+                return True
+            else:
+                capture_thread.join()
+                return False
+        
+        GLib.timeout_add(100, update_progress_bar)
+
+        dialog.run()
+        capture_thread.join()
+        GLib.idle_add(dialog.destroy)
+            
+        
+    def update_progress(self, value):
+        if value[0] == True:
+            cookie_name = value[2]
+            GLib.idle_add(self.cookie_counter.set_text, "Capturing Cookie: {}".format(cookie_name))
+            GLib.idle_add(self.images_left_label.set_text, "Image 1 of ")
+            GLib.idle_add(self.time_remaining_label.set_text, "Estimated time remaining: calculating...")
+            GLib.idle_add(self.progressbar.set_fraction, 0)
+        else:
+            elapsed_time, img_num, total_imgs = value
+            fraction = img_num/total_imgs
+            estimated_total_time = elapsed_time * total_imgs
+            remaining_time = estimated_total_time - (elapsed_time * img_num)
+            remaining_minutes = int(remaining_time/60)
+            remaining_seconds = int(remaining_time % 60)
+            remaining_time_text = "Estimated time remaining: {}min {}sec".format(remaining_minutes, remaining_seconds)
+            image_left_text = "Image {} of {}".format(img_num, total_imgs)
+            GLib.idle_add(self.images_left_label.set_text, image_left_text)
+            GLib.idle_add(self.time_remaining_label.set_text, remaining_time_text)
+            GLib.idle_add(self.progressbar.set_fraction, fraction)
+
     def cb_add_cookie_dialog(self, widget):
         width = int(self.entry_width_cookie.get_text())
         height = int(self.entry_height_cookie.get_text())
@@ -261,7 +336,10 @@ class App(Gtk.Window):
         log.info(notes)
         if species == False:
             return
-        
+        if overlap == '':
+            overlap = 50
+        else:
+            overlap = float(overlap)
         self.controller.add_cookie_sample(width, height, overlap, species, id1, id2, notes)
         log.info("Adding Cookie \nW: {}\nH: {}\nO: {}\nS:  {}\nID1:  {}\nID2:  {}\nNotes:  {}\n".format(width, height, overlap, species, id1, id2, notes))
     
