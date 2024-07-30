@@ -17,13 +17,15 @@ import json
 class Controller:
 
     def __init__(self, image_width_mm, image_height_mm):
+        #Settings for capturing images from multiple distances
+        self.n_images = 15 #make sure you're not going faster than the frame rate of the GStreamer feed... 
+        self.height_range = 1
         
         #Objects
-        #TODO: logic for when we have many cookies on one platform
         self.cookies = []
         self._gantry = gantry.Gantry()
         self.camera = camera.Camera()
-        self.focus = focus.Focus(delete_flag=True, setpoint=5)
+        self.focus = focus.Focus(delete_flag=True, setpoint=round(self.n_images / 2))
         self.stitcher = stitcher.Stitcher()
 
         #attributes
@@ -31,9 +33,6 @@ class Controller:
         self.image_width_mm = image_width_mm
         self.directory = "."
 
-        #Settings for capturing images from multiple distances
-        self.n_images = 9
-        self.height_range = 2
 
     def quit(self):
         log.info("Ending Camera Stream")
@@ -57,9 +56,6 @@ class Controller:
         focus_queue = queue.Queue()
         pid_queue = queue.Queue()
         pid_lock = Lock()
-        
-        # This takes a few seconds to run
-        #cookie.autoset_sat_max()
 
         self.focus.set_setpoint(round(self.n_images/2))
 
@@ -272,6 +268,9 @@ class Controller:
     def jog_absolute_z(self, pos):
         self._gantry.jog_absolute_z(pos)
 
+    def jog_absolute_xy(self, x, y):
+        self._gantry.jog_absolute_xy(x, y)
+
     def jog_absolute_xyz(self, x, y, z):
         self._gantry.jog_absolute_xyz(x, y, z)
 
@@ -309,10 +308,9 @@ class Controller:
             br = (r_x, b_y)
 
             # Go to top left, then move clockwise until return to tl
-            self.jog_absolute_x(tl[0])
+            self.jog_absolute_xy(tl[0], tl[1])
             self._gantry.block_for_jog()
-            self.jog_absolute_y(tl[1])
-            self._gantry.block_for_jog()
+
             self.jog_absolute_x(tr[0])
             self._gantry.block_for_jog()
             self.jog_absolute_y(br[1])
@@ -321,8 +319,6 @@ class Controller:
             self._gantry.block_for_jog()
             self.jog_absolute_y(tl[1])
             self._gantry.block_for_jog()
-
-            time.sleep(2)
 
             # go back to center
             self.jog_absolute_xyz(x, y, z)

@@ -27,11 +27,3 @@ class Cookie:
     def get_top_left_location(self):
         return self._top_left
     
-    def autoset_sat_max(self):
-
-        time.sleep(2) # wait for image to save for sure
-        image = cv2.imread(self.cookie_path)
-        blurred = cv2.GaussianBlur(image, (777,777), 0)
-        image_hsl = cv2.cvtColor(blurred, cv2.COLOR_BGR2HSV)
-        s_channel = image_hsl[:,:,1]
-        self.saturation_max = s_channel.max()
