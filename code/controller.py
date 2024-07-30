@@ -17,13 +17,15 @@ import json
 class Controller:
 
     def __init__(self, image_width_mm, image_height_mm):
+        #Settings for capturing images from multiple distances
+        self.n_images = 15 #make sure you're not going faster than the frame rate of the GStreamer feed... 
+        self.height_range = 1
         
         #Objects
-        #TODO: logic for when we have many cookies on one platform
         self.cookies = []
         self._gantry = gantry.Gantry()
         self.camera = camera.Camera()
-        self.focus = focus.Focus(delete_flag=True, setpoint=5)
+        self.focus = focus.Focus(delete_flag=True, setpoint=round(self.n_images / 2))
         self.stitcher = stitcher.Stitcher()
 
         #attributes
@@ -31,9 +33,6 @@ class Controller:
         self.image_width_mm = image_width_mm
         self.directory = "."
 
-        #Settings for capturing images from multiple distances
-        self.n_images = 15 #make sure you're not going faster than the frame rate of the GStreamer feed... 
-        self.height_range = 1
 
     def quit(self):
         log.info("Ending Camera Stream")
@@ -58,8 +57,6 @@ class Controller:
         pid_queue = queue.Queue()
         pid_lock = Lock()
     
-        self.focus.set_setpoint(round(self.n_images/2))
-
         #set directories
         species = cookie.species
         id1 = cookie.id1
