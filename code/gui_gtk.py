@@ -87,6 +87,7 @@ class App(Gtk.Window):
         self.create_capture_button(box_buttons)
         self.create_add_cookie_dialog_button(box_buttons)
         self.create_test_boundaries_button(box_buttons)
+        self.create_view_added_cookies_button(box_buttons)
 
     def create_jogging_controls(self, grid):
         frame_jogging = Gtk.Frame(label="Jogging Controls")
@@ -175,6 +176,11 @@ class App(Gtk.Window):
         button_capture.connect("clicked", lambda w: self.controller.cb_capture_image())
         box.pack_start(button_capture, True, True, 0)
 
+    def create_view_added_cookies_button(self, box):
+        button_view_cookies = Gtk.Button(label="View Cookies Added")
+        button_view_cookies.connect("clicked", self.view_added_cookies)
+        box.pack_start(button_view_cookies, True, True, 0)
+
     def create_arrow_buttons(self, box):
         label_jogging = Gtk.Label(label="Jogging Controls")
         box.pack_start(label_jogging, True, True, 0)
@@ -247,14 +253,33 @@ class App(Gtk.Window):
 
         self.controller.traverse_cookie_boundary(width, height)
 
+    def view_added_cookies(self, widget):
+        dialog = Gtk.Dialog(title="Added Cookies", parent=self, flags=0)
+        dialog.add_buttons(Gtk.STOCK_OK, Gtk.ResponseType.OK)
+        box = dialog.get_content_area()
+
+        cookies = self.controller.get_cookies()
+
+        for index, cookie in enumerate(cookies)
+            hbox = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=6)
+
+            entry = Gtk.Entry()
+            entry.set_text("{} {} {}".format(cookie.species, cookie.id1, cookie.id2))
+            hbox.pack_start(entry, True, True, 0)
+
+            delete_button = Gtk.Button(label="Delete")
+            delete_button.connect("clicked", lambda x: cookies.pop(index))
+            hbox.pack_start(delete_button, True, True, 0)
+
+            box.pack_start(hbox, True, True, 0)
+            hbox.show_all()
+
+        dialog.run()
+        dialog.destroy()
+
+        self.controller.set_cookies(cookies)
+        
     def capture_all_cookies(self, widget):
-    
-    
-        self.capture_cookies_progress_bar()
-        
-        
-        
-    def capture_cookies_progress_bar(self):
         dialog = Gtk.Dialog(title="Capturing Cookies", parent=self, flags=0)
         dialog.add_buttons(
             Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL
@@ -289,8 +314,6 @@ class App(Gtk.Window):
         
         capture_thread = Thread(target=self.controller.capture_all_cookies, args = (self.update_progress, ))
         capture_thread.start()
-        
-        start_time = time.time()
    	
         def update_progress_bar():
             if self.continue_running:
