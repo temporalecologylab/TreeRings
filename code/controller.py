@@ -313,8 +313,6 @@ class Controller:
             self.jog_absolute_y(tl[1])
             self._gantry.block_for_jog()
 
-            time.sleep(2)
-
             # go back to center
             self.jog_absolute_xyz(x, y, z)
             self._gantry.block_for_jog()
