@@ -60,8 +60,6 @@ class Controller:
     
         self.focus.set_setpoint(round(self.n_images/2))
 
-        log.info(f"saturation min: {cookie.saturation_max}")
-
         #set directories
         species = cookie.species
         id1 = cookie.id1
