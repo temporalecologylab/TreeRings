@@ -90,6 +90,7 @@ class Controller:
     def capture_all_cookies(self, progress_callback):
         for i in range(len(self.cookies)):
             cookie = self.cookies.pop(-1)
+            progress_callback((True, True, "{}_{}_{}".format(cookie.species, cookie.id1, cookie.id2)))
             self.navigate_to_cookie(cookie)
             self.capture_cookie(cookie, progress_callback)
 
@@ -148,7 +149,7 @@ class Controller:
                     # Allow for PID calculations to continue while x is still jogging. Imagine a very large x jog which takes a  while.
                     self._gantry.block_for_jog()
                     img_num=img_num+1
-                    elapsed_time = time.time - start_stack
+                    elapsed_time = time.time() - start_stack
                     progress_callback((elapsed_time, img_num, rows*cols))
 
                 start_stack = time.time()
@@ -172,7 +173,7 @@ class Controller:
 
                 self._gantry.block_for_jog()
                 img_num=img_num+1
-                elapsed_time = time.time - start_stack
+                elapsed_time = time.time() - start_stack
                 progress_callback((elapsed_time, img_num, rows*cols))    
 
             focus_queue.put([-1])
