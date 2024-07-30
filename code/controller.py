@@ -60,7 +60,7 @@ class Controller:
         
         # This takes a few seconds to run
         self.cookie.autoset_sat_max()
-        
+
         self.focus.set_sat_min(cookie.saturation_max)
         self.focus.set_setpoint(round(self.n_images/2))
 
@@ -319,6 +319,8 @@ class Controller:
             self._gantry.block_for_jog()
             self.jog_absolute_y(tl[1])
             self._gantry.block_for_jog()
+
+            time.sleep(2)
 
             # go back to center
             self.jog_absolute_xyz(x, y, z)

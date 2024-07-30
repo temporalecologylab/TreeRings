@@ -10,9 +10,9 @@ log.basicConfig(format='%(process)d-%(levelname)s-%(message)s', level=log.INFO)
 
 class Focus:
 
-    def __init__(self, delete_flag, setpoint=5):
+    def __init__(self, delete_flag, setpoint):
         self.DELETE_FLAG = delete_flag
-        self.sat_min = 0
+        self.sat_min = 27
         self.sat_max = 255
         self.PID = AsynchronousPID(Kp=1.0, Ki=0, Kd=0.05, setpoint=setpoint) # Setpoint?? depends on camera i think
         self.TESTINGLOG = []
@@ -22,9 +22,6 @@ class Focus:
     
     def set_sat_max(self, saturation_max):
         self.sat_max = saturation_max
-
-    def set_setpoint(self, setpoint):
-        self.PID.set_setpoint(setpoint)
 
     def find_focus(self, focus_queue, pid_queue, pid_lock, directory):
         while True:
