@@ -87,6 +87,9 @@ class Focus:
         else:
             return True
     
+    def set_setpoint(self, setpoint):
+        self.setpoint = setpoint
+        
     def adjust_focus(self, control_signal, scale_factor):
         # Convert the control signal to millimeters of movement using the scale factor
         movement_mm = control_signal * scale_factor
