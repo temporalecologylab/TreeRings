@@ -32,7 +32,7 @@ class Controller:
         self.directory = "."
 
         #Settings for capturing images from multiple distances
-        self.n_images = 15
+        self.n_images = 9
         self.height_range = 2
 
     def quit(self):
@@ -52,19 +52,16 @@ class Controller:
 
     #### SERPENTINE METHODS ####
     
-    def capture_cookie(self, cookie: cookie.Cookie):
+    def capture_cookie(self, cookie: cookie.Cookie, progress_callback):
         rows, cols, y_dist, x_dist = self.calculate_grid(cookie)
         focus_queue = queue.Queue()
         pid_queue = queue.Queue()
         pid_lock = Lock()
         
         # This takes a few seconds to run
-        self.cookie.autoset_sat_max()
+        #cookie.autoset_sat_max()
 
-        self.focus.set_sat_min(cookie.saturation_max)
         self.focus.set_setpoint(round(self.n_images/2))
-
-        log.info(f"saturation min: {cookie.saturation_max}")
 
         #set directories
         species = cookie.species
@@ -72,13 +69,14 @@ class Controller:
         id2 = cookie.id2
 
         dirtime = datetime.now().strftime("%H_%M_%S")
-        Path("./{}_{}_{}_{}".format(species, id1, id2, dirtime)).mkdir()
-        self.set_directory("./cookiecapture_{}".format(dirtime))
+        directory = "./{}_{}_{}_{}".format(species, id1, id2, dirtime)
+        Path(directory).mkdir()
+        self.set_directory(directory)
 
         start_time = time.time()
 
         x, y, z = cookie.get_center_location()
-        gantry_thread = Thread(target=self.capture_grid_photos, args=(focus_queue, pid_queue, pid_lock, rows, cols, y_dist, x_dist, z, self.n_images, self.height_range))
+        gantry_thread = Thread(target=self.capture_grid_photos, args=(focus_queue, pid_queue, pid_lock, rows, cols, y_dist, x_dist, z, self.n_images, self.height_range, progress_callback))
         focus_thread = Thread(target=self.focus.find_focus, args=(focus_queue, pid_queue, pid_lock, self.directory))
         gantry_thread.start()
         focus_thread.start()
@@ -93,11 +91,11 @@ class Controller:
 
         self.create_metadata(cookie, elapsed_time, num_images, rows, cols)
 
-    def capture_all_cookies(self):
+    def capture_all_cookies(self, progress_callback):
         for i in range(len(self.cookies)):
             cookie = self.cookies.pop(-1)
             self.navigate_to_cookie(cookie)
-            self.capture_cookie(cookie)
+            self.capture_cookie(cookie, progress_callback)
 
     def calculate_grid(self, cookie): 
         overlap_x = round(self.image_width_mm * cookie.percent_overlap / 100, 3)
@@ -120,11 +118,12 @@ class Controller:
         
         return y_steps, x_steps, y_step_size, x_step_size
     
-    def capture_grid_photos(self, focus_queue: queue.Queue, pid_queue: queue.Queue, pid_lock, rows: int, cols: int, y_dist, x_dist, z_start, n_images, height_range):
+    def capture_grid_photos(self, focus_queue: queue.Queue, pid_queue: queue.Queue, pid_lock, rows: int, cols: int, y_dist, x_dist, z_start, n_images, height_range, progress_callback):
         # for loop capture
         # Change feed rate back to being slow
         self.set_feed_rate(1)
-        while True: 
+        while True:
+            img_num = 0
             for row in range(rows):
                 
                 # for last column, we only want to take photo, not move.
@@ -151,6 +150,8 @@ class Controller:
 
                     # Allow for PID calculations to continue while x is still jogging. Imagine a very large x jog which takes a  while.
                     self._gantry.block_for_jog()
+                    img_num=img_num+1
+                    progress_callback(img_num / (rows*cols))
 
                 # Take final photo in row before jogging down
                 if row % 2 == 1:
@@ -159,7 +160,6 @@ class Controller:
                 else:
                     # imgs = self.capture_images_multiple_distances(0.05, z_steps, row, cols - 1)
                     imgs = self.capture_images_multiple_distances(n_images, self._gantry.feed_rate_z, height_range, 0.2, row, cols - 1, z_start)
-                    
                 focus_queue.put(imgs)
 
                 pid_lock.acquire()    
@@ -172,6 +172,8 @@ class Controller:
                 pid_queue.task_done()
 
                 self._gantry.block_for_jog()
+                img_num=img_num+1
+                progress_callback(img_num / (rows*cols))    
 
             focus_queue.put([-1])
             break
