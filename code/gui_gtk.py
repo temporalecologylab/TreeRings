@@ -2,7 +2,7 @@ import gi
 gi.require_version('Gtk', '3.0')
 gi.require_version('Gst', '1.0')
 from gi.repository import Gtk, Gst, GObject, GLib
-from threading import Thread
+from threading import Thread, Event
 import logging as log
 import controller
 from datetime import datetime
@@ -333,16 +333,19 @@ class App(Gtk.Window):
         self.time_remaining_label.show()
 	
         self.continue_running = True
+
+        stop_capture = Event()
         
         def on_response(dialog, response_id):
             if response_id == Gtk.ResponseType.CANCEL:
                 self.continue_running = False
+                stop_capture.set()
             dialog.destroy()
             
         dialog.connect("response", on_response)
         dialog.show_all()
-        
-        capture_thread = Thread(target=self.controller.capture_all_cookies, args = (self.update_progress, ))
+
+        capture_thread = Thread(target=self.controller.capture_all_cookies, args = (self.update_progress, stop_capture))
         capture_thread.start()
    	
         def update_progress_bar():

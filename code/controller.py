@@ -8,7 +8,7 @@ from datetime import datetime
 import time
 import math
 import queue
-from threading import Thread, Lock
+from threading import Thread, Lock, Event
 from multiprocessing import Process
 from pathlib import Path
 import json
@@ -51,48 +51,51 @@ class Controller:
 
     #### SERPENTINE METHODS ####
     
-    def capture_cookie(self, cookie: cookie.Cookie, progress_callback):
-        rows, cols, y_dist, x_dist = self.calculate_grid(cookie)
-        focus_queue = queue.Queue()
-        pid_queue = queue.Queue()
-        pid_lock = Lock()
+    def capture_cookie(self, cookie: cookie.Cookie, progress_callback, stop_capture):
 
-        self.focus.set_setpoint(round(self.n_images/2))
+        while not stop_capture.is_set():
+            rows, cols, y_dist, x_dist = self.calculate_grid(cookie)
+            focus_queue = queue.Queue()
+            pid_queue = queue.Queue()
+            pid_lock = Lock()
 
-        #set directories
-        species = cookie.species
-        id1 = cookie.id1
-        id2 = cookie.id2
+            self.focus.set_setpoint(round(self.n_images/2))
 
-        dirtime = datetime.now().strftime("%H_%M_%S")
-        directory = "./{}_{}_{}_{}".format(species, id1, id2, dirtime)
-        Path(directory).mkdir()
-        self.set_directory(directory)
+            #set directories
+            species = cookie.species
+            id1 = cookie.id1
+            id2 = cookie.id2
 
-        start_time = time.time()
+            dirtime = datetime.now().strftime("%H_%M_%S")
+            directory = "./{}_{}_{}_{}".format(species, id1, id2, dirtime)
+            Path(directory).mkdir()
+            self.set_directory(directory)
 
-        x, y, z = cookie.get_center_location()
-        gantry_thread = Thread(target=self.capture_grid_photos, args=(focus_queue, pid_queue, pid_lock, rows, cols, y_dist, x_dist, z, self.n_images, self.height_range, progress_callback))
-        focus_thread = Thread(target=self.focus.find_focus, args=(focus_queue, pid_queue, pid_lock, self.directory))
-        gantry_thread.start()
-        focus_thread.start()
-        
-        gantry_thread.join()	
-        focus_queue.join()    	
-        focus_thread.join()
+            start_time = time.time()
 
-        end_time = time.time()
-        elapsed_time = end_time - start_time
-        num_images = rows * cols
+            x, y, z = cookie.get_center_location()
+            gantry_thread = Thread(target=self.capture_grid_photos, args=(focus_queue, pid_queue, pid_lock, rows, cols, y_dist, x_dist, z, self.n_images, self.height_range, progress_callback, stop_capture))
+            focus_thread = Thread(target=self.focus.find_focus, args=(focus_queue, pid_queue, pid_lock, self.directory))
+            gantry_thread.start()
+            focus_thread.start()
+            
+            gantry_thread.join()	
+            focus_queue.join()    	
+            focus_thread.join()
 
-        self.create_metadata(cookie, elapsed_time, num_images, rows, cols)
+            end_time = time.time()
+            elapsed_time = end_time - start_time
+            num_images = rows * cols
 
-    def capture_all_cookies(self, progress_callback):
-        for i in range(len(self.cookies)):
-            cookie = self.cookies.pop(-1)
-            progress_callback((True, True, "{}_{}_{}".format(cookie.species, cookie.id1, cookie.id2)))
-            self.navigate_to_cookie(cookie)
-            self.capture_cookie(cookie, progress_callback)
+            self.create_metadata(cookie, elapsed_time, num_images, rows, cols)
+
+    def capture_all_cookies(self, progress_callback, stop_capture):
+        while not stop_capture.is_set():
+            for i in range(len(self.cookies)):
+                cookie = self.cookies.pop(-1)
+                progress_callback((True, True, "{}_{}_{}".format(cookie.species, cookie.id1, cookie.id2)))
+                self.navigate_to_cookie(cookie)
+                self.capture_cookie(cookie, progress_callback, stop_capture)
 
     def calculate_grid(self, cookie): 
         overlap_x = round(self.image_width_mm * cookie.percent_overlap / 100, 3)
@@ -115,18 +118,22 @@ class Controller:
         
         return y_steps, x_steps, y_step_size, x_step_size
     
-    def capture_grid_photos(self, focus_queue: queue.Queue, pid_queue: queue.Queue, pid_lock, rows: int, cols: int, y_dist, x_dist, z_start, n_images, height_range, progress_callback):
+    def capture_grid_photos(self, focus_queue: queue.Queue, pid_queue: queue.Queue, pid_lock, rows: int, cols: int, y_dist, x_dist, z_start, n_images, height_range, progress_callback, stop_capture):
         # for loop capture
         # Change feed rate back to being slow
         self.set_feed_rate(1)
-        while True:
+        while True and not stop_capture.is_set():
             img_num = 0
             for row in range(rows):
-                
+                if stop_capture.is_set():
+                    break
                 # for last column, we only want to take photo, not move.
                 for col in range(cols - 1):
                     start_stack = time.time()
                     # Odd rows go left
+                    if stop_capture.is_set():
+                        break
+
                     if row % 2 == 1:
                         imgs = self.capture_images_multiple_distances(n_images, self._gantry.feed_rate_z, height_range, 0.2, row, cols - col - 1, z_start)
                         pid_lock.acquire()
@@ -154,6 +161,9 @@ class Controller:
 
                 start_stack = time.time()
                 # Take final photo in row before jogging down
+                if stop_capture.is_set():
+                    break
+                
                 if row % 2 == 1:
                     # imgs = self.capture_images_multiple_distances(0.1, z_steps, row, 0)
                     imgs = self.capture_images_multiple_distances(n_images, self._gantry.feed_rate_z, height_range, 0.2, row, 0, z_start)
