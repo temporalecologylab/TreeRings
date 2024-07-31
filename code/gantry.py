@@ -45,7 +45,10 @@ class Gantry:
                 continue
             elif "WPos" in res_str:
                 self.position_lock.acquire()
-                _x, _y, _z = self.parse_coordinates(res_str)
+                try:
+                    _x, _y, _z = self.parse_coordinates(res_str)
+                except:
+                    continue
                 self._x = _x
                 self._y = _y
                 self._z = _z
