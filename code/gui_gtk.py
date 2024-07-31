@@ -43,7 +43,7 @@ class App(Gtk.Window):
         frame_entry_cookie.set_vexpand(True)
         frame_entry_cookie.set_halign(Gtk.Align.FILL)
         frame_entry_cookie.set_valign(Gtk.Align.FILL)
-        grid.attach(frame_entry_cookie, 0, 0, 1, 1)
+        grid.attach(frame_entry_cookie, 1, 0, 1, 1)
         
         box_cookie = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=7)
         frame_entry_cookie.add(box_cookie)
@@ -59,7 +59,7 @@ class App(Gtk.Window):
         frame_entry_machine.set_vexpand(True)
         frame_entry_machine.set_halign(Gtk.Align.FILL)
         frame_entry_machine.set_valign(Gtk.Align.FILL)
-        grid.attach(frame_entry_machine, 0, 1, 1, 1)
+        grid.attach(frame_entry_machine, 1, 1, 1, 1)
         
         box_machine = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
         frame_entry_machine.add(box_machine)
@@ -68,26 +68,38 @@ class App(Gtk.Window):
         self.create_img_width_entry(box_machine)
 
     def create_buttons(self, grid):
-        frame_buttons = Gtk.Frame(label="Actions")
-        frame_buttons.set_size_request(-1,-1)
-        frame_buttons.set_hexpand(True)
-        frame_buttons.set_vexpand(True)
-        frame_buttons.set_halign(Gtk.Align.FILL)
-        frame_buttons.set_valign(Gtk.Align.FILL)
-        grid.attach(frame_buttons, 0, 2, 1, 1)
+        frame_buttons0 = Gtk.Frame(label="Actions")
+        frame_buttons0.set_size_request(-1,-1)
+        frame_buttons0.set_hexpand(True)
+        frame_buttons0.set_vexpand(True)
+        frame_buttons0.set_halign(Gtk.Align.FILL)
+        frame_buttons0.set_valign(Gtk.Align.FILL)
+        grid.attach(frame_buttons0, 0, 0, 1, 1)
         
-        box_buttons = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=6)
-        frame_buttons.add(box_buttons)
+        box_buttons0 = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
+        frame_buttons0.add(box_buttons0)
 
-        self.create_directory_button(box_buttons)
-        self.create_serial_connect_button(box_buttons)
-        self.create_capture_all_cookies_button(box_buttons)
-        self.create_g_code_resume_button(box_buttons)
-        self.create_g_code_homing_button(box_buttons)
-        self.create_capture_button(box_buttons)
-        self.create_add_cookie_dialog_button(box_buttons)
-        self.create_test_boundaries_button(box_buttons)
-        self.create_view_added_cookies_button(box_buttons)
+        self.create_directory_button(box_buttons0)
+        self.create_serial_connect_button(box_buttons0)
+        self.create_g_code_homing_button(box_buttons0)
+        self.create_capture_button(box_buttons0)
+        
+        frame_buttons1 = Gtk.Frame()
+        frame_buttons1.set_size_request(-1,-1)
+        frame_buttons1.set_hexpand(True)
+        frame_buttons1.set_vexpand(True)
+        frame_buttons1.set_halign(Gtk.Align.FILL)
+        frame_buttons1.set_valign(Gtk.Align.FILL)
+        grid.attach(frame_buttons1, 0, 1, 1, 1)
+        
+        box_buttons1 = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
+        frame_buttons1.add(box_buttons1)
+
+        
+        self.create_capture_all_cookies_button(box_buttons1)
+        self.create_add_cookie_dialog_button(box_buttons1)
+        self.create_test_boundaries_button(box_buttons1)
+        self.create_view_added_cookies_button(box_buttons1)
 
     def create_jogging_controls(self, grid):
         frame_jogging = Gtk.Frame(label="Jogging Controls")
@@ -96,13 +108,12 @@ class App(Gtk.Window):
         frame_jogging.set_vexpand(True)
         frame_jogging.set_halign(Gtk.Align.FILL)
         frame_jogging.set_valign(Gtk.Align.FILL)
-        grid.attach(frame_jogging, 1, 0, 1, 1)
+        grid.attach(frame_jogging, 2, 0, 1, 1)
         
         box_jogging = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
         frame_jogging.add(box_jogging)
 
-        self.create_arrow_buttons(box_jogging)
-        self.create_radio_button_slow_fast(box_jogging)
+        self.create_jog_buttons(box_jogging)
 
     def create_cookie_height_entry(self, box):
         label_height_cookie = Gtk.Label(label="Enter Cookie Height (mm):   ")
@@ -161,18 +172,13 @@ class App(Gtk.Window):
         button_capture_all_cookies.connect("clicked", self.capture_all_cookies)
         box.pack_start(button_capture_all_cookies, True, True, 0)
 
-    def create_g_code_resume_button(self, box):
-        button_g_code_resume = Gtk.Button(label="RESUME")
-        button_g_code_resume.connect("clicked", lambda w: self.controller.cb_resume_g_code())
-        box.pack_start(button_g_code_resume, True, True, 0)
-
     def create_g_code_homing_button(self, box):
         button_g_code_homing = Gtk.Button(label="SET HOME")
         button_g_code_homing.connect("clicked", lambda w: self.controller.cb_homing_g_code())
         box.pack_start(button_g_code_homing, True, True, 0)
 
     def create_capture_button(self, box):
-        button_capture = Gtk.Button(label="CAPTURE")
+        button_capture = Gtk.Button(label="Capture Single Image")
         button_capture.connect("clicked", lambda w: self.controller.cb_capture_image())
         box.pack_start(button_capture, True, True, 0)
 
@@ -181,7 +187,7 @@ class App(Gtk.Window):
         button_view_cookies.connect("clicked", self.view_added_cookies)
         box.pack_start(button_view_cookies, True, True, 0)
 
-    def create_arrow_buttons(self, box):
+    def create_jog_buttons(self, box):
         label_jogging = Gtk.Label(label="Jogging Controls")
         box.pack_start(label_jogging, True, True, 0)
 
@@ -192,39 +198,41 @@ class App(Gtk.Window):
         self.entry_jog_distance.set_text("".format(self.jog_distance))
         box.pack_start(self.entry_jog_distance, True, True, 0)
         self.entry_jog_distance.connect('focus-out-event', self.cb_jog_distance)
+        
+        arrow_grid = Gtk.Grid()
+        box.pack_start(arrow_grid, True, True, 0)
 
         button_y_plus = Gtk.Button(label="Y+")
         button_y_plus.connect("clicked", lambda w: self.controller.jog_relative_y(self.jog_distance))
-        box.pack_start(button_y_plus, True, True, 0)
+        arrow_grid.attach(button_y_plus, 2, 0, 1, 1)
 
         button_y_minus = Gtk.Button(label="Y-")
         button_y_minus.connect("clicked", lambda w: self.controller.jog_relative_y(-1 * self.jog_distance))
-        box.pack_start(button_y_minus, True, True, 0)
+        arrow_grid.attach(button_y_minus, 2, 2, 1, 1)
 
         button_x_plus = Gtk.Button(label="X+")
         button_x_plus.connect("clicked", lambda w: self.controller.jog_relative_x(self.jog_distance))
-        box.pack_start(button_x_plus, True, True, 0)
+        arrow_grid.attach(button_x_plus, 3, 1, 1, 1)
 
         button_x_minus = Gtk.Button(label="X-")
         button_x_minus.connect("clicked", lambda w: self.controller.jog_relative_x(-1 * self.jog_distance))
-        box.pack_start(button_x_minus, True, True, 0)
+        arrow_grid.attach(button_x_minus, 1, 1, 1, 1)
 
         button_z_plus = Gtk.Button(label="Z+")
         button_z_plus.connect("clicked", lambda w: self.controller.jog_relative_z(self.jog_distance))
-        box.pack_start(button_z_plus, True, True, 0)
+        arrow_grid.attach(button_z_plus, 4, 0, 1, 1)
 
         button_z_minus = Gtk.Button(label="Z-")
         button_z_minus.connect("clicked", lambda w: self.controller.jog_relative_z(-1 * self.jog_distance))
-        box.pack_start(button_z_minus, True, True, 0)
-
-    def create_radio_button_slow_fast(self, box):
+        arrow_grid.attach(button_z_minus, 4, 2, 1, 1)
+        
         self.jog_speed = Gtk.RadioButton.new_with_label_from_widget(None, "Slow")
         self.jog_speed.connect("toggled", self.cb_speed_switch, 1)
-        box.pack_start(self.jog_speed, True, True, 0)
+        arrow_grid.attach(self.jog_speed, 0, 0, 1, 1)
 
         radio_button_fast = Gtk.RadioButton.new_with_label_from_widget(self.jog_speed, "Fast")
         radio_button_fast.connect("toggled", self.cb_speed_switch, 2)
-        box.pack_start(radio_button_fast, True, True, 0)
+        arrow_grid.attach(radio_button_fast, 0, 2, 1, 1)
         
     def cb_speed_switch(self, button, speed):
         if button.get_active():
@@ -437,7 +445,6 @@ class App(Gtk.Window):
 
         dialog.destroy()
         return overlap, species, id1, id2, notes
-        
 
     def print_cookie_height_entry(self, widget, event):
         height = int(self.entry_height_cookie.get_text())
