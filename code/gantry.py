@@ -76,7 +76,7 @@ class Gantry:
 
     def parse_state(self, input_string):
         # Use a regular expression to find the X, Y, and Z values
-        print("STATE {}".format(self.state))
+        #print("STATE {}".format(self.state))
         if "Idle" in input_string:
             return "Idle"
         

@@ -361,8 +361,8 @@ class Controller:
         if id2 == '':
             id2 = "na"
 
-        path_name = self.cb_capture_image()
-        ck = cookie.Cookie(width, height, species, id1, id2, notes, path_name, overlap, center_x, center_y, center_z, tl_x, tl_y, tl_z)
+        #path_name = self.cb_capture_image()
+        ck = cookie.Cookie(width, height, species, id1, id2, notes, overlap, center_x, center_y, center_z, tl_x, tl_y, tl_z)
         self.cookies.append(ck)
 
    #### GANTRY METHODS ####
