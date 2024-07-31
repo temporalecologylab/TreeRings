@@ -64,6 +64,7 @@ class App(Gtk.Window):
         box_machine = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
         frame_entry_machine.add(box_machine)
         
+        self.create_zoom_lvl_dropdown(box_machine)
         self.create_img_height_entry(box_machine)
         self.create_img_width_entry(box_machine)
 
@@ -131,11 +132,32 @@ class App(Gtk.Window):
         box.pack_start(self.entry_width_cookie, True, True, 0)
         self.entry_width_cookie.connect('focus-out-event', self.print_cookie_width_entry)
     
+    def create_zoom_lvl_dropdown(self, box):
+        label_zoom_lvl = Gtk.Label(label="Select camera zoom")
+        box.pack_start(label_zoom_lvl, True, True, 0)
+        
+        zoom_liststore = Gtk.ListStore(str)
+
+        zoom_options = ["Custom", "0.7", "1.0", "1.5", "2.0", "2.5", "3.0", "3.5", "4.0", "4.5"]
+        for option in zoom_options:
+            zoom_liststore.append([option])
+
+        self.zoom_combo = Gtk.ComboBox.new_with_model(zoom_liststore)
+        renderer_text = Gtk.CellRendererText()
+        self.zoom_combo.pack_start(renderer_text, True)
+        self.zoom_combo.add_attribute(renderer_text, "text", 0)
+
+        self.zoom_combo.set_active(5)
+
+        self.zoom_combo.connect("changed", self.on_zoom_combo_changed)
+
+        box.pack_start(self.zoom_combo, True, True, 0)
+
     def create_img_height_entry(self, box):
         label_height_img = Gtk.Label(label="Enter Image Height (mm):   ")
         box.pack_start(label_height_img, True, True, 0)
         self.entry_height_img = Gtk.Entry()
-        self.entry_height_img.set_text("2.00")
+        self.entry_height_img.set_text("3.00")
         box.pack_start(self.entry_height_img, True, True, 0)
         self.entry_height_img.connect('focus-out-event', self.print_img_height_entry)
 
@@ -143,7 +165,7 @@ class App(Gtk.Window):
         label_width_img = Gtk.Label(label="Enter Image Width (mm):   ")
         box.pack_start(label_width_img, True, True, 0)
         self.entry_width_img = Gtk.Entry()
-        self.entry_width_img.set_text("3.00")
+        self.entry_width_img.set_text("5.00")
         box.pack_start(self.entry_width_img, True, True, 0)
         self.entry_width_img.connect('focus-out-event', self.print_img_width_entry)
 
@@ -361,16 +383,15 @@ class App(Gtk.Window):
         width = int(self.entry_width_cookie.get_text())
         height = int(self.entry_height_cookie.get_text())
         overlap, species, id1, id2, notes = self.show_metadata_dialog()
-        log.info(species)
-        log.info(id1)
-        log.info(id2)
-        log.info(notes)
         if species == False:
             return
         if overlap == '':
             overlap = 50
         else:
             overlap = float(overlap)
+            species = species.replace(" ", "_")
+            id1 = id1.replace(" ", "_")
+            id2 = id2.replace(" ", "_")
         self.controller.add_cookie_sample(width, height, overlap, species, id1, id2, notes)
         log.info("Adding Cookie \nW: {}\nH: {}\nO: {}\nS:  {}\nID1:  {}\nID2:  {}\nNotes:  {}\n".format(width, height, overlap, species, id1, id2, notes))
     
@@ -445,6 +466,29 @@ class App(Gtk.Window):
 
         dialog.destroy()
         return overlap, species, id1, id2, notes
+    
+    def on_zoom_combo_changed(self, combo):
+        zoom_size_dict = {
+            "0.7": [10.0,18.0],
+            "1.0": [6.0,11.0],
+            "1.5": [4.5,7.8],
+            "2.0": [3.0,5.3],
+            "2.5": [3.0, 5.0],
+            "3.0": [2.2,4.0],
+            "3.5": [2.0,3.5],
+            "4.0": [2.0,3.0],
+            "4.5": [1.5, 3.0]
+        }
+        tree_iter = combo.get_active_iter()
+        if tree_iter is not None:
+            model = combo.get_model()
+            option = model[tree_iter][0]
+            if option != "Custom":
+                height, width = zoom_size_dict[option]
+                self.entry_height_img.set_text(str(height))
+                self.controller.image_height_mm = height
+                self.entry_width_img.set_text(str(width))
+                self.controller.image_width_mm = width
 
     def print_cookie_height_entry(self, widget, event):
         height = int(self.entry_height_cookie.get_text())
@@ -457,11 +501,13 @@ class App(Gtk.Window):
     def print_img_height_entry(self, widget, event):
         height = float(self.entry_height_img.get_text())
         self.controller.image_height_mm = height
+        self.zoom_combo.set_active(0)
         log.info("Update Image Height: {} mm".format(height))
 
     def print_img_width_entry(self, widget, event):
         width = float(self.entry_width_img.get_text())
         self.controller.image_width_mm = width
+        self.zoom_combo.set_active(0)
         log.info("Update Image Width: {} mm".format(width))        
         
 if __name__ == "__main__":
