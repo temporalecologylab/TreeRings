@@ -245,9 +245,10 @@ class Controller:
             "elapsed_time": elapsed_time,
             "DPI": dpi,
             "photo_count": image_count,
-            "image_height": self.image_height_mm,
-            "image_width": self.image_width_mm,
-            "dimension_units": "mm", 
+            "image_height_mm": self.image_height_mm,
+            "image_width_mm": self.image_width_mm,
+            "cookie_height_mm": cookie.height,
+            "cookie_width_mm":  cookie.width,
             "camera_pixels": pixels,
             "notes": cookie.notes
         }
