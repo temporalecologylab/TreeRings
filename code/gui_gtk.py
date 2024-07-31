@@ -426,27 +426,29 @@ class App(Gtk.Window):
         notes_window.set_policy(Gtk.PolicyType.AUTOMATIC, Gtk.PolicyType.AUTOMATIC)
         notes_window.add(text_view)
 
-        box.add(overlap_label)
-        box.add(overlap_entry)
         box.add(species_label)
         box.add(species_entry)
         box.add(id1_label)
         box.add(id1_entry)
         box.add(id2_label)
         box.add(id2_entry)
+        box.add(overlap_label)
+        box.add(overlap_entry)
         box.add(notes_label)
         box.add(notes_window)
 
-        overlap_label.show()
-        overlap_entry.show()
         species_label.show()
         species_entry.show()
         id1_label.show()
         id1_entry.show()
         id2_label.show()
         id2_entry.show()
+        overlap_label.show()
+        overlap_entry.show()
         notes_label.show()
         notes_window.show_all()
+
+        overlap_entry.set_text("50")
 
         # Run the dialog and capture the response
         response = dialog.run()
