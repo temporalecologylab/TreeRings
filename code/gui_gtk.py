@@ -35,9 +35,9 @@ class App(Gtk.Window):
         Gtk.main_quit()
 
     def create_entries(self, grid):
-        ## Cookie
+        ## Sample
         
-        frame_entry_cookie = Gtk.Frame(label="Cookie Entries")
+        frame_entry_cookie = Gtk.Frame(label="Sample Entries")
         frame_entry_cookie.set_size_request(-1,-1)
         frame_entry_cookie.set_hexpand(True)
         frame_entry_cookie.set_vexpand(True)
@@ -117,7 +117,7 @@ class App(Gtk.Window):
         self.create_jog_buttons(box_jogging)
 
     def create_cookie_height_entry(self, box):
-        label_height_cookie = Gtk.Label(label="Enter Cookie Height (mm):   ")
+        label_height_cookie = Gtk.Label(label="Enter Sample Height (mm):   ")
         box.pack_start(label_height_cookie, True, True, 0)
         self.entry_height_cookie = Gtk.Entry()
         self.entry_height_cookie.set_text("45")
@@ -125,7 +125,7 @@ class App(Gtk.Window):
         self.entry_height_cookie.connect('focus-out-event', self.print_cookie_height_entry)
 
     def create_cookie_width_entry(self, box):
-        label_width_cookie = Gtk.Label(label="Enter Cookie Width (mm):   ")
+        label_width_cookie = Gtk.Label(label="Enter Sample Width (mm):   ")
         box.pack_start(label_width_cookie, True, True, 0)
         self.entry_width_cookie = Gtk.Entry()
         self.entry_width_cookie.set_text("45")
@@ -170,12 +170,12 @@ class App(Gtk.Window):
         self.entry_width_img.connect('focus-out-event', self.print_img_width_entry)
 
     def create_add_cookie_dialog_button(self, box):
-        button_add_dialog = Gtk.Button(label="Add Cookie")
+        button_add_dialog = Gtk.Button(label="Add Sample")
         button_add_dialog.connect("clicked", self.cb_add_cookie_dialog)
         box.pack_start(button_add_dialog, True, True, 0)
 
     def create_test_boundaries_button(self, box):
-        button_test_dims = Gtk.Button(label="Test Cookie Dimensions")
+        button_test_dims = Gtk.Button(label="Test Sample Dimensions")
         button_test_dims.connect("clicked", self.cb_traverse_cookie)
         box.pack_start(button_test_dims, True, True, 0)
 
@@ -190,7 +190,7 @@ class App(Gtk.Window):
         box.pack_start(button_serial_connect, True, True, 0)
 
     def create_capture_all_cookies_button(self, box):
-        button_capture_all_cookies = Gtk.Button(label="Capture All Cookies")
+        button_capture_all_cookies = Gtk.Button(label="Capture All Samples")
         button_capture_all_cookies.connect("clicked", self.capture_all_cookies)
         box.pack_start(button_capture_all_cookies, True, True, 0)
 
@@ -205,7 +205,7 @@ class App(Gtk.Window):
         box.pack_start(button_capture, True, True, 0)
 
     def create_view_added_cookies_button(self, box):
-        button_view_cookies = Gtk.Button(label="View Cookies Added")
+        button_view_cookies = Gtk.Button(label="View Samples Added")
         button_view_cookies.connect("clicked", self.view_added_cookies)
         box.pack_start(button_view_cookies, True, True, 0)
 
@@ -284,7 +284,7 @@ class App(Gtk.Window):
         self.controller.traverse_cookie_boundary(width, height)
 
     def view_added_cookies(self, widget):
-        dialog = Gtk.Dialog(title="Added Cookies", parent=self, flags=0)
+        dialog = Gtk.Dialog(title="Added Samples", parent=self, flags=0)
         dialog.add_buttons(Gtk.STOCK_OK, Gtk.ResponseType.OK)
         box = dialog.get_content_area()
 
@@ -310,14 +310,14 @@ class App(Gtk.Window):
         self.controller.set_cookies(cookies)
         
     def capture_all_cookies(self, widget):
-        dialog = Gtk.Dialog(title="Capturing Cookies", parent=self, flags=0)
+        dialog = Gtk.Dialog(title="Capturing Samples", parent=self, flags=0)
         dialog.add_buttons(
             Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL
         )
         
         box = dialog.get_content_area()
         
-        self.cookie_counter = Gtk.Label(label="Capturing Cookie: ")
+        self.cookie_counter = Gtk.Label(label="Capturing Sample: ")
         self.progressbar = Gtk.ProgressBar()
         self.images_left_label = Gtk.Label(label="Image 1 of ")
         self.time_remaining_label = Gtk.Label(label="Estimated time remaining: calculating...")
@@ -362,7 +362,7 @@ class App(Gtk.Window):
     def update_progress(self, value):
         if value[0] == True:
             cookie_name = value[2]
-            GLib.idle_add(self.cookie_counter.set_text, "Capturing Cookie: {}".format(cookie_name))
+            GLib.idle_add(self.cookie_counter.set_text, "Capturing Sample: {}".format(cookie_name))
             GLib.idle_add(self.images_left_label.set_text, "Image 1 of ")
             GLib.idle_add(self.time_remaining_label.set_text, "Estimated time remaining: calculating...")
             GLib.idle_add(self.progressbar.set_fraction, 0)
@@ -393,10 +393,10 @@ class App(Gtk.Window):
             id1 = id1.replace(" ", "_")
             id2 = id2.replace(" ", "_")
         self.controller.add_cookie_sample(width, height, overlap, species, id1, id2, notes)
-        log.info("Adding Cookie \nW: {}\nH: {}\nO: {}\nS:  {}\nID1:  {}\nID2:  {}\nNotes:  {}\n".format(width, height, overlap, species, id1, id2, notes))
+        log.info("Adding Sample \nW: {}\nH: {}\nO: {}\nS:  {}\nID1:  {}\nID2:  {}\nNotes:  {}\n".format(width, height, overlap, species, id1, id2, notes))
     
     def show_metadata_dialog(self):
-        dialog = Gtk.Dialog(title="Add Cookie", parent=self, flags=0)
+        dialog = Gtk.Dialog(title="Add Sample", parent=self, flags=0)
         dialog.add_buttons(
             Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL,
             Gtk.STOCK_OK, Gtk.ResponseType.OK
@@ -455,14 +455,14 @@ class App(Gtk.Window):
             id2 = id2_entry.get_text()
             buffer = text_view.get_buffer()
             notes = buffer.get_text(buffer.get_start_iter(), buffer.get_end_iter(), True)
-            log.info("Adding Cookie")
+            log.info("Adding Sample")
         else:
             overlap = False
             species = False
             id1 =  False
             id2 = False
             notes = False
-            log.info("Cancel Cookie Add")
+            log.info("Cancel Sample Add")
 
         dialog.destroy()
         return overlap, species, id1, id2, notes
@@ -492,11 +492,11 @@ class App(Gtk.Window):
 
     def print_cookie_height_entry(self, widget, event):
         height = int(self.entry_height_cookie.get_text())
-        log.info("Update Cookie Height: {} mm".format(height))
+        log.info("Update Sample Height: {} mm".format(height))
 
     def print_cookie_width_entry(self, widget, event):
         width = int(self.entry_width_cookie.get_text())
-        log.info("Update Cookie Width: {} mm".format(width))
+        log.info("Update Sample Width: {} mm".format(width))
 
     def print_img_height_entry(self, widget, event):
         height = float(self.entry_height_img.get_text())
