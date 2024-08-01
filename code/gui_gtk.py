@@ -14,7 +14,7 @@ class App(Gtk.Window):
     def __init__(self):
         super().__init__(title="Cookie Capture")
         self.set_default_size(600, 400)
-        self.set_size_request(-1,-1)
+        self.set_size_request(600, 400)
         self.connect("destroy", self.quit_program)
         
         self.controller = controller.Controller(3, 2)
