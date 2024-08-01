@@ -35,15 +35,15 @@ class App(Gtk.Window):
         Gtk.main_quit()
 
     def create_entries(self, grid):
-        ## Cookie
+        ## Sample
         
-        frame_entry_cookie = Gtk.Frame(label="Cookie Entries")
+        frame_entry_cookie = Gtk.Frame(label="Sample Entries")
         frame_entry_cookie.set_size_request(-1,-1)
         frame_entry_cookie.set_hexpand(True)
         frame_entry_cookie.set_vexpand(True)
         frame_entry_cookie.set_halign(Gtk.Align.FILL)
         frame_entry_cookie.set_valign(Gtk.Align.FILL)
-        grid.attach(frame_entry_cookie, 0, 0, 1, 1)
+        grid.attach(frame_entry_cookie, 1, 0, 1, 1)
         
         box_cookie = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=7)
         frame_entry_cookie.add(box_cookie)
@@ -59,34 +59,48 @@ class App(Gtk.Window):
         frame_entry_machine.set_vexpand(True)
         frame_entry_machine.set_halign(Gtk.Align.FILL)
         frame_entry_machine.set_valign(Gtk.Align.FILL)
-        grid.attach(frame_entry_machine, 0, 1, 1, 1)
+        grid.attach(frame_entry_machine, 1, 1, 1, 1)
         
         box_machine = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
         frame_entry_machine.add(box_machine)
         
+        self.create_zoom_lvl_dropdown(box_machine)
         self.create_img_height_entry(box_machine)
         self.create_img_width_entry(box_machine)
 
     def create_buttons(self, grid):
-        frame_buttons = Gtk.Frame(label="Actions")
-        frame_buttons.set_size_request(-1,-1)
-        frame_buttons.set_hexpand(True)
-        frame_buttons.set_vexpand(True)
-        frame_buttons.set_halign(Gtk.Align.FILL)
-        frame_buttons.set_valign(Gtk.Align.FILL)
-        grid.attach(frame_buttons, 0, 2, 1, 1)
+        frame_buttons0 = Gtk.Frame(label="Actions")
+        frame_buttons0.set_size_request(-1,-1)
+        frame_buttons0.set_hexpand(True)
+        frame_buttons0.set_vexpand(True)
+        frame_buttons0.set_halign(Gtk.Align.FILL)
+        frame_buttons0.set_valign(Gtk.Align.FILL)
+        grid.attach(frame_buttons0, 0, 0, 1, 1)
         
-        box_buttons = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=6)
-        frame_buttons.add(box_buttons)
+        box_buttons0 = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
+        frame_buttons0.add(box_buttons0)
 
-        self.create_directory_button(box_buttons)
-        self.create_serial_connect_button(box_buttons)
-        self.create_capture_all_cookies_button(box_buttons)
-        self.create_g_code_resume_button(box_buttons)
-        self.create_g_code_homing_button(box_buttons)
-        self.create_capture_button(box_buttons)
-        self.create_add_cookie_dialog_button(box_buttons)
-        self.create_test_boundaries_button(box_buttons)
+        self.create_directory_button(box_buttons0)
+        self.create_serial_connect_button(box_buttons0)
+        self.create_g_code_homing_button(box_buttons0)
+        self.create_capture_button(box_buttons0)
+        
+        frame_buttons1 = Gtk.Frame()
+        frame_buttons1.set_size_request(-1,-1)
+        frame_buttons1.set_hexpand(True)
+        frame_buttons1.set_vexpand(True)
+        frame_buttons1.set_halign(Gtk.Align.FILL)
+        frame_buttons1.set_valign(Gtk.Align.FILL)
+        grid.attach(frame_buttons1, 0, 1, 1, 1)
+        
+        box_buttons1 = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
+        frame_buttons1.add(box_buttons1)
+
+        
+        self.create_capture_all_cookies_button(box_buttons1)
+        self.create_add_cookie_dialog_button(box_buttons1)
+        self.create_test_boundaries_button(box_buttons1)
+        self.create_view_added_cookies_button(box_buttons1)
 
     def create_jogging_controls(self, grid):
         frame_jogging = Gtk.Frame(label="Jogging Controls")
@@ -95,16 +109,15 @@ class App(Gtk.Window):
         frame_jogging.set_vexpand(True)
         frame_jogging.set_halign(Gtk.Align.FILL)
         frame_jogging.set_valign(Gtk.Align.FILL)
-        grid.attach(frame_jogging, 1, 0, 1, 1)
+        grid.attach(frame_jogging, 2, 0, 1, 1)
         
         box_jogging = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
         frame_jogging.add(box_jogging)
 
-        self.create_arrow_buttons(box_jogging)
-        self.create_radio_button_slow_fast(box_jogging)
+        self.create_jog_buttons(box_jogging)
 
     def create_cookie_height_entry(self, box):
-        label_height_cookie = Gtk.Label(label="Enter Cookie Height (mm):   ")
+        label_height_cookie = Gtk.Label(label="Enter Sample Height (mm):   ")
         box.pack_start(label_height_cookie, True, True, 0)
         self.entry_height_cookie = Gtk.Entry()
         self.entry_height_cookie.set_text("45")
@@ -112,18 +125,39 @@ class App(Gtk.Window):
         self.entry_height_cookie.connect('focus-out-event', self.print_cookie_height_entry)
 
     def create_cookie_width_entry(self, box):
-        label_width_cookie = Gtk.Label(label="Enter Cookie Width (mm):   ")
+        label_width_cookie = Gtk.Label(label="Enter Sample Width (mm):   ")
         box.pack_start(label_width_cookie, True, True, 0)
         self.entry_width_cookie = Gtk.Entry()
         self.entry_width_cookie.set_text("45")
         box.pack_start(self.entry_width_cookie, True, True, 0)
         self.entry_width_cookie.connect('focus-out-event', self.print_cookie_width_entry)
     
+    def create_zoom_lvl_dropdown(self, box):
+        label_zoom_lvl = Gtk.Label(label="Select camera zoom")
+        box.pack_start(label_zoom_lvl, True, True, 0)
+        
+        zoom_liststore = Gtk.ListStore(str)
+
+        zoom_options = ["Custom", "0.7", "1.0", "1.5", "2.0", "2.5", "3.0", "3.5", "4.0", "4.5"]
+        for option in zoom_options:
+            zoom_liststore.append([option])
+
+        self.zoom_combo = Gtk.ComboBox.new_with_model(zoom_liststore)
+        renderer_text = Gtk.CellRendererText()
+        self.zoom_combo.pack_start(renderer_text, True)
+        self.zoom_combo.add_attribute(renderer_text, "text", 0)
+
+        self.zoom_combo.set_active(5)
+
+        self.zoom_combo.connect("changed", self.on_zoom_combo_changed)
+
+        box.pack_start(self.zoom_combo, True, True, 0)
+
     def create_img_height_entry(self, box):
         label_height_img = Gtk.Label(label="Enter Image Height (mm):   ")
         box.pack_start(label_height_img, True, True, 0)
         self.entry_height_img = Gtk.Entry()
-        self.entry_height_img.set_text("2.00")
+        self.entry_height_img.set_text("3.00")
         box.pack_start(self.entry_height_img, True, True, 0)
         self.entry_height_img.connect('focus-out-event', self.print_img_height_entry)
 
@@ -131,17 +165,17 @@ class App(Gtk.Window):
         label_width_img = Gtk.Label(label="Enter Image Width (mm):   ")
         box.pack_start(label_width_img, True, True, 0)
         self.entry_width_img = Gtk.Entry()
-        self.entry_width_img.set_text("3.00")
+        self.entry_width_img.set_text("5.00")
         box.pack_start(self.entry_width_img, True, True, 0)
         self.entry_width_img.connect('focus-out-event', self.print_img_width_entry)
 
     def create_add_cookie_dialog_button(self, box):
-        button_add_dialog = Gtk.Button(label="Add Cookie")
+        button_add_dialog = Gtk.Button(label="Add Sample")
         button_add_dialog.connect("clicked", self.cb_add_cookie_dialog)
         box.pack_start(button_add_dialog, True, True, 0)
 
     def create_test_boundaries_button(self, box):
-        button_test_dims = Gtk.Button(label="Test Cookie Dimensions")
+        button_test_dims = Gtk.Button(label="Test Sample Dimensions")
         button_test_dims.connect("clicked", self.cb_traverse_cookie)
         box.pack_start(button_test_dims, True, True, 0)
 
@@ -156,14 +190,9 @@ class App(Gtk.Window):
         box.pack_start(button_serial_connect, True, True, 0)
 
     def create_capture_all_cookies_button(self, box):
-        button_capture_all_cookies = Gtk.Button(label="Capture All Cookies")
+        button_capture_all_cookies = Gtk.Button(label="Capture All Samples")
         button_capture_all_cookies.connect("clicked", self.capture_all_cookies)
         box.pack_start(button_capture_all_cookies, True, True, 0)
-
-    def create_g_code_resume_button(self, box):
-        button_g_code_resume = Gtk.Button(label="RESUME")
-        button_g_code_resume.connect("clicked", lambda w: self.controller.cb_resume_g_code())
-        box.pack_start(button_g_code_resume, True, True, 0)
 
     def create_g_code_homing_button(self, box):
         button_g_code_homing = Gtk.Button(label="SET HOME")
@@ -171,11 +200,16 @@ class App(Gtk.Window):
         box.pack_start(button_g_code_homing, True, True, 0)
 
     def create_capture_button(self, box):
-        button_capture = Gtk.Button(label="CAPTURE")
+        button_capture = Gtk.Button(label="Capture Single Image")
         button_capture.connect("clicked", lambda w: self.controller.cb_capture_image())
         box.pack_start(button_capture, True, True, 0)
 
-    def create_arrow_buttons(self, box):
+    def create_view_added_cookies_button(self, box):
+        button_view_cookies = Gtk.Button(label="View Samples Added")
+        button_view_cookies.connect("clicked", self.view_added_cookies)
+        box.pack_start(button_view_cookies, True, True, 0)
+
+    def create_jog_buttons(self, box):
         label_jogging = Gtk.Label(label="Jogging Controls")
         box.pack_start(label_jogging, True, True, 0)
 
@@ -186,39 +220,41 @@ class App(Gtk.Window):
         self.entry_jog_distance.set_text("".format(self.jog_distance))
         box.pack_start(self.entry_jog_distance, True, True, 0)
         self.entry_jog_distance.connect('focus-out-event', self.cb_jog_distance)
+        
+        arrow_grid = Gtk.Grid()
+        box.pack_start(arrow_grid, True, True, 0)
 
         button_y_plus = Gtk.Button(label="Y+")
         button_y_plus.connect("clicked", lambda w: self.controller.jog_relative_y(self.jog_distance))
-        box.pack_start(button_y_plus, True, True, 0)
+        arrow_grid.attach(button_y_plus, 2, 0, 1, 1)
 
         button_y_minus = Gtk.Button(label="Y-")
         button_y_minus.connect("clicked", lambda w: self.controller.jog_relative_y(-1 * self.jog_distance))
-        box.pack_start(button_y_minus, True, True, 0)
+        arrow_grid.attach(button_y_minus, 2, 2, 1, 1)
 
         button_x_plus = Gtk.Button(label="X+")
         button_x_plus.connect("clicked", lambda w: self.controller.jog_relative_x(self.jog_distance))
-        box.pack_start(button_x_plus, True, True, 0)
+        arrow_grid.attach(button_x_plus, 3, 1, 1, 1)
 
         button_x_minus = Gtk.Button(label="X-")
         button_x_minus.connect("clicked", lambda w: self.controller.jog_relative_x(-1 * self.jog_distance))
-        box.pack_start(button_x_minus, True, True, 0)
+        arrow_grid.attach(button_x_minus, 1, 1, 1, 1)
 
         button_z_plus = Gtk.Button(label="Z+")
         button_z_plus.connect("clicked", lambda w: self.controller.jog_relative_z(self.jog_distance))
-        box.pack_start(button_z_plus, True, True, 0)
+        arrow_grid.attach(button_z_plus, 4, 0, 1, 1)
 
         button_z_minus = Gtk.Button(label="Z-")
         button_z_minus.connect("clicked", lambda w: self.controller.jog_relative_z(-1 * self.jog_distance))
-        box.pack_start(button_z_minus, True, True, 0)
-
-    def create_radio_button_slow_fast(self, box):
+        arrow_grid.attach(button_z_minus, 4, 2, 1, 1)
+        
         self.jog_speed = Gtk.RadioButton.new_with_label_from_widget(None, "Slow")
         self.jog_speed.connect("toggled", self.cb_speed_switch, 1)
-        box.pack_start(self.jog_speed, True, True, 0)
+        arrow_grid.attach(self.jog_speed, 0, 0, 1, 1)
 
         radio_button_fast = Gtk.RadioButton.new_with_label_from_widget(self.jog_speed, "Fast")
         radio_button_fast.connect("toggled", self.cb_speed_switch, 2)
-        box.pack_start(radio_button_fast, True, True, 0)
+        arrow_grid.attach(radio_button_fast, 0, 2, 1, 1)
         
     def cb_speed_switch(self, button, speed):
         if button.get_active():
@@ -247,22 +283,41 @@ class App(Gtk.Window):
 
         self.controller.traverse_cookie_boundary(width, height)
 
+    def view_added_cookies(self, widget):
+        dialog = Gtk.Dialog(title="Added Samples", parent=self, flags=0)
+        dialog.add_buttons(Gtk.STOCK_OK, Gtk.ResponseType.OK)
+        box = dialog.get_content_area()
+
+        cookies = self.controller.get_cookies()
+
+        for index, cookie in enumerate(cookies):
+            hbox = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=6)
+
+            entry = Gtk.Entry()
+            entry.set_text("{} {} {}".format(cookie.species, cookie.id1, cookie.id2))
+            hbox.pack_start(entry, True, True, 0)
+
+            delete_button = Gtk.Button(label="Delete")
+            delete_button.connect("clicked", lambda x: cookies.pop(index))
+            hbox.pack_start(delete_button, True, True, 0)
+
+            box.pack_start(hbox, True, True, 0)
+            hbox.show_all()
+
+        dialog.run()
+        dialog.destroy()
+
+        self.controller.set_cookies(cookies)
+        
     def capture_all_cookies(self, widget):
-    
-    
-        self.capture_cookies_progress_bar()
-        
-        
-        
-    def capture_cookies_progress_bar(self):
-        dialog = Gtk.Dialog(title="Capturing Cookies", parent=self, flags=0)
+        dialog = Gtk.Dialog(title="Capturing Samples", parent=self, flags=0)
         dialog.add_buttons(
             Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL
         )
         
         box = dialog.get_content_area()
         
-        self.cookie_counter = Gtk.Label(label="Capturing Cookie: ")
+        self.cookie_counter = Gtk.Label(label="Capturing Sample: ")
         self.progressbar = Gtk.ProgressBar()
         self.images_left_label = Gtk.Label(label="Image 1 of ")
         self.time_remaining_label = Gtk.Label(label="Estimated time remaining: calculating...")
@@ -289,8 +344,6 @@ class App(Gtk.Window):
         
         capture_thread = Thread(target=self.controller.capture_all_cookies, args = (self.update_progress, ))
         capture_thread.start()
-        
-        start_time = time.time()
    	
         def update_progress_bar():
             if self.continue_running:
@@ -309,7 +362,7 @@ class App(Gtk.Window):
     def update_progress(self, value):
         if value[0] == True:
             cookie_name = value[2]
-            GLib.idle_add(self.cookie_counter.set_text, "Capturing Cookie: {}".format(cookie_name))
+            GLib.idle_add(self.cookie_counter.set_text, "Capturing Sample: {}".format(cookie_name))
             GLib.idle_add(self.images_left_label.set_text, "Image 1 of ")
             GLib.idle_add(self.time_remaining_label.set_text, "Estimated time remaining: calculating...")
             GLib.idle_add(self.progressbar.set_fraction, 0)
@@ -330,21 +383,20 @@ class App(Gtk.Window):
         width = int(self.entry_width_cookie.get_text())
         height = int(self.entry_height_cookie.get_text())
         overlap, species, id1, id2, notes = self.show_metadata_dialog()
-        log.info(species)
-        log.info(id1)
-        log.info(id2)
-        log.info(notes)
         if species == False:
             return
         if overlap == '':
             overlap = 50
         else:
             overlap = float(overlap)
+            species = species.replace(" ", "_")
+            id1 = id1.replace(" ", "_")
+            id2 = id2.replace(" ", "_")
         self.controller.add_cookie_sample(width, height, overlap, species, id1, id2, notes)
-        log.info("Adding Cookie \nW: {}\nH: {}\nO: {}\nS:  {}\nID1:  {}\nID2:  {}\nNotes:  {}\n".format(width, height, overlap, species, id1, id2, notes))
+        log.info("Adding Sample \nW: {}\nH: {}\nO: {}\nS:  {}\nID1:  {}\nID2:  {}\nNotes:  {}\n".format(width, height, overlap, species, id1, id2, notes))
     
     def show_metadata_dialog(self):
-        dialog = Gtk.Dialog(title="Add Cookie", parent=self, flags=0)
+        dialog = Gtk.Dialog(title="Add Sample", parent=self, flags=0)
         dialog.add_buttons(
             Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL,
             Gtk.STOCK_OK, Gtk.ResponseType.OK
@@ -403,35 +455,59 @@ class App(Gtk.Window):
             id2 = id2_entry.get_text()
             buffer = text_view.get_buffer()
             notes = buffer.get_text(buffer.get_start_iter(), buffer.get_end_iter(), True)
-            log.info("Adding Cookie")
+            log.info("Adding Sample")
         else:
             overlap = False
             species = False
             id1 =  False
             id2 = False
             notes = False
-            log.info("Cancel Cookie Add")
+            log.info("Cancel Sample Add")
 
         dialog.destroy()
         return overlap, species, id1, id2, notes
-        
+    
+    def on_zoom_combo_changed(self, combo):
+        zoom_size_dict = {
+            "0.7": [10.0,18.0],
+            "1.0": [6.0,11.0],
+            "1.5": [4.5,7.8],
+            "2.0": [3.0,5.3],
+            "2.5": [3.0, 5.0],
+            "3.0": [2.2,4.0],
+            "3.5": [2.0,3.5],
+            "4.0": [2.0,3.0],
+            "4.5": [1.5, 3.0]
+        }
+        tree_iter = combo.get_active_iter()
+        if tree_iter is not None:
+            model = combo.get_model()
+            option = model[tree_iter][0]
+            if option != "Custom":
+                height, width = zoom_size_dict[option]
+                self.entry_height_img.set_text(str(height))
+                self.controller.image_height_mm = height
+                self.entry_width_img.set_text(str(width))
+                self.controller.image_width_mm = width
 
     def print_cookie_height_entry(self, widget, event):
         height = int(self.entry_height_cookie.get_text())
-        log.info("Update Cookie Height: {} mm".format(height))
+        log.info("Update Sample Height: {} mm".format(height))
 
     def print_cookie_width_entry(self, widget, event):
         width = int(self.entry_width_cookie.get_text())
-        log.info("Update Cookie Width: {} mm".format(width))
+        log.info("Update Sample Width: {} mm".format(width))
 
     def print_img_height_entry(self, widget, event):
         height = float(self.entry_height_img.get_text())
         self.controller.image_height_mm = height
+        self.zoom_combo.set_active(0)
         log.info("Update Image Height: {} mm".format(height))
 
     def print_img_width_entry(self, widget, event):
         width = float(self.entry_width_img.get_text())
         self.controller.image_width_mm = width
+        self.zoom_combo.set_active(0)
         log.info("Update Image Width: {} mm".format(width))        
         
 if __name__ == "__main__":

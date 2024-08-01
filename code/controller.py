@@ -366,6 +366,12 @@ class Controller:
         ck = cookie.Cookie(width, height, species, id1, id2, notes, overlap, center_x, center_y, center_z, tl_x, tl_y, tl_z)
         self.cookies.append(ck)
 
+    def get_cookies(self):
+        return self.cookies
+    
+    def set_cookies(self, cookies):
+        self.cookies=cookies
+
    #### GANTRY METHODS ####
 
     def serial_connect(self):
