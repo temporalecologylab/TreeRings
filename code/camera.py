@@ -18,11 +18,10 @@ class Camera:
         # Create the pipeline with both display and save frame functionality
         
         self.pipeline = Gst.parse_launch(
-            "nvarguscamerasrc wbmode=1 ee-mode=2 ee-strength=0.5 exposurecompensation=0.5 exposuretimerange='680000000 600000000'  aelock=true ! video/x-raw(memory:NVMM),width={},height={},framerate=30/1 ! videorate ! video/x-raw(memory:NVMM),width=3840,height=2160,framerate=15/1 !".format(W_PIXELS, H_PIXELS) +                        #683709000
-            "nvvideoconvert flip-method=2 ! videobalance contrast=1.25 ! tee name=t "
-            "t. ! queue ! autovideosink "
-            #"t. ! fakesink "
-            "t. ! queue max-size-buffers=10 leaky=2 ! avenc_tiff name=encoder ! tee name=t_bin ! fakesink"
+            "nvarguscamerasrc wbmode=1 ee-mode=2 ee-strength=0.5 exposurecompensation=0.5 exposuretimerange='680000000 600000000'  aelock=true ! video/x-raw(memory:NVMM),width={},height={},framerate=30/1 ! videorate ! video/x-raw(memory:NVMM),width=3840,height=2160,framerate=15/1 !".format(W_PIXELS, H_PIXELS) + #683709000
+            "nvvideoconvert flip-method=2 ! videobalance contrast=1.25 ! queue max-size-buffers=10 leaky=2 ! tee name=t "
+            "t. ! queue max-size-buffers=1 leaky=2 ! autovideosink "
+            "t. ! queue max-size-buffers=1 leaky=2 ! avenc_tiff ! tee name=t_bin ! fakesink"
         )
 
         self.quiet = quiet
@@ -88,7 +87,7 @@ class Camera:
 
     def bin_cleanup_thread(self):
         # Let the bins exist for a predetermined amount of time, remove all bins that have existed for longer than this amount
-        save_time_ms = 100
+        save_time_ms = 300
 
         while not self.stop_thread:
             if len(self.bins) > 0:
@@ -113,7 +112,7 @@ class Camera:
 
     def create_save_bin(self, path="./test.tiff"):
         #log.info("Creating save bin")
-        bin_description = "queue name=q{} leaky=1 ! filesink name=filesink async=false location={}".format(path,path)
+        bin_description = "queue name=q{} max-size-buffers=1 leaky=1 ! filesink name=filesink async=false location={}".format(path,path)
         save_bin = Gst.parse_bin_from_description(bin_description, True)
 
         # Add a flag to track buffer
