@@ -18,7 +18,7 @@ class Controller:
 
     def __init__(self, image_width_mm, image_height_mm):
         #Settings for capturing images from multiple distances
-        self.n_images = 15 #make sure you're not going faster than the frame rate of the GStreamer feed... 
+        self.n_images = 9 #make sure you're not going faster than the frame rate of the GStreamer feed... 
         self.height_range = 1
         
         #Objects
@@ -243,7 +243,7 @@ class Controller:
             "id1": cookie.id1,
             "id2": cookie.id2,
             "elapsed_time": elapsed_time,
-            "DPI": dpi,
+            "DPI": round(dpi,2),
             "photo_count": image_count,
             "image_height_mm": self.image_height_mm,
             "image_width_mm": self.image_width_mm,
