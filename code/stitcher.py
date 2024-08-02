@@ -28,7 +28,7 @@ class Stitcher:
     def write_dats(self, dats_path, resize = None):
         # Create dats directory 
         if not os.path.exists(dats_path):
-            os.mkdir(dats_path)
+            os.makedirs(dats_path)
 
         i = 0
         tile_paths = self.get_frames()
@@ -154,14 +154,14 @@ class Stitcher:
 if __name__ == "__main__":
     def stitch_multiple_sizes(path, sizes):
         for size in sizes:
-            stitcher = Stitcher(path)
+            st = Stitcher(path)
             try:
-                stitcher.stitch(resize = size)
+                st.stitch(resize = size)
             except:
                 print("Cannot align with this resize value.")
-            stitcher.delete_dats()
+            st.delete_dats()
 
-            del stitcher
+            del st
 
     sizes = [0.01, 0.05, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]
     tile_path = "C:\\Users\\honey\\Downloads\\BETPOP_WM8_P16"

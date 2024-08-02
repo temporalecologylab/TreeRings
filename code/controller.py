@@ -26,7 +26,6 @@ class Controller:
         self._gantry = gantry.Gantry()
         self.camera = camera.Camera()
         self.focus = focus.Focus(delete_flag=True, setpoint=round(self.n_images / 2))
-        self.stitcher = stitcher.Stitcher()
 
         #attributes
         self.image_height_mm = image_height_mm
@@ -69,6 +68,7 @@ class Controller:
             dirtime = datetime.now().strftime("%H_%M_%S")
             directory = "./{}_{}_{}_{}".format(species, id1, id2, dirtime)
             Path(directory).mkdir()
+            cookie.directory = directory
             self.set_directory(directory)
 
             start_time = time.time()
@@ -88,6 +88,8 @@ class Controller:
             num_images = rows * cols
 
             self.create_metadata(cookie, elapsed_time, num_images, rows, cols)
+            
+            stop_capture.set()
 
     def capture_all_cookies(self, progress_callback, stop_capture):
         while not stop_capture.is_set():
@@ -96,6 +98,24 @@ class Controller:
                 progress_callback((True, True, "{}_{}_{}".format(cookie.species, cookie.id1, cookie.id2)))
                 self.navigate_to_cookie(cookie)
                 self.capture_cookie(cookie, progress_callback, stop_capture)
+                print('stitching frames')
+                self.stitch_frames(cookie.directory)
+                if len(self.cookies) == 0:
+                    stop_capture.set()
+
+    def stitch_frames(self, frame_dir: str):
+
+        sizes = [0.05, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]
+        for size in sizes:
+            st = stitcher.Stitcher(frame_dir) 
+            #st.stitch(resize=size)
+            try:
+                st.stitch(resize = size)
+            except RuntimeError:
+                print("Cannot align with this resize value.")
+            st.delete_dats()
+
+            del st
 
     def calculate_grid(self, cookie): 
         overlap_x = round(self.image_width_mm * cookie.percent_overlap / 100, 3)

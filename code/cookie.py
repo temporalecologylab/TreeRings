@@ -12,6 +12,7 @@ class Cookie:
         self.id1 = id1
         self.id2 = id2
         self.notes = notes
+        self.directory = None
 
 
     def set_center_location(self, x, y, z):
