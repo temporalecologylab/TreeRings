@@ -323,7 +323,7 @@ class Controller:
         # Fast mode
         if mode == 2:
             self._gantry.feed_rate_xy = 1250
-            self._gantry.feed_rate_z = 75
+            self._gantry.feed_rate_z = 150
 
     def navigate_to_cookie(self, cookie):
         x, y, z = cookie.get_top_left_location()
