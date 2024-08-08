@@ -45,8 +45,8 @@ class Controller:
     def set_image_width_mm(self, width):
         self.image_width_mm = width
 
-    def set_directory(self, dir):
-        self.directory = dir
+    def set_directory(self, d):
+        self.directory = d
 
     #### SERPENTINE METHODS ####
     
@@ -67,6 +67,7 @@ class Controller:
 
             dirtime = datetime.now().strftime("%H_%M_%S")
             directory = "./{}_{}_{}_{}".format(species, id1, id2, dirtime)
+            log.info(directory)
             Path(directory).mkdir()
             cookie.directory = directory
             self.set_directory(directory)
@@ -74,8 +75,8 @@ class Controller:
             start_time = time.time()
 
             x, y, z = cookie.get_center_location()
-            gantry_thread = Thread(target=self.capture_grid_photos, args=(focus_queue, pid_queue, pid_lock, rows, cols, y_dist, x_dist, z, self.n_images, self.height_range, progress_callback, stop_capture))
-            focus_thread = Thread(target=self.focus.find_focus, args=(focus_queue, pid_queue, pid_lock, self.directory))
+            gantry_thread = Thread(target=self.capture_grid_photos, args=(cookie.directory, focus_queue, pid_queue, pid_lock, rows, cols, y_dist, x_dist, z, self.n_images, self.height_range, progress_callback, stop_capture))
+            focus_thread = Thread(target=self.focus.find_focus, args=(focus_queue, pid_queue, pid_lock, cookie.directory))
             gantry_thread.start()
             focus_thread.start()
             
@@ -89,7 +90,8 @@ class Controller:
 
             self.create_metadata(cookie, elapsed_time, num_images, rows, cols)
             
-            stop_capture.set()
+            return
+            #stop_capture.set()
 
     def capture_all_cookies(self, progress_callback, stop_capture):
         while not stop_capture.is_set():
@@ -97,6 +99,7 @@ class Controller:
                 cookie = self.cookies.pop(-1)
                 progress_callback((True, True, "{}_{}_{}".format(cookie.species, cookie.id1, cookie.id2)))
                 self.navigate_to_cookie(cookie)
+                log.info("{}".format(cookie))
                 self.capture_cookie(cookie, progress_callback, stop_capture)
                 print('stitching frames')
                 self.stitch_frames(cookie.directory)
@@ -105,7 +108,7 @@ class Controller:
 
     def stitch_frames(self, frame_dir: str):
 
-        sizes = [0.05, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]
+        sizes = [0.05, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
         for size in sizes:
             st = stitcher.Stitcher(frame_dir) 
             #st.stitch(resize=size)
@@ -138,7 +141,7 @@ class Controller:
         
         return y_steps, x_steps, y_step_size, x_step_size
     
-    def capture_grid_photos(self, focus_queue: queue.Queue, pid_queue: queue.Queue, pid_lock, rows: int, cols: int, y_dist, x_dist, z_start, n_images, height_range, progress_callback, stop_capture):
+    def capture_grid_photos(self, d, focus_queue: queue.Queue, pid_queue: queue.Queue, pid_lock, rows: int, cols: int, y_dist, x_dist, z_start, n_images, height_range, progress_callback, stop_capture):
         # for loop capture
         # Change feed rate back to being slow
         self.set_feed_rate(1)
@@ -155,13 +158,13 @@ class Controller:
                         break
 
                     if row % 2 == 1:
-                        imgs = self.capture_images_multiple_distances(n_images, self._gantry.feed_rate_z, height_range, 0.2, row, cols - col - 1, z_start)
+                        imgs = self.capture_images_multiple_distances(d, n_images, self._gantry.feed_rate_z, height_range, 0.2, row, cols - col - 1, z_start)
                         pid_lock.acquire()
                         self.jog_relative_x(-x_dist)
                         pid_lock.release()
                     # Even rows go right
                     else:
-                        imgs = self.capture_images_multiple_distances(n_images, self._gantry.feed_rate_z, height_range, 0.2, row, col, z_start)
+                        imgs = self.capture_images_multiple_distances(d, n_images, self._gantry.feed_rate_z, height_range, 0.2, row, col, z_start)
                         pid_lock.acquire()
                         self.jog_relative_x(x_dist)
                         pid_lock.release()
@@ -186,10 +189,10 @@ class Controller:
                 
                 if row % 2 == 1:
                     # imgs = self.capture_images_multiple_distances(0.1, z_steps, row, 0)
-                    imgs = self.capture_images_multiple_distances(n_images, self._gantry.feed_rate_z, height_range, 0.2, row, 0, z_start)
+                    imgs = self.capture_images_multiple_distances(d, n_images, self._gantry.feed_rate_z, height_range, 0.2, row, 0, z_start)
                 else:
                     # imgs = self.capture_images_multiple_distances(0.05, z_steps, row, cols - 1)
-                    imgs = self.capture_images_multiple_distances(n_images, self._gantry.feed_rate_z, height_range, 0.2, row, cols - 1, z_start)
+                    imgs = self.capture_images_multiple_distances(d, n_images, self._gantry.feed_rate_z, height_range, 0.2, row, cols - 1, z_start)
                 focus_queue.put(imgs)
 
                 pid_lock.acquire()    
@@ -209,7 +212,7 @@ class Controller:
             focus_queue.put([-1])
             break
 
-    def capture_images_multiple_distances(self, image_count, feed_rate, r, acceleration_buffer, row, col, z_start):
+    def capture_images_multiple_distances(self, d, image_count, feed_rate, r, acceleration_buffer, row, col, z_start):
         """A method to move the camera through a Z range to allow for multiple images to be taken. This implementation is designed to reduce motion blur by taking advantage of a slow feed rate and avoiding a deceleration then sleep cycle to get an in focus image.
 
         Args:
@@ -247,7 +250,7 @@ class Controller:
         
         # First photo at the top of the range 
         for i in range(image_count):
-            file_location = f"{self.directory}/frame_{row}_{col}_{i}.tiff"
+            file_location = f"{d}/frame_{row}_{col}_{i}.tiff"
             image_filenames.append(file_location)
             self.camera.save_frame(file_location)
             time.sleep(time_between_photos_s)
