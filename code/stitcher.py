@@ -125,7 +125,7 @@ class Stitcher:
             mosaic_dat_path = os.path.join(path, "mosaic_{}per.dat".format(int(resize *100)))
         else:
             path = os.path.join(self._frame_dir, "100per")
-            mosaic_dat_path = os.path.join(path, "mosaic_full_res.dat")
+            mosaic_dat_path = os.path.join(path, "mosaic_100per.dat")
         
         self.dats_path = os.path.join(path, "dats")
         print("Writing dats with resize {}".format(resize))
