@@ -1,7 +1,9 @@
 import cv2
 import numpy as np
+import os 
+import json
 
-def overlay_scale_bar(image, pixel_size, scale_bar_length_mm=2, bar_height=50, bar_color=(255, 255, 0), text_color=(255, 255, 0), font_scale=3.5, thickness=10):
+def overlay_scale_bar(image, pixel_size, scale_bar_length_mm=2, bar_height=50, margin= 100, bar_color=(255, 255, 0), text_color=(255, 255, 0), font_scale=3.5, thickness=10):
     """
     Overlays a scale bar on the given image using OpenCV.
 
@@ -23,7 +25,6 @@ def overlay_scale_bar(image, pixel_size, scale_bar_length_mm=2, bar_height=50, b
     scale_bar_length_px = int(scale_bar_length_mm / pixel_size)
 
     # Bottom-left corner of the scale bar
-    margin = 100  # Margin from the edge
     x_start = margin
     y_start = image.shape[0] - bar_height - margin
 
@@ -52,21 +53,36 @@ def overlay_scale_bar(image, pixel_size, scale_bar_length_mm=2, bar_height=50, b
 # Example usage:
 
 def main():
-    img = cv2.imread("c:\\Users\\honey\\Downloads\\BETPOP_WM8_P16\\10per\\mosaic_10per.tif")
-    
-    DPI = 1648.26
-    
-    pixel_size_mm = 25.4 / DPI  # Example pixel size in mm
+    parent = "C:\\Users\\honey\\Downloads\\SCALE_TEST\\"
+    resolutions = ["5per", "10per", "20per", "30per", "40per"]
+    cols = [(255, 0, 0), (0, 255, 0), (0, 0, 255), (255, 255, 0), (255, 0, 255)]
 
-    bar_height = int(img.shape[0] * 0.02)
-    thickness = int(bar_height / 5 )
-    font_scale = int(thickness / 5)
-    img_with_scale_bar = overlay_scale_bar(img, pixel_size_mm, scale_bar_length_mm=25, bar_height = bar_height, font_scale =  font_scale, thickness=thickness)
+    for resolution, col in zip(resolutions, cols):
+        img_name = "mosaic_{}.tif".format(resolution)
+        img_dir = os.path.join(parent, resolution, img_name)
+        img = cv2.imread(img_dir)
+        metadata_dir = os.path.join(parent,resolution, "metadata.json")
+        
+        f = open(metadata_dir)
+        metadata = json.load(f)
+        f.close()
 
-    cv2.namedWindow("Image with Scale Bar", cv2.WINDOW_NORMAL)
-    cv2.imshow('Image with Scale Bar', img_with_scale_bar)
-    cv2.waitKey(0)
-    cv2.destroyAllWindows()
+        DPI = metadata["DPI"]
+        
+        pixel_size_mm = 25.4 / DPI  # Example pixel size in mm
+
+        bar_height = int(img.shape[0] * 0.02)
+        thickness = int(bar_height / 5 )
+        font_scale = int(thickness / 5)
+        margin = int(DPI * 0.33)
+        img_with_scale_bar = overlay_scale_bar(img, pixel_size_mm, scale_bar_length_mm=20, bar_height = bar_height, margin = margin, font_scale =  font_scale, thickness=thickness, bar_color=col, text_color=col)
+
+        img_dir_scaled = os.path.join(parent,resolution, "mosaic_{}_scale.jpg".format(resolution))
+        cv2.imwrite(img_dir_scaled, img_with_scale_bar)
+        cv2.namedWindow("Image with Scale Bar", cv2.WINDOW_NORMAL)
+        cv2.imshow('Image with Scale Bar', img_with_scale_bar)
+        cv2.waitKey(0)
+        cv2.destroyAllWindows()
     
 
 if __name__ == "__main__":
