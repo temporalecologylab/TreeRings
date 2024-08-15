@@ -1,20 +1,49 @@
 import cv2
 import time
+import numpy as np
+import math
+from pathlib import Path
+from datetime import datetime
 
 class Cookie:
-    def __init__(self, cookie_width_mm: int, cookie_height_mm: int, species:str, id1:str, id2:str, notes:str, percent_overlap:int = 20, x:float = None, y:float = None, z:float = None, x_tl:float = None, y_tl:float = None, z_tl:float = None):
+    def __init__(self, cookie_width_mm: int, cookie_height_mm: int, species:str, id1:str, id2:str, notes:str, image_width_mm:float, image_height_mm:float, percent_overlap:int = 50, x:float = None, y:float = None, z:float = None):
         self.width = cookie_width_mm
         self.height = cookie_height_mm
         self.percent_overlap = percent_overlap
         self._center = (x,y,z)
-        self._top_left = (x_tl, y_tl, z_tl)
+        tl_x = x - (self.width/2)
+        tl_y = y + (self.height/2)
+        tl_z = z
+        self._top_left = (tl_x, tl_y, tl_z)
         self.species = species
         self.id1 = id1
         self.id2 = id2
         self.notes = notes
-        self.directory = None
 
+        dirtime = datetime.now().strftime("%H_%M_%S")
+        directory = "./{}_{}_{}_{}".format(species, id1, id2, dirtime)
+        Path(directory).mkdir()
+        self.directory = directory
 
+        self.image_width_mm = image_width_mm
+        self.image_height_mm = image_height_mm
+        self.rows, self.cols, self.x_step_size, self.y_step_size = self.calculate_grid()
+        self.background = np.zeros((self.rows, self.cols))
+        self.background_std = np.zeros((self.rows, self.cols))
+        self.coordinates = np.zeros((self.rows, self.cols, 3))
+
+    def calculate_grid(self):
+        overlap_x = round(self.image_width_mm * self.percent_overlap / 100, 3)
+        overlap_y = round(self.image_height_mm * self.percent_overlap / 100, 3)
+
+        x_step_size = self.image_width_mm - overlap_x
+        y_step_size = self.image_height_mm - overlap_y 
+
+        cols = math.ceil(self.width / x_step_size)
+        rows = math.ceil(self.height / y_step_size)
+
+        return rows, cols, x_step_size, y_step_size
+    
     def set_center_location(self, x, y, z):
         self._center = (x,y,z)
 

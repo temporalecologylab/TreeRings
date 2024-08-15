@@ -13,10 +13,10 @@ class Focus:
     def __init__(self, delete_flag, setpoint):
         self.DELETE_FLAG = delete_flag
         self.scale_factor = 0.05
-        self.PID = AsynchronousPID(Kp=1.0, Ki=0, Kd=0.05, setpoint=setpoint) # Setpoint?? depends on camera i think
+        self.PID = AsynchronousPID(Kp=1.0, Ki=0, Kd=0.05, setpoint=setpoint) 
         self.TESTINGLOG = []
 
-    def find_focus(self, focus_queue, pid_queue, pid_lock, directory):
+    def find_focus(self, focus_queue, pid_queue, pid_lock, directory, background:np.array, background_std:np.array):
         while True:
             image_files = focus_queue.get()
             pid_lock.acquire()
@@ -26,10 +26,10 @@ class Focus:
                 break
             focused_image_name, std = self.best_focused_image(image_files)
             image_name = focused_image_name.split("/")[-1].split("_")
-            extract_row = image_name[1]
-            extract_col = image_name[2]
+            row = int(image_name[1])
+            col = int(image_name[2])
             stack_number = image_name[3].split(".")[0]
-            filename = "focused_{}_{}.tiff".format(extract_row, extract_col)
+            filename = "focused_{}_{}.tiff".format(row, col)
             if self.DELETE_FLAG:
                 image_files.remove(focused_image_name)
                 self.delete_unfocused(image_files)
@@ -37,8 +37,8 @@ class Focus:
                 Path("{}/focused_images".format(self.directory)).mkdir(exist_ok=True)
                 shutil.copy(focused_image_name, "{}/focused_images/{}".format(directory,filename))
             
-            self.TESTINGLOG.append(std)
-            np.savetxt("stdlog.csv", self.TESTINGLOG, delimiter=",")
+            background_std[row][col] = std
+            background[row][col] = self.is_background(std)
 
             if not self.is_background(std):
                 control_variable = self.PID.update(int(stack_number))

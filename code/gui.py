@@ -491,9 +491,9 @@ class App(Gtk.Window):
             if option != "Custom":
                 height, width = zoom_size_dict[option]
                 self.entry_height_img.set_text(str(height))
-                self.controller.image_height_mm = height
+                self.controller.set_image_height_mm(height)
                 self.entry_width_img.set_text(str(width))
-                self.controller.image_width_mm = width
+                self.controller.set_image_width_mm(width)
 
     def print_cookie_height_entry(self, widget, event):
         height = int(self.entry_height_cookie.get_text())

@@ -10,7 +10,16 @@ from datetime import datetime
 import glob
 import gc
 import imutils
+import logging as log
 
+log.basicConfig(format='%(process)d-%(levelname)s-%(message)s', level=log.INFO)
+
+class MaxFileSizeException(Exception):
+    "Raised when a file is created that is over the maximum file size"
+    def __init__(self, size):
+        self.size = size 
+        message = "File over {} MB created"
+        super().__init__(message)
 class Stitcher:
     def __init__(self, frame_dir):
         self._memmaps = []
@@ -21,6 +30,7 @@ class Stitcher:
         self._frame_dir = frame_dir
         self._resolution = round(3840 * 2160 / 1e6, 2)        
         self._metadata = None
+        self._max_file_size = 10000 # 10 GBs
 
         self.load_metadata()
         
@@ -148,7 +158,18 @@ class Stitcher:
         # no need in writing a normal tiff if it's going to be greater than the maximum tiff filesize
         if (shape[0] * shape[1] * shape[2]) / 1e6  < 3500:
             stitch = np.memmap(mosaic_dat_path, dtype='uint8', mode='r', shape=(shape[0], shape[1], shape[2]))
-            self.memmap_to_tiff(stitch, str.replace(mosaic_dat_path, ".dat", ".tif"))
+
+            try:
+                self.memmap_to_tiff(stitch, str.replace(mosaic_dat_path, ".dat", ".tif"))
+                del stitch
+                # get rid of dat if there's a tiff 
+                os.remove(mosaic_dat_path)
+
+            except OSError:
+                log.info("Not enough memory to create large tiff file")
+            
+        elif (shape[0] * shape[1] * shape[2]) / 1e6 > self._max_file_size: 
+            raise MaxFileSizeException(self._max_file_size)
 
 
 if __name__ == "__main__":

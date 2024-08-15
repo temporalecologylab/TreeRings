@@ -53,7 +53,6 @@ class Controller:
     def capture_cookie(self, cookie: cookie.Cookie, progress_callback, stop_capture):
 
         while not stop_capture.is_set():
-            rows, cols, y_dist, x_dist = self.calculate_grid(cookie)
             focus_queue = queue.Queue()
             pid_queue = queue.Queue()
             pid_lock = Lock()
@@ -65,18 +64,14 @@ class Controller:
             id1 = cookie.id1
             id2 = cookie.id2
 
-            dirtime = datetime.now().strftime("%H_%M_%S")
-            directory = "./{}_{}_{}_{}".format(species, id1, id2, dirtime)
-            log.info(directory)
-            Path(directory).mkdir()
-            cookie.directory = directory
-            self.set_directory(directory)
+            self.set_directory(cookie.directory)
 
             start_time = time.time()
 
-            x, y, z = cookie.get_center_location()
-            gantry_thread = Thread(target=self.capture_grid_photos, args=(cookie.directory, focus_queue, pid_queue, pid_lock, rows, cols, y_dist, x_dist, z, self.n_images, self.height_range, progress_callback, stop_capture))
-            focus_thread = Thread(target=self.focus.find_focus, args=(focus_queue, pid_queue, pid_lock, cookie.directory))
+            _, _, z = cookie.get_center_location()
+        
+            gantry_thread = Thread(target=self.capture_grid_photos, args=(cookie.coordinates, cookie.directory, focus_queue, pid_queue, pid_lock, cookie.rows, cookie.cols, cookie.y_step_size, cookie.x_step_size, z, self.n_images, self.height_range, progress_callback, stop_capture))
+            focus_thread = Thread(target=self.focus.find_focus, args=(focus_queue, pid_queue, pid_lock, cookie.directory, cookie.background, cookie.background_std))
             gantry_thread.start()
             focus_thread.start()
             
@@ -86,9 +81,8 @@ class Controller:
 
             end_time = time.time()
             elapsed_time = end_time - start_time
-            num_images = rows * cols
 
-            self.create_metadata(cookie, elapsed_time, num_images, rows, cols)
+            self.create_metadata(cookie, elapsed_time)
             
             return
             #stop_capture.set()
@@ -98,13 +92,15 @@ class Controller:
             for i in range(len(self.cookies)):
                 cookie = self.cookies.pop(-1)
                 progress_callback((True, True, "{}_{}_{}".format(cookie.species, cookie.id1, cookie.id2)))
-                self.navigate_to_cookie(cookie)
+                self.navigate_to_cookie_tl(cookie)
                 log.info("{}".format(cookie))
                 self.capture_cookie(cookie, progress_callback, stop_capture)
                 print('stitching frames')
                 self.stitch_frames(cookie.directory)
                 if len(self.cookies) == 0:
                     stop_capture.set()
+
+            return
 
     def stitch_frames(self, frame_dir: str):
 
@@ -116,32 +112,14 @@ class Controller:
                 st.stitch(resize = size)
             except RuntimeError:
                 print("Cannot align with this resize value.")
-            st.delete_dats()
-
-            del st
-
-    def calculate_grid(self, cookie): 
-        overlap_x = round(self.image_width_mm * cookie.percent_overlap / 100, 3)
-        overlap_y = round(self.image_height_mm * cookie.percent_overlap / 100, 3)
-
-        log.info("overlap x: {}".format(overlap_x))
-        log.info("overlap y: {}".format(overlap_y))
-        
-        x_step_size = self.image_width_mm - overlap_x
-        y_step_size = self.image_height_mm - overlap_y 
-
-        log.info("x_step_size x: {}".format(x_step_size))
-        log.info("y_step_size y: {}".format(y_step_size))
-
-        x_steps = math.ceil(cookie.width / x_step_size)
-        y_steps = math.ceil(cookie.height / y_step_size)
-
-        log.info("x_steps: {}".format(x_steps))
-        log.info("y_steps: {}".format(y_steps))
-        
-        return y_steps, x_steps, y_step_size, x_step_size
+            except stitcher.MaxFileSizeException:
+                print("Max file size met, no longer trying to stitch")
+                break
+            finally:
+                st.delete_dats()
+                del st
     
-    def capture_grid_photos(self, d, focus_queue: queue.Queue, pid_queue: queue.Queue, pid_lock, rows: int, cols: int, y_dist, x_dist, z_start, n_images, height_range, progress_callback, stop_capture):
+    def capture_grid_photos(self, coordinates: list, d: Path, focus_queue: queue.Queue, pid_queue: queue.Queue, pid_lock, rows: int, cols: int, y_dist, x_dist, z_start, n_images, height_range, progress_callback, stop_capture):
         # for loop capture
         # Change feed rate back to being slow
         self.set_feed_rate(1)
@@ -156,17 +134,23 @@ class Controller:
                     # Odd rows go left
                     if stop_capture.is_set():
                         break
-
+                    
+                    current_col = None
                     if row % 2 == 1:
-                        imgs = self.capture_images_multiple_distances(d, n_images, self._gantry.feed_rate_z, height_range, 0.2, row, cols - col - 1, z_start)
+                        current_col = cols - col - 1
+                        coordinates[row][current_col] = self._gantry.get_xyz()
+                        imgs = self.capture_images_multiple_distances(d, n_images, self._gantry.feed_rate_z, height_range, 0.2, row, current_col, z_start)
                         pid_lock.acquire()
                         self.jog_relative_x(-x_dist)
                         pid_lock.release()
                     # Even rows go right
                     else:
-                        imgs = self.capture_images_multiple_distances(d, n_images, self._gantry.feed_rate_z, height_range, 0.2, row, col, z_start)
+                        current_col = col
+                        coordinates[row][current_col] = self._gantry.get_xyz()
+                        imgs = self.capture_images_multiple_distances(d, n_images, self._gantry.feed_rate_z, height_range, 0.2, row, current_col, z_start)
                         pid_lock.acquire()
                         self.jog_relative_x(x_dist)
+
                         pid_lock.release()
 
                     focus_queue.put(imgs)
@@ -189,10 +173,16 @@ class Controller:
                 
                 if row % 2 == 1:
                     # imgs = self.capture_images_multiple_distances(0.1, z_steps, row, 0)
-                    imgs = self.capture_images_multiple_distances(d, n_images, self._gantry.feed_rate_z, height_range, 0.2, row, 0, z_start)
+                    current_col = 0
+                    coordinates[row][current_col] = self._gantry.get_xyz()
+                    imgs = self.capture_images_multiple_distances(d, n_images, self._gantry.feed_rate_z, height_range, 0.2, row, current_col, z_start)
+
                 else:
                     # imgs = self.capture_images_multiple_distances(0.05, z_steps, row, cols - 1)
-                    imgs = self.capture_images_multiple_distances(d, n_images, self._gantry.feed_rate_z, height_range, 0.2, row, cols - 1, z_start)
+                    current_col = cols - 1
+                    coordinates[row][current_col] = self._gantry.get_xyz()
+
+                    imgs = self.capture_images_multiple_distances(d, n_images, self._gantry.feed_rate_z, height_range, 0.2, row, current_col, z_start)
                 focus_queue.put(imgs)
 
                 pid_lock.acquire()    
@@ -263,27 +253,31 @@ class Controller:
 
         return image_filenames
     
-    def create_metadata(self, cookie, elapsed_time, image_count, rows, cols):
+    def create_metadata(self, cookie: cookie.Cookie, elapsed_time):
         cookie_size = cookie.height * cookie.width
         camera_fov = self.image_height_mm * self.image_width_mm
         pixels = self.camera.h_pixels * self.camera.w_pixels
         dpi = self.camera.w_pixels/self.image_width_mm * 25.4  
         metadata = {
             "species": cookie.species,
-            "rows": rows,
-            "cols": cols,
-            "size": rows * cols,
+            "rows": cookie.rows,
+            "cols": cookie.cols,
             "id1": cookie.id1,
             "id2": cookie.id2,
             "elapsed_time": elapsed_time,
             "DPI": round(dpi,2),
-            "photo_count": image_count,
+            "photo_count": cookie.rows * cookie.cols,
             "image_height_mm": self.image_height_mm,
             "image_width_mm": self.image_width_mm,
             "cookie_height_mm": cookie.height,
             "cookie_width_mm":  cookie.width,
             "camera_pixels": pixels,
-            "notes": cookie.notes
+            "notes": cookie.notes,
+            "center": cookie.get_center_location(),
+            "top_left": cookie.get_top_left_location(),
+            "coordinates": cookie.coordinates.tolist(),
+            "background": cookie.background.tolist(),
+            "background_std": cookie.background_std.tolist()
         }
 
         with open ("{}/metadata.json".format(self.directory), "w", encoding="utf-8") as f:
@@ -325,7 +319,7 @@ class Controller:
             self._gantry.feed_rate_xy = 1250
             self._gantry.feed_rate_z = 150
 
-    def navigate_to_cookie(self, cookie):
+    def navigate_to_cookie_tl(self, cookie):
         x, y, z = cookie.get_top_left_location()
         self.jog_absolute_xyz(x, y, z)
 
@@ -382,10 +376,6 @@ class Controller:
     def add_cookie_sample(self, width, height, overlap, species, id1, id2, notes):
         center_x, center_y, center_z = self._gantry.get_xyz()
 
-        tl_x = center_x - (width/2)
-        tl_y = center_y + (height/2)
-        tl_z = center_z
-
         if overlap == '':
             overlap = 50
         if species == '':
@@ -396,7 +386,7 @@ class Controller:
             id2 = "na"
 
         #path_name = self.cb_capture_image()
-        ck = cookie.Cookie(width, height, species, id1, id2, notes, overlap, center_x, center_y, center_z, tl_x, tl_y, tl_z)
+        ck = cookie.Cookie(width, height, species, id1, id2, notes, self.image_width_mm, self.image_height_mm, overlap, center_x, center_y, center_z)
         self.cookies.append(ck)
 
     def get_cookies(self):

@@ -48,6 +48,7 @@ class Gantry:
                 try:
                     _x, _y, _z = self.parse_coordinates(res_str)
                 except:
+                    log.info("Error reading parsing coordinates")
                     continue
                 self._x = _x
                 self._y = _y
