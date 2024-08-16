@@ -41,7 +41,10 @@ class Gantry:
         self._send_command("$10=2")
         while not self.stop_threads:
             res_str = self._send_command(cmd)
-            if res_str[-2:] == "ok":
+
+            if res_str is None:
+                continue
+            elif res_str[-2:] == "ok":
                 continue
             elif "WPos" in res_str:
                 self.position_lock.acquire()
@@ -57,6 +60,7 @@ class Gantry:
                 self.state = self.parse_state(res_str)
                 if not self.quiet:
                     log.info("X {} \nY {}\nZ{}\n".format(_x, _y, _z))
+
             time.sleep(0.2)
 
     def get_xyz(self):
@@ -94,9 +98,14 @@ class Gantry:
     def _send_command(self, cmd) -> str:
         def read_response(ser):
             response = ""
-            while ser.in_waiting > 0:
-                response += ser.readline().decode().strip() + "\n"
-            return response
+
+            try: 
+                while ser.in_waiting > 0:
+                    response += ser.readline().decode().strip() + "\n"
+                return response
+            except:
+                log.info("Error reading serial")
+                return None
         
         if not self.quiet:
             log.info("Sending {}".format(cmd))
