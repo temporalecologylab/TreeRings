@@ -23,6 +23,10 @@ These instructions will get you a copy of the project up and running on your loc
 | USBC Flash Drive | Generic, for transferring files from the device to your main computer. |
 | Display Port to HDMI adapter | Any adapter should work if using a HDMI monitor |
 | Monitor | Computer monitor of some sort to use the GUI. | 
+| 3m HDMI Cord | Generic | 
+| 3m USB-B to USB-A Cord | Generic | 
+| [Corner brackets](https://www.amazon.ca/dp/B09YGJMNBP?ref=ppx_yo2ov_dt_b_fed_asin_title&th=1) for aluminum extrusion | Used for making stronger, and taller legs for the Acro | 
+| [250mm V-Slot Aluminum](https://www.amazon.ca/dp/B0CL49ZGZX?ref=ppx_yo2ov_dt_b_fed_asin_title) | Used for extending the height of the Acro | 
 
 
 ### Installing TODO
