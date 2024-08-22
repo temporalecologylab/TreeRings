@@ -61,7 +61,7 @@ class Focus:
         return normVar
 
     def best_focused_image(self, images):
-        best_image_filepath = []
+        best_image_filepath = None
         best_var = 0
         vars = []
 
