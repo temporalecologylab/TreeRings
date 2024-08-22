@@ -12,11 +12,18 @@ These instructions will get you a copy of the project up and running on your loc
 
 | Item | Description |
 | ---  |     ---     | 
-| FDM 3D Printer | Many components are 3D printed to allow for rapid prototyping. Printing quality varies across platforms and materials. Choose what is best for your lab - our parts were made with a Bambu Carbon X1 printer. |
+| FDM 3D Printer | Many components are 3D printed to allow for rapid prototyping. Printing quality varies across platforms and materials. Choose what is best for your lab - our parts were made with a [Bambu Carbon X1](https://ca.store.bambulab.com/products/x1-carbon?variant=46286179270896&currency=CAD&utm_medium=product_sync&utm_source=google&utm_content=sag_organic&utm_campaign=sag_organic&gad_source=1&gclid=Cj0KCQjww5u2BhDeARIsALBuLnPN2AA2AAOx9SfhR0Slt6G1aFqrriQxQIsDFw2W-HsvmBLvWzmlFU4aAoNQEALw_wcB) printer. |
 | [Jetson Orin Nano](https://www.seeedstudio.com/NVIDIAr-Jetson-Orintm-Nano-Developer-Kit-p-5617.html?gad_source=1&gclid=Cj0KCQjww5u2BhDeARIsALBuLnM4tGqXsBM7JNxW5mwzGraFG74Qjp_JeM_HpbXGEc9Mlnl9b1s2fv8aAsPREALw_wcB) | This acts as the main computing device, running the GUI, stitching software, driving the camera, etc. |
 | [OpenBuilds Acro](https://openbuilds.com/builds/openbuilds-acro-system.5416/) | The chassis for the gantry robot has already been designed and greatly documented by OpenBuilds. Building on top of this system has many benefits such as a library of documentation and customer service! |
 | [OpenBuilds BlackBox X32](https://openbuildspartstore.com/BlackBox-Motion-Control-System-X32) | The motor controller to convert G-Code commands into electrical signals for the stepper motors. This was originally an Arduino - with a CNC hat and GRBL firmware. Sadly this quickly became a mess of wires and lacked the robust and clean wiring that the BlackBox has out of the box. |
-| | | 
+| [Raspberry Pi HQ Camera](https://www.digikey.ca/en/products/detail/raspberry-pi/SC1220/12339164?utm_adgroup=&utm_source=google&utm_medium=cpc&utm_campaign=PMax%20Product_Low%20ROAS%20Categories&utm_term=&productid=12339164&utm_content=&utm_id=go_cmp-20291741422_adg-_ad-__dev-c_ext-_prd-12339164_sig-Cj0KCQjww5u2BhDeARIsALBuLnPqCH09hu75KK18zBjZjUBQatUt-5BTpTnjI5q8qJso41ViaZUtn34aAnrvEALw_wcB&gad_source=1&gclid=Cj0KCQjww5u2BhDeARIsALBuLnPqCH09hu75KK18zBjZjUBQatUt-5BTpTnjI5q8qJso41ViaZUtn34aAnrvEALw_wcB) | The Raspberry Pi HQ camera is guaranteed to be made for a few more years. It is also a cheap and convenient alternative to a professional camera. Although this lacks built in autofocus, making the control of the system long. | 
+| [Seeed Studio 100x C-Mount Lens](https://www.mouser.ca/ProductDetail/Seeed-Studio/114992279?qs=sPbYRqrBIVkEZBNsZalWRw%3D%3D&mgh=1&utm_id=17633666059&gad_source=1&gclid=Cj0KCQjww5u2BhDeARIsALBuLnODICm5ko0IUJuMAPNL5cLVtKh6Wy707Y80PBOfuO5cLn4FYl5yqvsaAvkBEALw_wcB) | This lens has variable focal lengths allowing for easy adjustment of amount of the detail desired while capturing the images. | 
+| USB / Wireless Keyboard | Generic |
+| USB / Wireless Mouse | Generic |
+| USBC Flash Drive | Generic, for transferring files from the device to your main computer. |
+| Display Port to HDMI adapter | Any adapter should work if using a HDMI monitor |
+| Monitor | Computer monitor of some sort to use the GUI. | 
+
 
 ### Installing TODO
 
