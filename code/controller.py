@@ -95,8 +95,11 @@ class Controller:
                 self.navigate_to_cookie_tl(cookie)
                 log.info("{}".format(cookie))
                 self.capture_cookie(cookie, progress_callback, stop_capture)
-                print('stitching frames')
-                self.stitch_frames(cookie.directory)
+                
+                # Only stitch if the capture complete successfully
+                if not stop_capture.is_set():
+                    print('stitching frames')
+                    self.stitch_frames(cookie.directory)
                 if len(self.cookies) == 0:
                     stop_capture.set()
 
@@ -115,6 +118,9 @@ class Controller:
             except stitcher.MaxFileSizeException:
                 print("Max file size met, no longer trying to stitch")
                 break
+            except Exception as e:
+                print(e)
+                print("Unexpected exception, potentially too many files open")
             finally:
                 st.delete_dats()
                 del st
