@@ -20,6 +20,7 @@ class MaxFileSizeException(Exception):
         self.size = size 
         message = "File over {} MB created"
         super().__init__(message)
+
 class Stitcher:
     def __init__(self, frame_dir):
         self._memmaps = []
@@ -51,15 +52,19 @@ class Stitcher:
                 i+=1
                 memmap_array[:] = data
                 self._memmaps.append(memmap_array)
+
+                # flush to save the array
                 memmap_array.flush()
-                del memmap_array
+                #del memmap_array
                 del dataset
         
         print("Wrote dats")
+
     def create_tiles(self):
         for memmap in self._memmaps:
             self._tiles.append(tile_memmap.MemmapOpenCVTile(memmap))
         print("Created tiles")
+
     def create_mosaic(self):
         self._mosaic = mosaic_memmap.MemmapStructuredMosaic(self._tiles, dim=self._metadata["cols"])
         print("Created mosaic")
@@ -178,13 +183,18 @@ if __name__ == "__main__":
             st = Stitcher(path)
             try:
                 st.stitch(resize = size)
-            except:
+            except st.MaxFileSizeException:
+                print("Max file size met, no longer trying to stitch")
+                break
+            except Exception as e:
+                print(e)
                 print("Cannot align with this resize value.")
-            st.delete_dats()
+            finally:
+                st.delete_dats()
 
-            del st
+                del st
 
-    sizes = [0.01, 0.05, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]
+    sizes = [0.05, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
     tile_path = "C:\\Users\\honey\\Downloads\\BETPOP_WM8_P16"
     stitch_multiple_sizes(tile_path, sizes)
     # tile_path = "C:\\Users\\honey\\Downloads\\BETPOP_WM8_P16_22_55_11_good"
