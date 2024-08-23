@@ -11,15 +11,17 @@ class Camera:
 
     def __init__(self, quiet = True):
         # Adding hardcoded image size, will need to update to update DPI
-        W_PIXELS = 3840
-        H_PIXELS = 2160
+        CROP_W = 500
+        CROP_H = 100
+        W_PIXELS = 3840 - 2 * CROP_W
+        H_PIXELS = 2160 - 2 * CROP_H
 
         Gst.init(None)
         # Create the pipeline with both display and save frame functionality
         
         self.pipeline = Gst.parse_launch(
-            "nvarguscamerasrc wbmode=1 ee-mode=2 ee-strength=0.5 exposurecompensation=0.5 exposuretimerange='680000000 600000000'  aelock=true ! video/x-raw(memory:NVMM),width={},height={},framerate=30/1 ! videorate ! video/x-raw(memory:NVMM),width=3840,height=2160,framerate=15/1 !".format(W_PIXELS, H_PIXELS) + #683709000
-            "nvvideoconvert flip-method=2 ! videobalance contrast=1.25 ! queue max-size-buffers=1 leaky=2 ! tee name=t "
+            "nvarguscamerasrc wbmode=1 ee-mode=2 ee-strength=0.5 exposurecompensation=0.5 exposuretimerange='680000000 600000000'  aelock=true ! video/x-raw(memory:NVMM),width={},height={},framerate=30/1 ! videorate ! video/x-raw(memory:NVMM),width=3840,height=2160,framerate=15/1 !".format(W_PIXELS + (2*CROP_W), H_PIXELS + (2*CROP_H)) + #683709000
+            "nvvideoconvert src-crop='{}:{}:{}:{}' flip-method=2 ! video/x-raw,width={},height={},framerate=15/1 ! videobalance contrast=1.25 ! queue max-size-buffers=1 leaky=2 ! tee name=t ".format( CROP_W, CROP_H, W_PIXELS, H_PIXELS, W_PIXELS, H_PIXELS) +
             "t. ! queue max-size-buffers=1 leaky=2 ! autovideosink "
             "t. ! queue max-size-buffers=1 leaky=2 ! avenc_tiff ! tee name=t_bin ! fakesink"
         )
