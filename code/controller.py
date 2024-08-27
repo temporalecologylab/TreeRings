@@ -125,7 +125,7 @@ class Controller:
                 st.delete_dats()
                 del st
     
-    def capture_grid_photos(self, focus_index:list, coordinates: list, d: Path, focus_queue: queue.Queue, pid_queue: queue.Queue, pid_lock, rows: int, cols: int, y_dist, x_dist, z_start, n_images, height_range, progress_callback, stop_capture):
+    def capture_grid_photos(self, coordinates: list, d: Path, focus_queue: queue.Queue, pid_queue: queue.Queue, pid_lock, rows: int, cols: int, y_dist, x_dist, z_start, n_images, height_range, progress_callback, stop_capture):
         # for loop capture
         # Change feed rate back to being slow
         self.set_feed_rate(1)
