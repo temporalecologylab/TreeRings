@@ -30,6 +30,8 @@ class Camera:
         self.bus = self.pipeline.get_bus()
         self.w_pixels = W_PIXELS
         self.h_pixels = H_PIXELS
+        self.crop_w = CROP_W
+        self.crop_h = CROP_H
 
         if quiet:
             pass

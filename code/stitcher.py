@@ -100,12 +100,14 @@ class Stitcher:
         new_metadata["id2"]=self._metadata["id2"]
         new_metadata["notes"]=self._metadata["notes"]
         new_metadata["camera_pixels"]=self._metadata["camera_pixels"]
+        new_metadata["percent_overlap"]=self._metadata["percent_overlap"]
         new_metadata["DPI"] = round(shape[0] / self._metadata["cookie_height_mm"] * 25.4, 2)
         new_metadata["cookie_height_mm"] = self._metadata["cookie_height_mm"]
         new_metadata["cookie_width_mm"] = self._metadata["cookie_width_mm"]
         new_metadata["pixels_h"] = shape[0]
         new_metadata["pixels_w"] = shape[1]
         new_metadata["depth"] = shape[2]
+        
 
         with open(os.path.join(new_dir, 'metadata.json'), 'w', encoding='utf-8') as f:
             json.dump(new_metadata, f, ensure_ascii=False, indent=4)
