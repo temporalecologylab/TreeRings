@@ -13,7 +13,7 @@ class Focus:
     def __init__(self, delete_flag, setpoint):
         self.DELETE_FLAG = delete_flag
         self.scale_factor = 0.05
-        self.PID = AsynchronousPID(Kp=1.0, Ki=0, Kd=0.05, setpoint=setpoint) 
+        self.PID = AsynchronousPID(Kp=1.0, Ki=0.1, Kd=0.05, setpoint=setpoint) 
         self.TESTINGLOG = []
 
     def find_focus(self, focus_queue, pid_queue, pid_lock, directory, index:np.array, background:np.array, background_std:np.array):
@@ -48,6 +48,7 @@ class Focus:
                 pid_queue.put(update_z)
             else:
                 pid_queue.put(0)
+                log.info("Background detected, ignore focus index score")
             focus_queue.task_done()
             pid_lock.release()
 	    
@@ -84,7 +85,8 @@ class Focus:
             os.remove(file_name)
     
     def is_background(self, std):
-        if std > 0.125:
+        # High zoom, 0.125 seemed to work. Low zoom, 0.015 seems to work
+        if std > 0.015:
             return False
         else:
             return True
