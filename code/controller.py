@@ -71,7 +71,7 @@ class Controller:
             _, _, z = cookie.get_center_location()
         
             gantry_thread = Thread(target=self.capture_grid_photos, args=(cookie.coordinates, cookie.directory, focus_queue, pid_queue, pid_lock, cookie.rows, cookie.cols, cookie.y_step_size, cookie.x_step_size, z, self.n_images, self.height_range, progress_callback, stop_capture))
-            focus_thread = Thread(target=self.focus.find_focus, args=(focus_queue, pid_queue, pid_lock, cookie.directory, cookie.background, cookie.background_std))
+            focus_thread = Thread(target=self.focus.find_focus, args=(focus_queue, pid_queue, pid_lock, cookie.directory, cookie.focus_index, cookie.background, cookie.background_std))
             gantry_thread.start()
             focus_thread.start()
             
@@ -125,7 +125,7 @@ class Controller:
                 st.delete_dats()
                 del st
     
-    def capture_grid_photos(self, coordinates: list, d: Path, focus_queue: queue.Queue, pid_queue: queue.Queue, pid_lock, rows: int, cols: int, y_dist, x_dist, z_start, n_images, height_range, progress_callback, stop_capture):
+    def capture_grid_photos(self, focus_index:list, coordinates: list, d: Path, focus_queue: queue.Queue, pid_queue: queue.Queue, pid_lock, rows: int, cols: int, y_dist, x_dist, z_start, n_images, height_range, progress_callback, stop_capture):
         # for loop capture
         # Change feed rate back to being slow
         self.set_feed_rate(1)
@@ -286,7 +286,8 @@ class Controller:
             "top_left": cookie.get_top_left_location(),
             "coordinates": cookie.coordinates.tolist(),
             "background": cookie.background.tolist(),
-            "background_std": cookie.background_std.tolist()
+            "background_std": cookie.background_std.tolist(),
+            "focus_index": cookie.focus_index.tolist() 
         }
 
         with open ("{}/metadata.json".format(self.directory), "w", encoding="utf-8") as f:

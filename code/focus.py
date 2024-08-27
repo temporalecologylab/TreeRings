@@ -16,7 +16,7 @@ class Focus:
         self.PID = AsynchronousPID(Kp=1.0, Ki=0, Kd=0.05, setpoint=setpoint) 
         self.TESTINGLOG = []
 
-    def find_focus(self, focus_queue, pid_queue, pid_lock, directory, background:np.array, background_std:np.array):
+    def find_focus(self, focus_queue, pid_queue, pid_lock, directory, index:np.array, background:np.array, background_std:np.array):
         while True:
             image_files = focus_queue.get()
             pid_lock.acquire()
@@ -39,6 +39,7 @@ class Focus:
             
             background_std[row][col] = std
             background[row][col] = self.is_background(std)
+            index[row][col] = stack_number
 
             if not self.is_background(std):
                 control_variable = self.PID.update(int(stack_number))
