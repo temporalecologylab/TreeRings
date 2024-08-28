@@ -40,6 +40,7 @@ class Focus:
             background_std[row][col] = std
             background[row][col] = self.is_background(std)
             index[row][col] = stack_number
+            nvars[row][col][:] = nv
 
             if not self.is_background(std):
                 control_variable = self.PID.update(int(stack_number))
