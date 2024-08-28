@@ -16,7 +16,7 @@ class Focus:
         self.PID = AsynchronousPID(Kp=1.0, Ki=0.1, Kd=0.05, setpoint=setpoint) 
         self.TESTINGLOG = []
 
-    def find_focus(self, focus_queue, pid_queue, pid_lock, directory, index:np.array, background:np.array, background_std:np.array):
+    def find_focus(self, focus_queue, pid_queue, pid_lock, directory, nvars: np.array, index:np.array, background:np.array, background_std:np.array):
         while True:
             image_files = focus_queue.get()
             pid_lock.acquire()
@@ -24,7 +24,7 @@ class Focus:
             if image_files == [-1]:
                 focus_queue.task_done()
                 break
-            focused_image_name, std = self.best_focused_image(image_files)
+            focused_image_name, std, nv = self.best_focused_image(image_files)
             image_name = focused_image_name.split("/")[-1].split("_")
             row = int(image_name[1])
             col = int(image_name[2])
@@ -78,7 +78,7 @@ class Focus:
 
         std = np.std(vars)
 
-        return best_image_filepath, std
+        return best_image_filepath, std, vars
 
     def delete_unfocused(self, images_to_delete):
         for file_name in images_to_delete:

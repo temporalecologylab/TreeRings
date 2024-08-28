@@ -71,7 +71,7 @@ class Controller:
             _, _, z = cookie.get_center_location()
         
             gantry_thread = Thread(target=self.capture_grid_photos, args=(cookie.coordinates, cookie.directory, focus_queue, pid_queue, pid_lock, cookie.rows, cookie.cols, cookie.y_step_size, cookie.x_step_size, z, self.n_images, self.height_range, progress_callback, stop_capture))
-            focus_thread = Thread(target=self.focus.find_focus, args=(focus_queue, pid_queue, pid_lock, cookie.directory, cookie.focus_index, cookie.background, cookie.background_std))
+            focus_thread = Thread(target=self.focus.find_focus, args=(focus_queue, pid_queue, pid_lock, cookie.directory, cookie.nvar, cookie.focus_index, cookie.background, cookie.background_std))
             gantry_thread.start()
             focus_thread.start()
             
@@ -287,7 +287,8 @@ class Controller:
             "coordinates": cookie.coordinates.tolist(),
             "background": cookie.background.tolist(),
             "background_std": cookie.background_std.tolist(),
-            "focus_index": cookie.focus_index.tolist() 
+            "focus_index": cookie.focus_index.tolist(),
+            "normalized_variance": cookie.nvar.tolist()  
         }
 
         with open ("{}/metadata.json".format(self.directory), "w", encoding="utf-8") as f:

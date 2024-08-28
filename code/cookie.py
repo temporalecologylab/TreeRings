@@ -32,6 +32,7 @@ class Cookie:
         self.background_std = np.zeros((self.rows, self.cols))
         self.coordinates = np.zeros((self.rows, self.cols, 3))
         self.focus_index = np.zeros((self.rows, self.cols))
+        self.nvar = np.zeros((self.rows, self.cols, 9))
 
     def calculate_grid(self):
         overlap_x = round(self.image_width_mm * self.percent_overlap / 100, 3)
