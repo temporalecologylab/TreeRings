@@ -4,6 +4,19 @@ The TreeRings project is under development by students in the Temporal Ecology L
 
 While this was designed to capture tree cookies, in theory this should also be able to be used to scan other planar objects such as planed mineral samples or pencil drawings. 
 
+## Current Functionality
+
+- Image capture and stitching of the surface of a tree cookie into a single mosaic
+- Memory efficient image stitching (stitching images greater than available device RAM)
+- Multiple mosaic resolutions for one set of images
+- Data storage in .dat files to be used with a custom image viewer to view a subset of the image without loading into RAM
+
+## Current Problems
+
+- Larger cookies (> 25cm in diameter) are more difficult to sand uniformly, resulting in poor stitching
+- Larger cookies are less functional then smaller cookies as the filesizes can become prohibitively large
+- Stochastic insufficient system memory while capturing for long periods of time (large cookies or many cookies)
+
 ## Getting Started TODO
 
 These instructions will get you a copy of the project up and running on your local machine for development and testing purposes. See deployment for notes on how to deploy the project on a live system.
