@@ -1,0 +1,86 @@
+\documentclass{article}
+\usepackage[top=1.00in, bottom=1.0in, left=1in, right=1in]{geometry}
+\usepackage{outlines}
+\usepackage{enumitem}
+\setenumerate[1]{label=\Roman*.}
+\setenumerate[2]{label=\Alph*.}
+\setenumerate[3]{label=\roman*.}
+\setenumerate[4]{label=\alph*.}
+\begin{document}
+\section {Paper Outline}
+\begin{outline}[itemize]
+
+\1 Abstract
+\begin{itemize}
+	\item  Digital twins of samples is important for building data repositories and promoting replicable science
+	\item  Digitizing wood samples has limits to sample dimensions or lacks affordable implementations
+	\item 	Current alternatives are very expensive (\$70,000USD), lack a high level of detail (printer scanners), or cannot scan cookies (CaptuRING)
+\end{itemize}
+\item Introduction
+	\begin{itemize}
+	\item Development of measurement and recording systems
+	\item Digitizing wood samples for better data pooling / archiving
+	\item Software can be used to help record annual growth 
+	\item Main reasons 
+		\begin{itemize}
+		\item affordable
+		\item open source
+		\item  alternative to scanners, without size limitations to digitize tree cookies and cores 
+		\end{itemize}
+	\item Provide a means to study tree growth from more detailed data than tree cores alone
+	\item Development of measurement and recording systems
+	\end{itemize}
+\item Materials and Methods
+	\begin{itemize}
+	\item System Design 
+		\begin{itemize}
+		\item Hardware
+			\begin{itemize}
+			\item Cartesian gantry robot
+			\item Camera
+			\item computer
+			\item camera and computer mount
+			\end{itemize}
+		\item Software
+			\begin{itemize}
+			\item image focusing
+			\item grid traverse
+			\item feature based image stitching
+			\subitem memory mapped 
+			\item user interface
+			\end{itemize}
+		\end{itemize}
+	\end{itemize}
+\item Results
+	\begin{itemize}
+	\item ultra high resolution scans (DPI 15,000 +)
+	\item scans of cookies / cores
+	\item  Digitization time as a function of surface area
+	\item File-size results in functional limits 
+		\begin{itemize}
+		\item max filesize for TIFF files is 2.5 GB
+		\item other lossless filetypes for larger images are not compatible with standard image viewers
+		\item viewing a pseudo-core of a larger image and cropping 
+		\item downscaling
+		\end{itemize}
+	\end{itemize}
+\item Discussion (for MEE Only)
+	\begin{itemize}
+	\item Potential for vessel counts for an entire ring 
+	\item Potential for automatic tree ring identification with image processing / ML techniques 
+	\item strengths
+		\begin{itemize}
+		\item  Ability to capture multiple cores / cookies simultaneously
+		\item cost effective
+		\end{itemize}
+	\item limitations
+		\item poor lense quality
+		\item The final quality is only as good as the sample preparation, microtomes are very expensive
+		\item lack of focus stacking
+		\item Difficulty stitching with lower detail images, can't increase digitizing speed, must downscale high resolution images
+	\end{itemize}
+\item Conclusions (optional for MEE)
+
+        
+\end{outline}
+\end{document}
