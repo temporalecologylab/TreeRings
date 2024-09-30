@@ -1,0 +1,108 @@
+\documentclass{article}
+\usepackage[top=1.00in, bottom=1.0in, left=1in, right=1in]{geometry}
+\usepackage{outlines}
+\usepackage{enumitem}
+\setenumerate[1]{label=\Roman*.}
+\setenumerate[2]{label=\Alph*.}
+\setenumerate[3]{label=\roman*.}
+\setenumerate[4]{label=\alph*.}
+\begin{document}
+\section {Operation Manual}
+\begin{outline}[enumerate]
+
+\1 Device Setup
+\begin{enumerate}
+	\item Turn on the Jetson by plugging the power port in
+	\item Turn on the motor controller with the switch
+	\item Turn on the power supply with the switch 
+	\item Ensure everything is plugged in correctly
+        \begin{enumerate}
+        \item USB ring light is powered
+        \item Jetson is connected to motor controller with a USB-B to USB-A cable
+        \item Jetson is plugged into the monitor with DisplayPort to HDMI converter
+        \item Power supply is plugged into the wall and also into the motor controller
+        \item Motor controller is connected to X, Y, and Z motors
+        \item Motor controller is connected to X, Y, and Z limit switches
+        \end{enumerate}
+    \item Log into the Jetson
+        \begin{enumerate}
+        \item Username: dragonfly
+        \item Password: alls33ingFly
+        \end{enumerate}
+    \item Launch the GUI
+        \begin{enumerate}
+        \item Open Terminal
+        \item Run the following
+            \begin{enumerate}
+                \item cd ~/Desktop/refactored
+                \item python gui.py
+            \end{enumerate}
+        \end{enumerate}
+    \item Use the GUI to connect to establish a connection between the Jetson and the motor controller
+        \begin{enumerate}
+        \item Press the physical 'Reset' button on the motor controller
+        \item Click the 'Serial Connect' button on the GUI and wait until the GUI is responsive again.
+        \item Test that the connection has been made by clicking the arrows to manually jog the machine 
+        \end{enumerate}
+    \item Set Home
+        \begin{enumerate}
+        \item Confirm that there are no obstructions in the machine that will cause a collision
+        \item Click the 'Set Home' button on the GUI. This will move the machine towards the limit switches until they are triggered
+        \item *** If the machine doesn't move, repeat the previous step to establish a connection between the Jetson and motor controller ***
+        \end{enumerate}
+\end{enumerate}
+\item Sample Setup
+	\begin{enumerate}
+	\item Sample levelling
+		\begin{enumerate}
+		\item Ensure that the the top and bottom face of the cookies are relatively level
+        \item Take note of the sample name, id, etc on to a piece of paper
+		\item Place the cookie on sampling table
+		\item Place the bullseye level on top of the sample
+        \item Rotate the sample until the bubble is biased towards the side of the levelling table with only one screw
+        \item Loosen the lone screw until the bubble is centered on the bullseye
+		\end{enumerate}
+	\item Multiple samples
+		\begin{enumerate}
+		\item Level all samples and make sure to note their sample identifiers and relative positions on a piece of paper 
+		\end{enumerate}
+	\end{enumerate}
+\item Capturing samples
+    \begin{enumerate}
+    \item Click the 'Fast' option in the jogging controls section of the GUI
+    \item Set the jogging distance to be relatively large like 10 or 20mm
+    \item Navigate with the jogging arrows to the approximate middle of a sample
+    \item Jog in the Z-axis to get the sample in focus
+        \begin{enumerate}
+        \item I like to start by setting the jog to 5mm, and seeing the sample go into then out of focus
+        \item To tune closer, I then change the jog to 1mm to get roughly to the focus
+        \item Finally, I switch to 0.1mm and get as in focus as possible
+        \item Note that it is pretty important to start off in focus. While the machine has a control algorithm to help keep the machine in focus, it performs best with a good start
+        \end{enumerate}
+    \item Fill in the 'Sample Height' and 'Sample Width' text boxes with an estimation of the size
+    \item Click 'Test Sample Boundaries'
+        \begin{enumerate}
+        \item The purpose of testing the boundaries is to show the user the border of the sample. 
+        \item The button will take the location of when you click the button, and traverse around the border of the sample according to what you defined as the height and width
+        \item You should watch to verify that all of the sample that you want is within the border
+        \item If you do not see all of the cookie, adjust either the starting location of the sample with the jogging arrows, the 'Sample Height' text box, the 'Sample Width' text box, or a combination of the three
+        \end{enumerate}
+    \end{enumerate}
+\item Potential errors
+    \begin{enumerate}
+    \item Running out of memory
+        \begin{enumerate}
+        \item While this shouldn't be a problem, there is still a memory problem in the stitching implementation from when it was ported from Stitch2D. In theory this is fixable, but I haven't had the time to get to the root bug yet.
+        \item If you need a higher resolution stitch than what the Jetson can do, you'll need to load the images onto a computer with more RAM, such as the Legion laptop, and stitch them on there. 
+        \end{enumerate}
+    \item Visible seams
+        \begin{enumerate}
+        \item This is an annoying artifact from what we have deduced to be a poor lens. If you want to maximize sampling speed, it is possible to take zoomed out photos with larger field of view. Although this 
+        results in visible seams which have seemingly only been able to be fixed by cropping the images to a size which effectively cancels out the increased field of view.
+        \item If you are going to be using a manual dating software like Coorecorder, then the seams may not be the end of the world. As long as you can differentiate the seams from the rings.
+        \end{enumerate}
+    \item 
+    \end{enumerate}
+        
+\end{outline}
+\end{document}
