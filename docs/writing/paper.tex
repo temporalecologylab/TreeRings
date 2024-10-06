@@ -49,7 +49,15 @@ Unlike the Gigapixel or CaptuRING, the camera is a machine vision camera rather 
 forum support, and includes an Obsolescence Statement that the camera will be in production until January 2030. Combined with a 180mm C-mount microscope lens, the images can reach above 20,000 dots per inch (DPI).
 
 \subsection{Software Design}
-Software design here.
+All software was written in Python VERSION and a variety of packages for the GUI, image stitching, and calculations (Should I include all the packages in writing?). Care was taken to segment the
+software design into abstracted object oriented code. 
+
+\subsubsection{Graphical User Interface}
+The GUI to control the machine launches from a Python script. Included are a viewer to see the live stream from the camera, buttons to jog the machine throughout the XYZ coordinate system,
+setting the size of samples, and running the process to capture and stitch images. The system was designed to allow for multiple samples to be prepared in a queue for bulk digitization. 
+
+\subsubsection{Sample Digitization}
+The digitization of a sample can be reduced to a few processes - capturing a grid of overlapping images, image focusing, and image stitching. 
 
 \section{Results}
 Present your results here.
