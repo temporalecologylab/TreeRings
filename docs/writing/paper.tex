@@ -32,7 +32,21 @@ This is the introduction section where you introduce the topic and cite some pap
 Describe your methods here. You can use equations like this:
 
 \subsection{Hardware Design}
-Hardware design here.
+
+\subsubsection{Mechanical Structure}
+The cartesian robot was purchased from an open source parts supplier, OpenBuilds. They sell various sets of gantry robots, motor controllers, and power supplies
+which can be conveniently purchased from one supplier. All metal components are cut and sized, and have very detailed assembly videos, an active community forum,
+and customer support to fall back on. The OpenBuilds ACRO system circumvents the need for most power tools and machining that would otherwise be necessary to build a robust robot.
+All other parts were designed using SolidWorks and printed on an FDM 3D printer using ABS material. Mechanical assembly can be completed entirely with common hand tools and metric fasteners. 
+
+\subsubsection{Computer}
+The computer which runs the graphical user interface (GUI), gantry control, camera streaming, and image stitching is the NVIDIA Jetson Orin Nano Developer Kit (Orin Nano). Using a computer
+which is compatible with CSI cameras such as the Raspberry Pi HQ Camera was essential to maintain cost effectiveness. The Orin Nano, like others in the Jetson line of products, has hardware
+accelerators for common GPU tasks such as image streaming, which is vital to retain CPU power for GUI tasks and robot control. 
+
+\subsubsection{Camera}
+Unlike the Gigapixel or CaptuRING, the camera is a machine vision camera rather than a handheld professional camera. Choosing the Raspberry Pi HQ Camera provided many lens options, significant
+forum support, and includes an Obsolescence Statement that the camera will be in production until January 2030. Combined with a 180mm C-mount microscope lens, the images can reach above 20,000 dots per inch (DPI).
 
 \subsection{Software Design}
 Software design here.
