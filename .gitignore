@@ -5,3 +5,11 @@ code/focus_stacking_testing
 *.png
 *.jpeg
 *.dat
+
+# LaTeX output files
+*.aux
+*.synctex.gz
+*.fdb_latexmk
+*.fls
+*.log
+*.blg
