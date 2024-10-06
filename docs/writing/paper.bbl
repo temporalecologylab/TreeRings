@@ -1,0 +1,21 @@
+\begin{thebibliography}{1}
+\providecommand{\natexlab}[1]{#1}
+\providecommand{\url}[1]{\texttt{#1}}
+\expandafter\ifx\csname urlstyle\endcsname\relax
+  \providecommand{\doi}[1]{doi: #1}\else
+  \providecommand{\doi}{doi: \begingroup \urlstyle{rm}\Url}\fi
+
+\bibitem[Mohammadi et~al.(2024)Mohammadi, Mohammadi, Mojarad~Adi, Mirkarimi,
+  and Shabani]{mohammadi_comparative_2024}
+Fatemeh~Sadat Mohammadi, Seyyed~Erfan Mohammadi, Parsa Mojarad~Adi, Seyed
+  Mohammad~Ali Mirkarimi, and Hasti Shabani.
+\newblock A comparative analysis of pairwise image stitching techniques for
+  microscopy images.
+\newblock \emph{Scientific Reports}, 14\penalty0 (1):\penalty0 9215, April
+  2024.
+\newblock ISSN 2045-2322.
+\newblock \doi{10.1038/s41598-024-59626-y}.
+\newblock URL \url{https://www.nature.com/articles/s41598-024-59626-y}.
+\newblock Publisher: Nature Publishing Group.
+
+\end{thebibliography}
