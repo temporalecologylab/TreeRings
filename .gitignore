@@ -13,3 +13,4 @@ code/focus_stacking_testing
 *.fls
 *.log
 *.blg
+*.out
