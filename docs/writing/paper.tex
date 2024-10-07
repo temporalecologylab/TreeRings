@@ -36,7 +36,7 @@ Describe your methods here. You can use equations like this:
 \subsubsection{Mechanical Structure}
 The cartesian robot was purchased from an open source parts supplier, OpenBuilds. They sell various sets of gantry robots, motor controllers, and power supplies
 which can be conveniently purchased from one supplier. All metal components are cut and sized, and have very detailed assembly videos, an active community forum,
-and customer support to fall back on. The OpenBuilds ACRO system circumvents the need for most power tools and machining that would otherwise be necessary to build a robust robot.
+and customer support to fall back on. The OpenBuilds ACRO system circumvents the need for most power tools, machining, electrical connectors, and technical knowhow that would otherwise be necessary to build a robust robot.
 All other parts were designed using SolidWorks and printed on an FDM 3D printer using ABS material. Mechanical assembly can be completed entirely with common hand tools and metric fasteners. 
 
 \subsubsection{Computer}
@@ -58,6 +58,28 @@ setting the size of samples, and running the process to capture and stitch image
 
 \subsubsection{Sample Digitization}
 The digitization of a sample can be reduced to a few processes - capturing a grid of overlapping images, image focusing, and image stitching. 
+
+Inside the GUI, the program is populated with the height and width of the sample as well as the height and width of the image. The user then navigates to the center of the sample and can choose 
+to begin imaging the sample or add the sample to a queue for bulk digitization. This provides the machine enough data to calculate the necessary rows and columns for traversing the entire surface
+area of the sample while maintaining a level of overlap between adjacent images. Image overlap is what allows for images to be stitched together as there is nonzero error when the robot translates 
+from one coordinate to another. 
+
+To stitch adjacent images, feature based image stitching from a Python package Stitch2D was used. The underlying functions were based on the processing libraries
+OpenCV and NumPy. Multiple other image stitching packages were tested but none were able to successfully piece together our samples. (***Sounds kinda bad to not have data on a comparison as well as not having a metric to see how 'well' an image is stitched... but this is non trivial. Can we get away with it?***)
+
+One major difficulty with using the Raspberry Pi HQ Camera is the lack of a lens with auto-focus. An in focus image in this regime is dependent on the focal length of the lens set by the user and the
+distance from the sample. The microscope lens has a very small depth of field and goes from in-focus to out-of-focus in less than a 1mm step in the distance to the sample. Two cooperative solutions were implemented 
+to achieve a focused image for the entire surface area of the sample - taking images from multiple distances from the sample and automatic control. 
+
+\subsubsection{Image Stack Focusing}
+When the sample is placed on the table to be digitized, it is assumed that there will, at best, very slight variations in height across the surface area of the sample. A levelling table 
+assists in reducing this error although it will never be nonzero. At each location (X, Y) on the grid of overlapping images, 11 images are captured in equally distanced Z steps across a 1mm range. 
+Each of these images have a normalized variance score calculated - the maximum value represents the most in focus image \citep{sampat_extensive_2014}.
+
+\subsubsection{Automatic Control}
+
+
+$$\frac{1}{MN\mu} \sum\limits_{x=0}^{M-1} \sum\limits_{y=0}^{N-1}(f(x,y) - \mu)^2$$
 
 \section{Results}
 Present your results here.

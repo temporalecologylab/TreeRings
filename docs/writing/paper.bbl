@@ -1,9 +1,18 @@
-\begin{thebibliography}{1}
+\begin{thebibliography}{2}
 \providecommand{\natexlab}[1]{#1}
 \providecommand{\url}[1]{\texttt{#1}}
 \expandafter\ifx\csname urlstyle\endcsname\relax
   \providecommand{\doi}[1]{doi: #1}\else
   \providecommand{\doi}{doi: \begingroup \urlstyle{rm}\Url}\fi
+
+\bibitem[Mir et~al.(2014)Mir, Xu, and Van~Beek]{sampat_extensive_2014}
+Hashim Mir, Peter Xu, and Peter Van~Beek.
+\newblock An extensive empirical evaluation of focus measures for digital
+  photography.
+\newblock page 90230I, San Francisco, California, USA, March 2014.
+\newblock \doi{10.1117/12.2042350}.
+\newblock URL
+  \url{http://proceedings.spiedigitallibrary.org/proceeding.aspx?doi=10.1117/12.2042350}.
 
 \bibitem[Mohammadi et~al.(2024)Mohammadi, Mohammadi, Mojarad~Adi, Mirkarimi,
   and Shabani]{mohammadi_comparative_2024}
