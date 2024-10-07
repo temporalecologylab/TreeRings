@@ -83,7 +83,7 @@ $$\frac{1}{MN\mu} \sum\limits_{x=0}^{M-1} \sum\limits_{y=0}^{N-1}(f(x,y) - \mu)^
 
 \subsubsection{Automatic Control}
 While the image stack provides a basis to obtain an in focus image, it is statically limited to the 1mm range in Z-values. Instead of spending significant time guaranteeing that the sample
-is within the Z-value range across the entire surface area, a PID control algorithm takes the wheel. The information previously calculated in the image stack is sufficient 
+is within the Z-value range across the entire surface area, a PID control algorithm takes the wheel \citep{odwyer_summary_2000}. The information previously calculated in the image stack is sufficient 
 to inform the PID controller of how to adjust the initial Z-value for the next image stack. The controller is constantly trying to make the most in focus image be at the center of the image stack,
 index value 5. This allows for the most flexibility moving to the next location of the image grid. 
 
