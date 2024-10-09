@@ -8,6 +8,7 @@
 \usepackage{geometry}           % For setting page margins
 \usepackage{natbib}             % For citations
 \usepackage{hyperref}           % For clickable links in references
+\usepackage{subcaption}         % For side by side subfigures
 
 % Page layout
 \geometry{margin=1in}           % Set margins to 1 inch
@@ -26,10 +27,12 @@
 \end{abstract}
 
 \section{Introduction}
-This is the introduction section where you introduce the topic and cite some papers \citep{mohammadi_comparative_2024}.
+This is the introduction section where you introduce the topic and cite some papers.
 
 \section{Methods}
-Describe your methods here. You can use equations like this:
+The functionality of this system allows for the major steps in tree cookie and core digitization to be automated. Capturing images and stitching them together is handled without the need for user intervention. 
+To do this, the system traverses the surface area of the sample after being given its dimensions. After the capturing process, the images are stitched and are stored on the device along with metadata of relevant 
+settings and sample parameters.
 
 \subsection{Hardware Design}
 
@@ -82,16 +85,34 @@ the motion blur due to acceleration and dramatically reduces imaging time.
 $$\frac{1}{MN\mu} \sum\limits_{x=0}^{M-1} \sum\limits_{y=0}^{N-1}(f(x,y) - \mu)^2$$
 
 \subsubsection{Automatic Control}
-While the image stack provides a basis to obtain an in focus image, it is statically limited to the 1mm range in Z-values. Instead of spending significant time guaranteeing that the sample
-is within the Z-value range across the entire surface area, a PID control algorithm takes the wheel \citep{odwyer_summary_2000}. The information previously calculated in the image stack is sufficient 
-to inform the PID controller of how to adjust the initial Z-value for the next image stack. The controller is constantly trying to make the most in focus image be at the center of the image stack,
+While the image stack provides a basis to obtain an in focus image, it is statically limited to the 1mm range in the Z axis. Instead of spending significant time guaranteeing that the sample
+is within the the Z axis range across the entire surface area, a PID control algorithm takes the wheel \citep{odwyer_summary_2000}. The information previously calculated in the image stack is sufficient 
+to inform the PID controller of how to adjust the initial the Z axis for the next image stack. The controller is constantly trying to make the most in focus image be at the center of the image stack,
 index value 5. This allows for the most flexibility moving to the next location of the image grid. 
+
+\begin{figure}
+    \centering
+    \begin{subfigure}{.5\textwidth}
+      \centering
+      \includegraphics[height=0.75\linewidth]{../diagrams/sample_setup_ideal.png}
+      \caption{Ideal sample leveling}
+      \label{fig:sub1}
+    \end{subfigure}%
+    \begin{subfigure}{.5\textwidth}
+      \centering
+      \includegraphics[height=0.75\linewidth]{../diagrams/sample_setup_realistic.png}
+      \caption{Realistic sample leveling}
+      \label{fig:sub2}
+    \end{subfigure}
+    \caption{Side view of the camera and sample on top of a leveling table. The ideal sample leveling shows a uniform distance d at all (x,y) coordinates on the sample. This is impossible to achieve in reality, the true sample leveling has a non uniform distance at unique (x,y) coordinates.}
+    \label{fig:test}
+\end{figure}
 
 
 \section{Results}
-Present your results here.
-
 \subsection{Scans of Cookies and Cores}
+The microscope lens greatly improved the maximum resolution of the digitization. Resolutions of up to 13,400 DPI were achieved, a large improvement when compared to 
+both high resolution flatbed scanners (Epson® Perfection v750 PRO) and CaptuRING. 
 
 \subsection{Functional Limits}
 
