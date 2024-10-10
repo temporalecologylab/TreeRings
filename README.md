@@ -6,6 +6,8 @@ While this was designed to capture tree cookies, in theory this should also be a
 
 ## Current Functionality
 
+![Tina](./docs/content/tina.jpg)
+
 - Image capture and stitching of the surface of a tree cookie into a single mosaic
 - Memory efficient image stitching (stitching images greater than available device RAM)
 - Multiple mosaic resolutions for one set of images
