@@ -116,41 +116,47 @@
 		\subitem although final quality is only as good as the sample preparation
 		\end{enumerate}
 	\item opportunities for improvements
-		\item Lenses
+		\begin{enumerate}
+		\item focus stacking
+			\begin {enumerate}
+			\item when a sample is microtomed, the vessels are hollow. The autofocusing algorithm can be confused from this 
+			\end{enumerate}
+			\item Lenses
 			\begin{enumerate}
-			\item troubles with fixed aperature / non autofocusing / poorly manufactured lens
-				\begin{enumerate}
+				\item troubles with fixed aperature / non autofocusing / poorly manufactured lens
 				\item lack of control to increase sharpness
 				\item autofocusing with Z-axis movement is time consuming to do without image blur
 				\item poor lens manufacturing can lead to drastically different quality / lighting between the edges and center of an image
+				\item good lens can increase sharpness and therefore stitching accuracy and ML inference
+				\item obtain similar quality between the corner and center of the image
+				\item Difficulty stitching with lower detail images, can't increase digitizing speed, must downscale high resolution images 
 				\end{enumerate}
-			\item good lens can increase sharpness and therefore stitching accuracy and ML inference
-			\item obtain similar quality between the corner and center of the image
-			\subitem poor lens quality seemed to be the culprit of producing visible seams when stitching with larger field of view images 
+		\end{enumerate}
+		\begin{enumerate}
+		\item poor lens quality seemed to be the culprit of producing visible seams when stitching with larger field of view images 
+		\end{enumerate}
+	\item tested on R-CNN
+		\begin{enumerate}
+		\item Cookie with a dpi of SMALL and dpi of 13500 were tested. With total pixel count of SMALL and BIG
+			\begin{enumerate}
+			\item NEEDS specific: DPI, height and width of pixels, record runtime
+			\item NEEDS specifications of server computational power (GPU count/other metric for ANN power)
 			\end{enumerate}
-		\item tested on R-CNN
-			\begin {enumerate}
-			\item Cookie with a dpi of SMALL and dpi of 13500 were tested. With total pixel count of SMALL and BIG
-			\item tree rings were successfully measured with the metadata supplied from the machine but the SMALL took X minutes and big took Y minutes on a computer with Z specifications 
-			\end {enumerate}
-		\item tested on CooRecorder + CDendro
-			\begin {enumerate}
-			\item Maximum filesize 
-			\item Coordinates were registered on to the cookie scans 
-			\item Note to self: using CDendro for multiple samples from the same tree... (cookies) 
-			\end {enumerate}
-		\item focus stacking
-		\subitem when a sample is microtomed, the vessels are hollow. The autofocusing algorithm can be confused from this 
-		\item Difficulty stitching with lower detail images, can't increase digitizing speed, must downscale high resolution images 
-		\item Autofocusing with hardware would significantly decrease the time to capture a cookie (using a professional camera)
-		\item Software support for BigTIFF 
-			\begin {enumerate}
-			\item Not all software can support this, especially if the computer is RAM constrained. Ring analysis tool which uses BigTIFF and loads only partial bits of the full image would be useful
-			\end {enumerate}
+		\end{enumerate}
+	\item tested on CooRecorder + CDendro
+		\begin{enumerate}
+		\item Maximum filesize 
+		\item Coordinates were registered on to the cookie scans 
+		\item Note to self: using CDendro for multiple samples from the same tree... (cookies) 
+		\end{enumerate}
+	\item Software support for large files 
+		\begin{enumerate}
+		\item Not all software can support this, especially if the computer is RAM constrained. Ring analysis tool which uses BigTIFF, HD5, or memory maps and loads only partial portions of the full image would be useful
+		\end{enumerate}
 	\end{enumerate}
 \item Conclusions (optional for MEE)
 	\begin{enumerate}
-	\item
+	\item empty
 	\end{enumerate}
         
 \end{outline}
