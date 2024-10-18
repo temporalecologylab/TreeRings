@@ -1801,7 +1801,7 @@ class MemmapStructuredMosaic(MemmapMosaic):
                 tile.col = x
                 tile.grid = self.grid
 
-    def align(self, origin=None, limit=None, **kwargs):
+    def align(self, origin=None, limit=None, batch_size = 10, **kwargs):
         """Builds a mosaic outward from a single tile using feature matching
 
         Parameters
@@ -1841,18 +1841,25 @@ class MemmapStructuredMosaic(MemmapMosaic):
                 unique.setdefault(tile.id, tile)
                 for neighbor in tile.neighbors().values():
                     unique.setdefault(neighbor.id, neighbor)
+            
+             # Control batch size
             batch = [t for t in unique.values() if not t.features_detected]
-            self._batch_tile_method("detect_and_extract", batch=batch)
-
+            for i in range(0, len(batch), batch_size):
+                batch_slice = batch[i:i + batch_size]
+                self._batch_tile_method("detect_and_extract", batch=batch_slice)
+            
             # Batch align adjacent tiles
             unique = {}
             for tile in tiles:
                 for neighbor in tile.neighbors().values():
                     unique.setdefault(neighbor.id, (tile, neighbor))
+
+            # Control batch size
             batch = [(t, n) for t, n in unique.values() if not n.placed]
-            self._batch_tile_method(
-                "align_to", [t for t, _ in batch], batch=[n for _, n in batch], **kwargs
-            )
+            for i in range(0, len(batch), batch_size):
+                batch_slice = batch[i:i + batch_size]
+                self._batch_tile_method("align_to", [t for t, _ in batch_slice], batch=[n for _, n in batch_slice], **kwargs)
+
 
             # Otherwise re-run the loop with the next group of tiles
             tiles = [n for _, n in batch if n.placed]
