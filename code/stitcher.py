@@ -11,7 +11,7 @@ import glob
 import gc
 import imutils
 import logging as log
-from memory_profiler import profile
+# from memory_profiler import profile
 import sys 
 
 log.basicConfig(format='%(process)d-%(levelname)s-%(message)s', level=log.INFO)
@@ -37,7 +37,7 @@ class Stitcher:
 
         self.load_metadata()
         
-    @profile
+    # @profile
     def write_dats(self, dats_path, resize = None):
         # Create dats directory 
         if not os.path.exists(dats_path):
@@ -86,7 +86,7 @@ class Stitcher:
         gc.collect()
         print("Wrote dats")
 
-    @profile
+    # @profile
     def read_dats(self):
         del self._memmaps
 
@@ -171,7 +171,7 @@ class Stitcher:
             )
         
         return sorted_paths
-    @profile
+    # @profile
     def stitch(self, resize=None):
         if resize is not None and resize < 1.0 and resize > 0:
             path = os.path.join(self._frame_dir, "{}per".format(int(resize * 100)))
