@@ -1801,7 +1801,7 @@ class MemmapStructuredMosaic(MemmapMosaic):
                 tile.row = y
                 tile.col = x
                 tile.grid = self.grid
-
+    # @profile
     def align(self, origin=None, limit=None, batch_size = 10, **kwargs):
         """Builds a mosaic outward from a single tile using feature matching
 
@@ -1849,9 +1849,6 @@ class MemmapStructuredMosaic(MemmapMosaic):
                 batch_slice = batch[i:i + batch_size]
                 self._batch_tile_method("detect_and_extract", batch=batch_slice)
             
-            # for id, ti in unique.items():
-            #     if ti.features_detected:
-            #         ti.refresh_memmap()
 
             # Batch align adjacent tiles
             unique = {}
@@ -1868,6 +1865,17 @@ class MemmapStructuredMosaic(MemmapMosaic):
 
             # Otherwise re-run the loop with the next group of tiles
             tiles = [n for _, n in batch if n.placed]
+
+            # If all of the neighbors are placed, delete the keypoints and descriptors to save memory
+            for t, _ in batch:
+                neighbors = t.neighbors()
+
+                if ("top" in neighbors and "left" in neighbors and "bottom" in neighbors and "right" in neighbors):
+                    if (neighbors["top"].placed and neighbors["left"].placed and neighbors["bottom"].placed and neighbors["right"].placed):
+                            # del t.descriptors
+                            # del t.keypoints 
+                            t.descriptors = np.array([0])
+                            t.keypoints = ()
 
         else:
             if limit is not None:
