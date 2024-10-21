@@ -13,6 +13,7 @@ import numpy as np
 
 from tile import Tile, OpenCVTile, MemmapOpenCVTile, MemmapTile
 
+from memory_profiler import profile
 
 logger = logging.getLogger(__name__)
 
@@ -1789,7 +1790,7 @@ class MemmapStructuredMosaic(MemmapMosaic):
                 origin=origin,
                 direction=direction,
                 pattern=pattern,
-                fill_value=self.placeholder(tiles[0]),
+                # fill_value=self.placeholder(tiles[0]),
             )
 
         self._verify_tiles()
@@ -1848,6 +1849,10 @@ class MemmapStructuredMosaic(MemmapMosaic):
                 batch_slice = batch[i:i + batch_size]
                 self._batch_tile_method("detect_and_extract", batch=batch_slice)
             
+            # for id, ti in unique.items():
+            #     if ti.features_detected:
+            #         ti.refresh_memmap()
+
             # Batch align adjacent tiles
             unique = {}
             for tile in tiles:
@@ -1859,7 +1864,7 @@ class MemmapStructuredMosaic(MemmapMosaic):
             for i in range(0, len(batch), batch_size):
                 batch_slice = batch[i:i + batch_size]
                 self._batch_tile_method("align_to", [t for t, _ in batch_slice], batch=[n for _, n in batch_slice], **kwargs)
-
+                
 
             # Otherwise re-run the loop with the next group of tiles
             tiles = [n for _, n in batch if n.placed]

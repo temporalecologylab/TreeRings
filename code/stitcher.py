@@ -11,6 +11,8 @@ import glob
 import gc
 import imutils
 import logging as log
+from memory_profiler import profile
+import sys 
 
 log.basicConfig(format='%(process)d-%(levelname)s-%(message)s', level=log.INFO)
 
@@ -35,7 +37,7 @@ class Stitcher:
 
         self.load_metadata()
         
-        
+    @profile
     def write_dats(self, dats_path, resize = None):
         # Create dats directory 
         if not os.path.exists(dats_path):
@@ -43,26 +45,60 @@ class Stitcher:
 
         i = 0
         tile_paths = self.get_frames()
+        self._memmap_paths = []
+        first = True
         for tile_path in tile_paths:
             with rasterio.open(os.path.join(self._frame_dir, tile_path)) as dataset:
                 data = np.transpose(dataset.read(), (1, 2, 0))
                 if resize is not None and resize > 0 and resize < 1.0:
                     data = imutils.resize(data, width = int(resize * data.shape[1]))
-                memmap_array = np.memmap(os.path.join(dats_path, "{}_".format(i) + "memmap_array.dat"), dtype=dataset.dtypes[0], mode='w+', shape=(data.shape[0], data.shape[1], data.shape[2]))
+
+                self._memmap_shape = (data.shape[0], data.shape[1], data.shape[2])
+
+                # create a placeholder dat 
+                if first:
+                    memmap_path = os.path.join(dats_path, "placeholder_memmap_array.dat")
+                    memmap_array = np.memmap(memmap_path, dtype = dataset.dtypes[0], mode='w+', shape=(data.shape[0], data.shape[1], data.shape[2]))
+                    data = np.full((data.shape[0], data.shape[1], data.shape[2]), 0, dataset.dtypes[0])
+                    memmap_array[:] = data[:]
+                    memmap_array.flush()
+                    del memmap_array
+                    first = False
+
+                memmap_path = os.path.join(dats_path, "{}_".format(i) + "memmap_array.dat")
+                self._memmap_paths.append(memmap_path)
+                self._memmap_dtype = dataset.dtypes[0]
+                memmap_array = np.memmap(memmap_path, dtype=dataset.dtypes[0], mode='w+', shape=(data.shape[0], data.shape[1], data.shape[2]))
                 i+=1
-                memmap_array[:] = data
-                self._memmaps.append(memmap_array)
+                memmap_array[:] = data[:]
+                memmap_array.flush()
+
+                
+                # memmap_read_only = np.memmap(os.path.join(dats_path, "{}_".format(i) + "memmap_array.dat"), dtype=dataset.dtypes[0], mode='r', shape=(data.shape[0], data.shape[1], data.shape[2]))
+                # self._memmaps.append(memmap_array)
 
                 # flush to save the array
-                memmap_array.flush()
-                #del memmap_array
+                del memmap_array
                 del dataset
+                del data
         
+        print(sys.getsizeof(self._memmaps))
+        gc.collect()
         print("Wrote dats")
 
+    @profile
+    def read_dats(self):
+        del self._memmaps
+
+        self._memmaps = []
+
+        for path in self._memmap_paths:
+            memmap_array = np.memmap(path, dtype=self._memmap_dtype, mode='r', shape=(self._memmap_shape[0], self._memmap_shape[1], self._memmap_shape[2]))
+            self._memmaps.append(memmap_array)
+
     def create_tiles(self):
-        for memmap in self._memmaps:
-            self._tiles.append(tile_memmap.MemmapOpenCVTile(memmap))
+        for path in self._memmap_paths:
+            self._tiles.append(tile_memmap.MemmapOpenCVTile(path, self._memmap_shape))
         print("Created tiles")
 
     def create_mosaic(self):
@@ -135,7 +171,7 @@ class Stitcher:
             )
         
         return sorted_paths
-
+    @profile
     def stitch(self, resize=None):
         if resize is not None and resize < 1.0 and resize > 0:
             path = os.path.join(self._frame_dir, "{}per".format(int(resize * 100)))
@@ -148,6 +184,8 @@ class Stitcher:
         print("Writing dats with resize {}".format(resize))
         self.write_dats(self.dats_path, resize = resize)
         print("Creating Tiles")
+        # self.read_dats()
+        # print("Reading dats")
         self.create_tiles()
         print("Creating Mosaic")
         self.create_mosaic()
@@ -185,7 +223,7 @@ if __name__ == "__main__":
             st = Stitcher(path)
             try:
                 st.stitch(resize = size)
-            except st.MaxFileSizeException:
+            except MaxFileSizeException:
                 print("Max file size met, no longer trying to stitch")
                 break
             except Exception as e:
@@ -196,8 +234,9 @@ if __name__ == "__main__":
 
                 del st
 
-    sizes = [0.05, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
-    tile_path = "C:\\Users\\honey\\Downloads\\BETPOP_WM8_P16"
+    # sizes = [0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
+    sizes = [0.3]
+    tile_path = "C:\\Users\\honey\\OneDrive\\Desktop\\TOSTITCH"
     stitch_multiple_sizes(tile_path, sizes)
     # tile_path = "C:\\Users\\honey\\Downloads\\BETPOP_WM8_P16_22_55_11_good"
 

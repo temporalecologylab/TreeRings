@@ -793,13 +793,15 @@ class MemmapTile:
     #: dict : maps strings to a subclass-specific feature matcher
     matchers = {}
 
-    def __init__(self, data, detector="sift"):
+    def __init__(self, path, shape, detector="sift"):
         """Initializes a mosaic from a list of tiles
 
         Parameters
         ----------
-        data : str or numpy.ndarray
+        data : str or numpy.memmap
             path to an image file or an array of image data
+        path: str
+            path to the memmap 
         detector : str
             name of the detector used to find/extract features. Currently
             only sift is supported.
@@ -807,11 +809,11 @@ class MemmapTile:
 
         self.id = uuid.uuid4()
 
-        self.source = data 
-        self.imdata = data if isinstance(self.source, np.memmap) else print("NOT np.memmap")
-
-        if self.imdata is None:
-            raise IOError(f"No image data found (source={self.source})")
+        self.source = path
+        self.path = path
+        self.shape = shape
+        # if self.imdata is None:
+        #     raise IOError(f"No image data found (source={self.source})")
 
         self.row = None
         self.col = None
@@ -936,21 +938,6 @@ class MemmapTile:
         return self.imdata.dtype
 
     @property
-    def shape(self):
-        """Gets the shape of the image"""
-        return self.imdata.shape
-
-    @property
-    def size(self):
-        """Gets the size of the image"""
-        return self.imdata.size
-
-    @property
-    def mp(self):
-        """Gets the size of the image in megapixels"""
-        return self.imdata.size / 1e6
-
-    @property
     def placed(self):
         """Whether the tile has been assigned coordinates in the mosaic"""
         return self.y is not None and self.x is not None
@@ -967,44 +954,10 @@ class MemmapTile:
             return self.source.copy()
         raise ValueError("Data must be a numpy array")
 
-    def copy(self):
-        """Creates a copy of the tile
-
-        Parameters
-        ----------
-        grid: list of lists
-            grid from the mosaic containing the tile
-
-        Returns
-        -------
-        Mosaic
-            copy of the tile
-        """
-        source = self.source
-        if not isinstance(self.source, str):
-            source = self.source.copy()
-
-        copy = self.__class__(source)
-
-        copy.imdata = self.imdata.copy()
-        copy.scale = self.scale
-
-        copy.row = self.row
-        copy.col = self.col
-
-        copy.y = self.y
-        copy.x = self.x
-
-        copy.grid = None
-
-        copy.features_detected = self.features_detected
-
-        if copy.features_detected:
-            copy.descriptors = self.descriptors
-            copy.keypoints = self.keypoints
-
-        return copy
-
+    def get_imdata(self):
+        """Loads the data from the memmap path"""
+        return np.memmap(self.path, dtype='uint8', mode='r', shape=(self.shape[0], self.shape[1], self.shape[2]))
+    
     def bounds(self, as_int=False):
         """Calculates the position of the tile within the mosaic
 
@@ -1073,7 +1026,7 @@ class MemmapTile:
             a tile with attributes to copy over to this one
         """
         for attr in (
-            "imdata",
+            # "imdata",
             "source",
             "row",
             "col",
@@ -1086,26 +1039,6 @@ class MemmapTile:
         ):
             setattr(self, attr, getattr(other, attr))
 
-    def crop(self, box, convert_mosaic_coords=True):
-        """Crops tile to the given box
-
-        Parameters
-        ----------
-        box : tuple
-            box to crop to as (y1, x1, y2, x2)
-        convert_mosaic_coords : bool
-            whether to convert the given coordinates from mosaic to image
-            coordinates
-
-        Returns
-        -------
-        numpy.ndarray
-            image data cropped to the given box
-        """
-        if convert_mosaic_coords:
-            box = self.convert_mosaic_coords(*box)
-        y1, x1, y2, x2 = box
-        return self.imdata.copy()[y1:y2, x1:x2]
 
     def intersection(self, other):
         """Finds the intersection between two placed tiles
@@ -1277,7 +1210,9 @@ class MemmapTile:
             y = int(tile.y - min(ys))
             x = int(tile.x - min(xs))
 
-            data[y : y + tile.height, x : x + tile.width] = tile.imdata
+            data[y : y + tile.height, x : x + tile.width] = tile.get_imdata()
+            # del tile.imdata
+
 
         del data 
 
@@ -1705,12 +1640,16 @@ class MemmapOpenCVTile(MemmapTile):
         ),
     }
 
-    def __init__(self, data, detector="sift", matcher="flann"):
-        super().__init__(data)
+    def __init__(self, path, shape, detector="sift", matcher="flann"):
+        super().__init__(path, shape)
 
         self.channel_order = "BGR"
         self._detector = detector
         self._matcher = matcher
+
+    def refresh_memmap(self):
+        del self.imdata
+        self.imdata = np.memmap(self.path, dtype=np.uint8, mode='r', shape=(self.shape[0], self.shape[1], self.shape[2]))
 
     def load_imdata(self):
         """Loads copy of source data
@@ -1835,12 +1774,15 @@ class MemmapOpenCVTile(MemmapTile):
         if self.features_detected is None:
 
             try:
-                detected = self.detector.detectAndCompute(self.prep_imdata(), None)
+                detected = self.detector.detectAndCompute(self.get_imdata(), None)
             except KeyError:
                 self.features_detected = False
             else:
                 self.keypoints, self.descriptors = detected
                 self.features_detected = self.descriptors is not None
+            # finally:
+            #     # delete the each time as a blanket fix 
+            #     self.refresh_memmap()
 
         return self
 
