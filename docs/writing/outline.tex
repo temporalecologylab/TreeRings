@@ -16,30 +16,47 @@
 	\item Digital twins of samples is important for building data repositories and promoting replicable science
 	\item Digitizing wood samples has limits to sample dimensions or lacks affordable implementations
 	\item Current alternatives are very expensive (\$70,000USD), lack a high level of detail (printer scanners), or cannot scan cookies (CaptuRING)
-	\item Tina is open source and able to be assembled with 3D printed parts, OpenBuilds parts kits, and hand tools
+	\item Tina is open source and able to be assembled with 3D printed parts, OpenBuilds parts kits, and hand tools % Can we add how much ours costs?
 \end{enumerate}
 \item Introduction
 	\begin{enumerate}
 	\item Tree ring science overview
 		\begin{enumerate}
-		\item **Lizzie add here**
+		\item tree rings provide critical data/insights across multiple fields
 		\item tree rings can help reconstruct past climates 
-		\item understanding tree growth mechanisms
+		\item understanding tree growth mechanisms (plant bio/ecology)
 		\end{enumerate}
-	\item Development of scanning alternatives
+	% Consider adding this to below points (Development of scanning alternatives) as one paragraph on its own
+	\item Getting these data means measuring tree rings -- quick history
+		\begin{enumerate}
+		\item originally done on scopes
+		\item images important for several decades now (WinDendro?) 
+		\item But new methods coming up often to take advantage of better imaging technology ... 
+		% \item Could add here one sentence on the three methods you mention below depending on what you want to say ... 
+		\end{enumerate}
+	\item Development of scanning alternatives 
 		\begin{enumerate}
 		\item beginning with ATRICS
 		\item expensive Gigapixel
 		\item DIY CaptuRING
 		\end{enumerate}
 	\item Main reasons to build this 
-		\begin{enumerate}
+		\begin{enumerate} 
 		\item further develop the affordable / open source alternatives for scientific equipment
 		\item reduce the need for proprietary software such as PTGUI for image stitching
 		\item allow a method to digitize cookies to have higher quality data than cores alone
 		\item avoid size limitations to digitize tree cookies and cores 
 		\item Digitizing wood samples for better data pooling / archiving
+		\end{enumerate} 
+	% I suggest a more 'here we ....' paragraph next that includes the below points so something like: (comment this in if you like it and delete your section below
+	\iffalse
+	\item Here we tell you about our new device
+		\begin{enumerate}
+		\item We review hardware and software % Could add total estimated cost?
+		\item Then show how the method can be used to record annual growth through current common programs pr ...
+		\item Various ML based methods that Sandy has researched
 		\end{enumerate}
+	\fi
 	\item Software can be used to help record annual growth 
 		\begin{enumerate}
 		\item Coorecorder
@@ -105,12 +122,14 @@
 		\item workaround with NumPy memory maps and cropped viewing 
 		\end{enumerate}
 	\end{enumerate}
-\item Discussion (for MEE Only)
+\item Discussion (for MEE Only) 
 	\begin{enumerate}
 	\item strengths and opportunities
-		\begin{enumerate}
+		\begin{enumerate} % Usually I like a quick overview paragraph and I think you should still have one but as currently written I think the 'potential for automatic tree ring identification with iamge processing / ML ' and 'potential for vessel counts for an entire ring' connect too much to later sections, so you should move those sections up 
 		\item  Ability to capture multiple cores / cookies simultaneously
 		\item cost effective
+		% I would move the section on  tested on CooRecorder + CDendro here then 
+		% Section on R-CNN here then ... a paragraph on potential for two things below (or you could have these points on potential as part of your conclusions)
 		\item potential for automatic tree ring identification with iamge processing / ML 
 		\item potential for vessel counts for an entire ring 
 		\subitem although final quality is only as good as the sample preparation
@@ -154,7 +173,7 @@
 		\item Not all software can support this, especially if the computer is RAM constrained. Ring analysis tool which uses BigTIFF, HD5, or memory maps and loads only partial portions of the full image would be useful
 		\end{enumerate}
 	\end{enumerate}
-\item Conclusions (optional for MEE)
+\item Conclusions (optional for MEE) % Usually I am anti-conclusions because you just end up repeating yourself, but I think this could work here, especially to end on a positive after the 'opportunities' section. I think you could add  the 'potential for automatic tree ring identification with iamge processing / ML ' and 'potential for vessel counts for an entire ring'  here perhaps.
 	\begin{enumerate}
 	\item empty
 	\end{enumerate}
