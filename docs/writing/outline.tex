@@ -2,6 +2,7 @@
 \usepackage[top=1.00in, bottom=1.0in, left=1in, right=1in]{geometry}
 \usepackage{outlines}
 \usepackage{enumitem}
+\usepackage{graphicx}
 \setenumerate[1]{label=\Roman*.}
 \setenumerate[2]{label=\Alph*.}
 \setenumerate[3]{label=\roman*.}
@@ -32,6 +33,9 @@
 		\item originally done on scopes
 		\item images important for several decades now (WinDendro?) 
 		\item But new methods coming up often to take advantage of better imaging technology ... 
+		\begin{enumerate}
+			\item vessel counting requires detail at the sub-vessel level % detail is only as good as sample prep
+		\end{enumerate}
 		% \item Could add here one sentence on the three methods you mention below depending on what you want to say ... 
 		\end{enumerate}
 	\item Development of scanning alternatives 
@@ -48,71 +52,69 @@
 		\item avoid size limitations to digitize tree cookies and cores 
 		\item Digitizing wood samples for better data pooling / archiving
 		\end{enumerate} 
-	% I suggest a more 'here we ....' paragraph next that includes the below points so something like: (comment this in if you like it and delete your section below
-	\iffalse
 	\item Here we tell you about our new device
 		\begin{enumerate}
-		\item We review hardware and software % Could add total estimated cost?
-		\item Then show how the method can be used to record annual growth through current common programs pr ...
-		\item Various ML based methods that Sandy has researched
-		\end{enumerate}
-	\fi
-	\item Software can be used to help record annual growth 
-		\begin{enumerate}
-		\item Coorecorder
-		\item Various ML based methods that Sandy has researched
+		\item We review hardware and software 
+		\item total cost
+		\item Then show how the method can be used to record annual growth through current common programs 
+		\item allows for multiple cookies / cores to be added to a queue for sampling
+		\item stitching on device 
 		\end{enumerate}
 	\end{enumerate}
 \item Materials and Methods
 		\begin{enumerate}
+		\item Guiding design considerations
+			\begin{enumerate}
+				\item Digitization of a tree cookie and core
+				\item Minimizing barriers to assemble (Cost effective, open source, open hardware, minimal use of specialized equipment/tools)
+				\item Reducing user interaction between sample prep and the final image
+				\item Achieving near microscopic detail with a field of view as large as the sample
+			\end{enumerate}
+		\item Considerations for Digitizing Cookies
+		\begin{enumerate}
+			\item Inconsistencies in cookie preparation, (different height, non parallel faces) (figure related) %inconsistent_cookies.jpg
+			\item Cookie's surface area requires movement in the X and Y direction
+			\item The inconsistencies require movement in the Z direction to maintain in focus images
+		\end{enumerate}
 		\item Hardware Design
 			\begin{enumerate}
-			\item Cartesian gantry robot kit from OpenBuilds (ACRO system)
-			\item Camera 
-				\begin{enumerate}
-				\item chose Raspberry Pi HQ Camera for C-mount lens options, ability to stream, cost effectiveness, and clear obscelescence statement
-				\end{enumerate}
-			\item computer
-				\begin{enumerate}
-				\item NVIDIA Jetson Orin Nano for processing power in a light package, can connect to Raspberry Pi camera. Powerful enough to power a GUI and monitor display as well
-				\item NVMM Hardware accelerated video streaming reduces CPU load 
-				\end{enumerate}
-			\item 3D printed components
-				\begin{enumerate}
-				\item 3D printed parts from a Bambu X1C were designed to mount the lens and computer to the ACRO system
-				\item other parts such as a drag chain for cable management were also 3D printed
-				\item levelling tables were designed to allow for the cookie samples to be arranged orthogonally to the lens. Imperative to capturing in focus images across the entire cookie
-				\end{enumerate}
+				\item Biggest cost in most alternatives is a professional camera, choosing a Raspberry Pi HQ camera avoids this. The camera also has a definitive obscelescence statement %camera 
+				\item But to use a CSI camera, we need special hardware. NVIDIA Jetson Orin Nano fits the bill and has enough computational power to handle the image processing tasks while powering a monitor and GUI %computer 
+				\item Ideally all non-structural components could be purchased off the shelf and assembled. Fortunately complex geometries, dimensional accuracy, quick iteration speed, and cost effectiveness can be achieved with 3D printing  % 3d printing
+					\subitem Parts can easily be ordered from 3D printing shops but also has a low technical barrier for personal use
+				\item to combat sample inconsistencies, a levelling table and bullseye level were designed to make the prepared surface of the cookie closer to parallel to the XY plane
+				\item for the structure, the 1m x 1m OpenBuilds ACRO system was used. This kit is made of strong aluminum extrusion, has 4.5 micron resolution of accuracy, and is assembled quickly by following OpenBuild's detailed video instructions. % cartesian gantry machine
+				\item For the Z axis a lead screw linear actuator was attached to the mounting plate of the ACRO
 			\end{enumerate}
 		\item Software Design
 			\begin{enumerate}
-			\item image focusing
-				\begin{enumerate}
-				\item sample levelling is not perfect. At different points on the cookie, the Z-height of the gantry must vary to capture the in focus image. A routine was made to take multiple images at varied Z-heights. The image with the highest normalized variance score was chosen as the in focus image and is kept.
-				\item automatic PID control was implemented to adjust the initial Z-coordinate for each set of images to increase the probability of having an in focus image at each image set
-				\end{enumerate}
-			\item grid traverse
-				\begin{enumerate}
-				\item The software traverses the entire surface area of the sample. Each row and column is overlapping with its adjacent row and column. Allowing for feature based image sttiching.
-				\end{enumerate}
-			\item feature based image stitching
-				\begin{enumerate}
-				\item An implementation, Stitch2D, of feature based OpenCV image stitching was used. Edits to the code were made to allow for more memory efficient methods of stitching with the use of NumPy memory maps
-				\end{enumerate}
-			\item user interface
-				\begin{enumerate}
-				\item A GUI was made to navigate the machine to samples, set the size of the sample and its center. After samples are set up the operation is passive.
-				\end{enumerate}
+				\item Everything was designed in Python 
+				\item GUI to load samples and their identifiers to the queue to be digitized
+				\item image focusing
+					\begin{enumerate}
+					\item A routine was made to take multiple images at varied Z-heights as a proxy for autofocusing. The image with the highest normalized variance score was chosen as the in focus image and is kept. %reference
+					\item Rather than moving the Z-axis, taking a photo, then moving again, the images are taken when the Z-axis is moving at constant velocity and are triggered with a time delay. Stopping and starting the Z-axis results in significant vibration blur in the image, requiring 2 to 3 seconds of inactivity after coming to a stop before taking an image
+					\item It's possible for the height variation to exceed the range of the multiple images taken. A PID automatic control algorithm was used to make adjustments to the initial Z-height of the image stack. This is done by adjusting to keep the focused image in the center of the image stack % reference to PID
+					\item figure
+					\end{enumerate}
+				\item obtaining a large field of view with a grid of small field of view images 
+					\begin{enumerate}
+						\item When the sample is loaded into the machine, the machine traverses the user defined bounding box of the sample
+						\item It automatically takes a grid of images where each image has overlap with its adjacent neighbors
+						\item The overlap in the images allows for the images to be aligned and combined to their neighbors. Stitching an image to its neighbors is done by comparing calculated key points on each image and stitching them on their matches.
+						\item A python package Stitch2D was made to stitch together a grid from a set of structured images % should I talk about the changes I made to the package here or in the discussion?
+							\subitem We made changes to the package's stitching algorithm for memory efficiency as samples with thousands of images needed more RAM than what was available
+						\item figure
+					\end{enumerate}
 			\end{enumerate}
 		\end{enumerate}
-
 \item Results
 	\begin{enumerate}
 	\item scans of cookies / cores
 		\begin{enumerate}
-		\item ultra high resolution scans (DPI 15,000 +)
+		\item ultra high resolution scans (DPI 13,500 +)
 		\item downscaled versions as high resolution is not necessary for all applications
-		\item Digitization time as a function of surface area. Large cookies can scan only a portion of the cookie including the center and half of the rings.
+		\item Digitization time and file size as a function of surface area. Large cookies can scan only a portion of the cookie including the center and half of the rings.
 		\item large surface areas can produce files that are inconveniently large
 		\end{enumerate}
 	\item File-size results in functional limits 
@@ -121,18 +123,38 @@
 		\item other lossless filetypes for larger images are not compatible with standard image viewers
 		\item workaround with NumPy memory maps and cropped viewing 
 		\end{enumerate}
+	\item Images/tables	
+		\begin{enumerate}
+		\item Scale test image, proves the generated DPI calculation negates need to image with a ruler in frame
+		\item Sample size vs image capturing time graph
+		\item Hopefully sample size, dpi, automated tree ring time
+		\item Table with results of Equation for uncompressed filesize, emphasize lossy vs lossless compression, and true filesize %image filesize = DPI x 25.4 x sample-h-mm x sample-w-mm x 8bits x 3 colors
+		\end{enumerate}
 	\end{enumerate}
 \item Discussion (for MEE Only) 
 	\begin{enumerate}
+	\item Quick overview (TODO)
+		\begin{enumerate}
+			\item 
+		\end{enumerate}
 	\item strengths and opportunities
 		\begin{enumerate} % Usually I like a quick overview paragraph and I think you should still have one but as currently written I think the 'potential for automatic tree ring identification with iamge processing / ML ' and 'potential for vessel counts for an entire ring' connect too much to later sections, so you should move those sections up 
-		\item  Ability to capture multiple cores / cookies simultaneously
+		\item Ability to capture multiple cores / cookies simultaneously
 		\item cost effective
-		% I would move the section on  tested on CooRecorder + CDendro here then 
-		% Section on R-CNN here then ... a paragraph on potential for two things below (or you could have these points on potential as part of your conclusions)
-		\item potential for automatic tree ring identification with iamge processing / ML 
-		\item potential for vessel counts for an entire ring 
-		\subitem although final quality is only as good as the sample preparation
+		\item tested on CooRecorder + CDendro
+			\begin{enumerate}
+			\item Maximum filesize 
+			\item Coordinates were registered on to the cookie scans 
+			\item Note to self: using CDendro for multiple samples from the same tree... (cookies) 
+			\end{enumerate}
+		\item tested on R-CNN for deep learning tree ring identification
+			\begin{enumerate}
+			\item potential for integration with a more powerful computer to automatically identify rings while imaging
+			\item potential for final stitched images to have rings automatically counted
+			\item Cookie with a dpi of SMALL and dpi of 13500 were tested. With total pixel count of SMALL and BIG
+				\subitem NEEDS specific: DPI, height and width of pixels, record runtime
+				\subitem NEEDS specifications of server computational power (GPU count/other metric for ANN power)
+			\end{enumerate}
 		\end{enumerate}
 	\item opportunities for improvements
 		\begin{enumerate}
@@ -154,20 +176,7 @@
 		\begin{enumerate}
 		\item poor lens quality seemed to be the culprit of producing visible seams when stitching with larger field of view images 
 		\end{enumerate}
-	\item tested on R-CNN
-		\begin{enumerate}
-		\item Cookie with a dpi of SMALL and dpi of 13500 were tested. With total pixel count of SMALL and BIG
-			\begin{enumerate}
-			\item NEEDS specific: DPI, height and width of pixels, record runtime
-			\item NEEDS specifications of server computational power (GPU count/other metric for ANN power)
-			\end{enumerate}
-		\end{enumerate}
-	\item tested on CooRecorder + CDendro
-		\begin{enumerate}
-		\item Maximum filesize 
-		\item Coordinates were registered on to the cookie scans 
-		\item Note to self: using CDendro for multiple samples from the same tree... (cookies) 
-		\end{enumerate}
+
 	\item Software support for large files 
 		\begin{enumerate}
 		\item Not all software can support this, especially if the computer is RAM constrained. Ring analysis tool which uses BigTIFF, HD5, or memory maps and loads only partial portions of the full image would be useful
