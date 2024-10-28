@@ -65,47 +65,49 @@
 		\begin{enumerate}
 		\item Guiding design considerations
 			\begin{enumerate}
-				\item Digitization of a tree cookie and core
-				\item Minimizing barriers to assemble (Cost effective, open source, open hardware, minimal use of specialized equipment/tools)
-				\item Reducing user interaction between sample prep and the final image
-				\item Achieving near microscopic detail with a field of view as large as the sample
+			\item Digitization of a tree cookie and core
+			\item Minimizing barriers to assemble (Cost effective, open source, open hardware, minimal use of specialized equipment/tools)
+			\item Reducing user interaction between sample prep and the final image
+			\item Achieving near microscopic detail with a field of view as large as the sample
 			\end{enumerate}
 		\item Considerations for Digitizing Cookies
-		\begin{enumerate}
-			\item Inconsistencies in cookie preparation, (different height, non parallel faces) (figure related) %inconsistent_cookies.jpg
+			\begin{enumerate}
+			\item Inconsistencies in cookie preparation, (different height, non parallel faces)%inconsistent_cookies.jpg
+				\subitem figure for inconsistencies
 			\item Cookie's surface area requires movement in the X and Y direction
 			\item The inconsistencies require movement in the Z direction to maintain in focus images
-		\end{enumerate}
+			\end{enumerate}
 		\item Hardware Design
 			\begin{enumerate}
-				\item Biggest cost in most alternatives is a professional camera, choosing a Raspberry Pi HQ camera avoids this. The camera also has a definitive obscelescence statement %camera 
-				\item But to use a CSI camera, we need special hardware. NVIDIA Jetson Orin Nano fits the bill and has enough computational power to handle the image processing tasks while powering a monitor and GUI %computer 
-				\item Ideally all non-structural components could be purchased off the shelf and assembled. Fortunately complex geometries, dimensional accuracy, quick iteration speed, and cost effectiveness can be achieved with 3D printing  % 3d printing
-					\subitem Parts can easily be ordered from 3D printing shops but also has a low technical barrier for personal use
-				\item to combat sample inconsistencies, a levelling table and bullseye level were designed to make the prepared surface of the cookie closer to parallel to the XY plane
-				\item for the structure, the 1m x 1m OpenBuilds ACRO system was used. This kit is made of strong aluminum extrusion, has 4.5 micron resolution of accuracy, and is assembled quickly by following OpenBuild's detailed video instructions. % cartesian gantry machine
-				\item For the Z axis a lead screw linear actuator was attached to the mounting plate of the ACRO
+			\item Biggest cost in most alternatives is a professional camera, choosing a Raspberry Pi HQ camera avoids this. The camera also has a definitive obscelescence statement %camera 
+			\item But to use a CSI camera, we need special hardware. NVIDIA Jetson Orin Nano fits the bill and has enough computational power to handle the image processing tasks while powering a monitor and GUI %computer 
+			\item Ideally all non-structural components could be purchased off the shelf and assembled. Fortunately complex geometries, dimensional accuracy, quick iteration speed, and cost effectiveness can be achieved with 3D printing  % 3d printing
+				\subitem Parts can easily be ordered from 3D printing shops but also has a low technical barrier for personal use
+			\item to combat sample inconsistencies, a levelling table and bullseye level were designed to make the prepared surface of the cookie closer to parallel to the XY plane
+			\item for the structure, the 1m x 1m OpenBuilds ACRO system was used. This kit is made of strong aluminum extrusion, has 4.5 micron resolution of accuracy, and is assembled quickly by following OpenBuild's detailed video instructions. % cartesian gantry machine
+			\item For the Z axis a lead screw linear actuator was attached to the mounting plate of the ACRO
 			\end{enumerate}
 		\item Software Design
 			\begin{enumerate}
-				\item Everything was designed in Python 
-				\item GUI to load samples and their identifiers to the queue to be digitized
-				\item image focusing
-					\begin{enumerate}
-					\item A routine was made to take multiple images at varied Z-heights as a proxy for autofocusing. The image with the highest normalized variance score was chosen as the in focus image and is kept. %reference
-					\item Rather than moving the Z-axis, taking a photo, then moving again, the images are taken when the Z-axis is moving at constant velocity and are triggered with a time delay. Stopping and starting the Z-axis results in significant vibration blur in the image, requiring 2 to 3 seconds of inactivity after coming to a stop before taking an image
-					\item It's possible for the height variation to exceed the range of the multiple images taken. A PID automatic control algorithm was used to make adjustments to the initial Z-height of the image stack. This is done by adjusting to keep the focused image in the center of the image stack % reference to PID
-					\item figure
-					\end{enumerate}
-				\item obtaining a large field of view with a grid of small field of view images 
-					\begin{enumerate}
-						\item When the sample is loaded into the machine, the machine traverses the user defined bounding box of the sample
-						\item It automatically takes a grid of images where each image has overlap with its adjacent neighbors
-						\item The overlap in the images allows for the images to be aligned and combined to their neighbors. Stitching an image to its neighbors is done by comparing calculated key points on each image and stitching them on their matches.
-						\item A python package Stitch2D was made to stitch together a grid from a set of structured images % should I talk about the changes I made to the package here or in the discussion?
-							\subitem We made changes to the package's stitching algorithm for memory efficiency as samples with thousands of images needed more RAM than what was available
-						\item figure
-					\end{enumerate}
+			\item Everything was designed in Python 
+			\item GUI to load samples and their identifiers to the queue to be digitized
+			\item image focusing
+				\begin{enumerate}
+				\item A routine was made to take multiple images at varied Z-heights as a proxy for autofocusing. The image with the highest normalized variance score was chosen as the in focus image and is kept. %reference
+				\item Rather than moving the Z-axis, taking a photo, then moving again, the images are taken when the Z-axis is moving at constant velocity and are triggered with a time delay. Stopping and starting the Z-axis results in significant vibration blur in the image, requiring 2 to 3 seconds of inactivity after coming to a stop before taking an image
+				\item It's possible for the height variation to exceed the range of the multiple images taken. A PID automatic control algorithm was used to make adjustments to the initial Z-height of the image stack. This is done by adjusting to keep the focused image in the center of the image stack % reference to PID
+				\item figure for focusing 
+				\item figure for sample setup ideal/realistic
+				\end{enumerate}
+			\item obtaining a large field of view with a grid of small field of view images 
+				\begin{enumerate}
+				\item When the sample is loaded into the machine, the machine traverses the user defined bounding box of the sample
+				\item It automatically takes a grid of images where each image has overlap with its adjacent neighbors
+				\item The overlap in the images allows for the images to be aligned and combined to their neighbors. Stitching an image to its neighbors is done by comparing calculated key points on each image and stitching them on their matches.
+				\item A python package Stitch2D was made to stitch together a grid from a set of structured images % should I talk about the changes I made to the package here or in the discussion?
+					\subitem We made changes to the package's stitching algorithm for memory efficiency as samples with thousands of images needed more RAM than what was available
+				\item figure for grid traverse
+				\end{enumerate}
 			\end{enumerate}
 		\end{enumerate}
 \item Results
@@ -135,7 +137,9 @@
 	\begin{enumerate}
 	\item Quick overview (TODO)
 		\begin{enumerate}
-			\item 
+		\item X,Y,Z imaging machine which acts as a scanner 
+		\item obtains a grid of in focus images and slightly overlapping images which get stitched together to form one large mosaic 
+		\item designed for other labs with minimal engineering experience or equipment to build this for themselves
 		\end{enumerate}
 	\item strengths and opportunities
 		\begin{enumerate} % Usually I like a quick overview paragraph and I think you should still have one but as currently written I think the 'potential for automatic tree ring identification with iamge processing / ML ' and 'potential for vessel counts for an entire ring' connect too much to later sections, so you should move those sections up 
@@ -156,36 +160,24 @@
 				\subitem NEEDS specifications of server computational power (GPU count/other metric for ANN power)
 			\end{enumerate}
 		\end{enumerate}
-	\item opportunities for improvements
+	\item opportunities for improvements %combine into strengths and opportunities? 
 		\begin{enumerate}
-		\item focus stacking
-			\begin {enumerate}
-			\item when a sample is microtomed, the vessels are hollow. The autofocusing algorithm can be confused from this 
-			\end{enumerate}
-			\item Lenses
+		\item Software support for large files than 2.5GB >
 			\begin{enumerate}
-				\item troubles with fixed aperature / non autofocusing / poorly manufactured lens
-				\item lack of control to increase sharpness
-				\item autofocusing with Z-axis movement is time consuming to do without image blur
-				\item poor lens manufacturing can lead to drastically different quality / lighting between the edges and center of an image
-				\item good lens can increase sharpness and therefore stitching accuracy and ML inference
-				\item obtain similar quality between the corner and center of the image
-				\item Difficulty stitching with lower detail images, can't increase digitizing speed, must downscale high resolution images 
-				\end{enumerate}
+			\item Not all software can support this, especially if the computer is RAM constrained. Ring analysis tool which uses BigTIFF, HD5, or memory maps and loads only partial portions of the full image would be useful
+			\end{enumerate}
+		\item Integration with automatic tree ring identification model
+			\begin{enumerate}
+			\item It would be interesting to analyze the images before stitching in a different thread to potentially stitch together a binary bitmap which highlight tree rings
+			\item This could potentially drop the need for a hypercomputer if inference could be made concurrently with the images being captured
+			\end{enumerate}
+		\item Identifying vessel counts in each growth year 
 		\end{enumerate}
-		\begin{enumerate}
-		\item poor lens quality seemed to be the culprit of producing visible seams when stitching with larger field of view images 
-		\end{enumerate}
-
-	\item Software support for large files 
-		\begin{enumerate}
-		\item Not all software can support this, especially if the computer is RAM constrained. Ring analysis tool which uses BigTIFF, HD5, or memory maps and loads only partial portions of the full image would be useful
-		\end{enumerate}
-	\end{enumerate}
 \item Conclusions (optional for MEE) % Usually I am anti-conclusions because you just end up repeating yourself, but I think this could work here, especially to end on a positive after the 'opportunities' section. I think you could add  the 'potential for automatic tree ring identification with iamge processing / ML ' and 'potential for vessel counts for an entire ring'  here perhaps.
 	\begin{enumerate}
 	\item empty
 	\end{enumerate}
-        
+
+\end{enumerate}
 \end{outline}
 \end{document}
