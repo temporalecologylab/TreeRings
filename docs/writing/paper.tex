@@ -27,7 +27,24 @@
 \end{abstract}
 
 \section{Introduction}
-This is the introduction section where you introduce the topic and cite some papers.
+The study of tree rings has proven useful across multiple fields, proving to be a reliable subject for reconstructing past climates of regional and local environments, as well as a mechanism to understand tree growth response \citep{fritts_dendroclimatology_1971} \citep{williams_using_2010} \citep{guibal_dendrochronology_2021} \citep{sheppard_dendroclimatology_2010}.
+To obtain these data from the tree rings, it is necessary to measure tree rings from a tree cookie or core. The first high precision tool for this purpose was a stage micrometer, involving a trained technician to incrementally shift a tree core under the objective of a microscope - informing a computer when a new ring is encountered \citep{robinson_microcomputer_nodate}.
+While this method has very high precision, the data is only as accurate as the experience and knowledge of the technician at the time of recording \citep{levanic_atrics_2007}.
+The desire to remove repetition of errors in sampling and sampling bias across to individual technicians led researchers to an alternative - image analysis. 
+\par
+The first step in measuring tree ring width from images requires the digitization of the sample. There are currently two competing models to digitize a sample. The first model is to use a flatbed scanner or similar tool, providing the benefit to 
+
+The first approach involved flatbed scanning technology which digitized the surface of a prepared sample \citep{guay_new_1992}. 
+Flatbed scanners eventually encountered a resolution insufficiency when analyzing very narrow tree rings on the scale of a few cells. A new method introduced with the ATRICS system increased the resolution of samples by stitching together multiple images from a digital microscope camera \citep{levanic_atrics_2007}. 
+ATRICS set an example of the process which has been implemented in two other image acquisition tools, Gigapixel and CaptuRING \citep{griffin_gigapixel_2021, garcia-hidalgo_capturing_2022}.
+Both of these tools use professional cameras to take individual images of cores, although CaptuRING requires the technician to transfer the images to a second device and use the proprietary image stitching software PTGUI. 
+A budget friendly image acquisition tool with integrated image stitching for both cores and cookies has yet to be released.   
+
+
+% Potentially should have a section on tree ring width measurement software
+% The images were then fed to software such as WinDENDRO to have technicians click tree rings on a graphical user interface (GUI) \citep{guay_new_1992}.
+% More modern implementations of measurement software now exists which includes width measurement, cross dating, and autodetection of rings as well \citep{maxwell_measuring_2021}. 
+
 
 \section{Methods}
 The functionality of this system allows for the major steps in tree cookie and core digitization to be automated. Capturing images and stitching them together is handled without the need for user intervention. 

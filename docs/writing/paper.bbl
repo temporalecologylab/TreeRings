@@ -1,9 +1,81 @@
-\begin{thebibliography}{2}
+\begin{thebibliography}{11}
 \providecommand{\natexlab}[1]{#1}
 \providecommand{\url}[1]{\texttt{#1}}
 \expandafter\ifx\csname urlstyle\endcsname\relax
   \providecommand{\doi}[1]{doi: #1}\else
   \providecommand{\doi}{doi: \begingroup \urlstyle{rm}\Url}\fi
+
+\bibitem[Fritts(1971)]{fritts_dendroclimatology_1971}
+Harold~C. Fritts.
+\newblock Dendroclimatology and dendroecology.
+\newblock \emph{Quaternary Research}, 1\penalty0 (4):\penalty0 419--449,
+  December 1971.
+\newblock ISSN 0033-5894.
+\newblock \doi{10.1016/0033-5894(71)90057-3}.
+\newblock URL
+  \url{https://www.sciencedirect.com/science/article/pii/0033589471900573}.
+
+\bibitem[García-Hidalgo et~al.(2022)García-Hidalgo, García-Pedrero, Colón,
+  Sangüesa-Barreda, García-Cervigón, López-Molina, Hernández-Alonso,
+  Rozas, Olano, and Alonso-Gómez]{garcia-hidalgo_capturing_2022}
+Miguel García-Hidalgo, Ángel García-Pedrero, Daniel Colón, Gabriel
+  Sangüesa-Barreda, Ana~I. García-Cervigón, Juan López-Molina, Héctor
+  Hernández-Alonso, Vicente Rozas, José~Miguel Olano, and Víctor
+  Alonso-Gómez.
+\newblock {CaptuRING}: {A} do-it-yourself tool for wood sample digitization.
+\newblock \emph{Methods in Ecology and Evolution}, 13\penalty0 (6):\penalty0
+  1185--1191, 2022.
+\newblock ISSN 2041-210X.
+\newblock \doi{10.1111/2041-210X.13847}.
+\newblock URL
+  \url{https://onlinelibrary.wiley.com/doi/abs/10.1111/2041-210X.13847}.
+\newblock \_eprint:
+  https://onlinelibrary.wiley.com/doi/pdf/10.1111/2041-210X.13847.
+
+\bibitem[Griffin et~al.(2021)Griffin, Porter, Trumper, Carlson, Crawford,
+  Schwalen, and McFadden]{griffin_gigapixel_2021}
+Daniel Griffin, Samantha~T. Porter, Matthew~L. Trumper, Kate~E. Carlson,
+  Daniel~J. Crawford, Daniel Schwalen, and Colin~H. McFadden.
+\newblock Gigapixel {Macro} {Photography} of {Tree} {Rings}.
+\newblock \emph{Tree-Ring Research}, 77\penalty0 (2):\penalty0 86--94, July
+  2021.
+\newblock ISSN 1536-1098, 2162-4585.
+\newblock \doi{10.3959/TRR2021-3}.
+\newblock URL
+  \url{https://bioone.org/journals/tree-ring-research/volume-77/issue-2/TRR2021-3/Gigapixel-Macro-Photography-of-Tree-Rings/10.3959/TRR2021-3.full}.
+\newblock Publisher: Tree-Ring Society.
+
+\bibitem[Guay et~al.(1992)Guay, Gagnon, and Morin]{guay_new_1992}
+Régent Guay, Réjean Gagnon, and Hubert Morin.
+\newblock A new automatic and interactive tree ring measurement system based on
+  a line scan camera.
+\newblock \emph{The Forestry Chronicle}, 68\penalty0 (1):\penalty0 138--141,
+  February 1992.
+\newblock ISSN 0015-7546, 1499-9315.
+\newblock \doi{10.5558/tfc68138-1}.
+\newblock URL \url{http://pubs.cif-ifc.org/doi/10.5558/tfc68138-1}.
+
+\bibitem[Guibal and Guiot(2021)]{guibal_dendrochronology_2021}
+Frédéric Guibal and Joël Guiot.
+\newblock Dendrochronology.
+\newblock In Gilles Ramstein, Amaëlle Landais, Nathaelle Bouttes, Pierre
+  Sepulchre, and Aline Govin, editors, \emph{Paleoclimatology}, pages 117--122.
+  Springer International Publishing, Cham, 2021.
+\newblock ISBN 978-3-030-24982-3.
+\newblock \doi{10.1007/978-3-030-24982-3_8}.
+\newblock URL \url{https://doi.org/10.1007/978-3-030-24982-3_8}.
+
+\bibitem[Levanič(2007)]{levanic_atrics_2007}
+Tom Levanič.
+\newblock Atrics – {A} {New} {System} for {Image} {Acquisition} in
+  {Dendrochronology}.
+\newblock \emph{Tree-Ring Research}, 63\penalty0 (2):\penalty0 117--122,
+  December 2007.
+\newblock ISSN 1536-1098, 2162-4585.
+\newblock \doi{10.3959/1536-1098-63.2.117}.
+\newblock URL
+  \url{https://bioone.org/journals/tree-ring-research/volume-63/issue-2/1536-1098-63.2.117/Atrics--A-New-System-for-Image-Acquisition-in-Dendrochronology/10.3959/1536-1098-63.2.117.full}.
+\newblock Publisher: Tree-Ring Society.
 
 \bibitem[Mir et~al.(2014)Mir, Xu, and Van~Beek]{sampat_extensive_2014}
 Hashim Mir, Peter Xu, and Peter Van~Beek.
@@ -25,5 +97,30 @@ Aidan O'Dwyer.
 \newblock \doi{10.1016/S1474-6670(17)38237-X}.
 \newblock URL
   \url{https://www.sciencedirect.com/science/article/pii/S147466701738237X}.
+
+\bibitem[Robinson and Evans()]{robinson_microcomputer_nodate}
+William~J Robinson and Robert Evans.
+\newblock A {MICROCOMPUTER} -{BASED} {TREE} -{RING} {MEASURING} {SYSTEM}.
+
+\bibitem[Sheppard(2010)]{sheppard_dendroclimatology_2010}
+Paul~R. Sheppard.
+\newblock Dendroclimatology: extracting climate from trees.
+\newblock \emph{WIREs Climate Change}, 1\penalty0 (3):\penalty0 343--352, 2010.
+\newblock ISSN 1757-7799.
+\newblock \doi{10.1002/wcc.42}.
+\newblock URL \url{https://onlinelibrary.wiley.com/doi/abs/10.1002/wcc.42}.
+\newblock \_eprint: https://onlinelibrary.wiley.com/doi/pdf/10.1002/wcc.42.
+
+\bibitem[Williams et~al.(2010)Williams, Michaelsen, Leavitt, and
+  Still]{williams_using_2010}
+A.~Park Williams, Joel Michaelsen, Steven~W. Leavitt, and Christopher~J. Still.
+\newblock Using {Tree} {Rings} to {Predict} the {Response} of {Tree} {Growth}
+  to {Climate} {Change} in the {Continental} {United} {States} during the
+  {Twenty}-{First} {Century}.
+\newblock December 2010.
+\newblock \doi{10.1175/2010EI362.1}.
+\newblock URL
+  \url{https://journals.ametsoc.org/view/journals/eint/14/19/2010ei362.1.xml}.
+\newblock Section: Earth Interactions.
 
 \end{thebibliography}
