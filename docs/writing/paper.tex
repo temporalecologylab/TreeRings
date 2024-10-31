@@ -31,74 +31,81 @@ The study of tree rings has proven useful across multiple fields, proving to be 
 To obtain these data from the tree rings, it is necessary to measure tree rings from a tree cookie or core. The first high precision tool for this purpose was a stage micrometer, involving a trained technician to incrementally shift a tree core under the objective of a microscope - informing a computer when a new ring is encountered \citep{robinson_microcomputer_nodate}.
 While this method has very high precision, the data is only as accurate as the experience and knowledge of the technician at the time of recording \citep{levanic_atrics_2007}.
 The desire to remove repetition of errors in sampling and sampling bias across to individual technicians led researchers to an alternative - image analysis. 
-\par
+
 The first step in measuring tree ring width from images requires the digitization of the sample from one of two major methods.  
 The original technique was as a flatbed scanner which can digitize the entire sample at once \citep{guay_new_1992}. 
-With a top of the line scanner, like the Epson Perfection V850 Pro, it's possible to scan at maximum resolutions of 4800 dpi. 
-The resolution ceiling and a limited scan area of 8.5" x 11.7" make scanners unfit for ultra high resolution analysis or larger samples. 
+With a top of the line scanner, like the Epson Perfection V850 Pro, it's possible to scan at maximum resolutions of 4800 dpi and scan an area of up to 8.5" x 11.7".
+Analysis which relies on higher resolution larger samples require a different digitization approach. 
 
-During the time it took for scanners to reach high resolution, the second digitization model was introduced with ATRICS \citep{levanic_atrics_2007}. 
+The second digitization model was introduced with ATRICS \citep{levanic_atrics_2007}. 
 Rather than scanning a whole sample at once, a high resolution camera takes multiple images across the surface of the sample and uses image stitching software techniques to combine them into one ultra high resolution image \citep{muhlich_stitching_2022}.
 This methodology is often seen in other fields such as mineralogy and cellular biology \citep{ro_image_2021,mohammadi_fast_2024}. 
 This method requires either the camera objective to move relative to the sample, or the sample move underneath a stationary camera. 
 For ATRICS and a more modern do-it-yourself alternative, CaptuRING, the sample is moved relative to the camera \citep{garcia-hidalgo_capturing_2022}. 
 Gigapixel takes a different approach by moving the camera relative to the sample, allowing for multiple samples to be recorded in sequence. 
+While these machines can all digitize cores, none have been shown to digitize cookies.
 
-Both of these tools use professional cameras to take individual images of cores, although CaptuRING requires the technician to transfer the images to a second device and use the proprietary image stitching software PTGUI. 
-A budget friendly image acquisition tool with integrated image stitching for both cores and cookies has yet to be released.   
+Tina was made to combine the defining features of the previously mentioned machines into one while making the code open-source and chassis open-hardware device. 
+We designed Tina to digitize both cookies and cores, extend the maximum sample length, perform image stitching without user intervention, while minimizing cost. 
+The only specialized piece of equipment needed to build Tina is a 3D printer, but the parts can be readily ordered through 3D print shops if preferred.
+Excluding 3D printed parts, the total cost of the machine is approximately \$2,200 USD compared to the \$70,000 USD of the Gigapixel \citep{griffin_gigapixel_2021}.
+The total cost of the machine is almost comparable in price or less to many professional camera and macro lens combinations.
+Additional savings can also be made when factoring in the cost of a professional stitching software license such as PTGui. 
 
 \section{Methods}
 The functionality of this system allows for the major steps in tree cookie and core digitization to be automated. Capturing images and stitching them together is handled without the need for user intervention. 
-To do this, the system traverses the surface area of the sample after being given its dimensions. After the capturing process, the images are stitched and are stored on the device along with metadata of relevant 
-settings and sample parameters.
+To do this, the system traverses the surface area of the sample after being given its dimensions. After the capturing process, the images are stitched and are stored on the device along with metadata of relevant machine
+settings and sample parameters. 
 
-\subsection{Hardware Design}
 
-\subsubsection{Mechanical Structure}
-The cartesian robot was purchased from an open source parts supplier, OpenBuilds. They sell various sets of gantry robots, motor controllers, and power supplies
-which can be conveniently purchased from one supplier. All metal components are cut and sized, and have very detailed assembly videos, an active community forum,
-and customer support to fall back on. The OpenBuilds ACRO system circumvents the need for most power tools, machining, electrical connectors, and technical knowhow that would otherwise be necessary to build a robust robot.
-All other parts were designed using SolidWorks and printed on an FDM 3D printer using ABS material. Mechanical assembly can be completed entirely with common hand tools and metric fasteners. 
+%% Previous Methods is commented out so I can reorder things 
+% \subsection{Hardware Design}
 
-\subsubsection{Computer}
-The computer which runs the graphical user interface (GUI), gantry control, camera streaming, and image stitching is the NVIDIA Jetson Orin Nano Developer Kit (Orin Nano). Using a computer
-which is compatible with CSI cameras such as the Raspberry Pi HQ Camera was essential to maintain cost effectiveness. The Orin Nano, like others in the Jetson line of products, has hardware
-accelerators for common GPU tasks such as image streaming, which is vital to retain CPU power for GUI tasks and robot control. 
+% \subsubsection{Frame}
+% The cartesian gantry machine was purchased from an open source parts supplier, OpenBuilds. They sell various sets of gantry robots, motor controllers, and power supplies
+% which can be conveniently purchased from one supplier. All metal components are cut and sized, and have very detailed assembly videos, an active community forum,
+% and customer support to fall back on. The OpenBuilds ACRO system circumvents the need for most power tools, machining, electrical connectors, and technical knowhow that would otherwise be necessary to build a robust robot.
+% All other parts were designed using SolidWorks and printed on an FDM 3D printer using ABS material. Mechanical assembly can be completed entirely with common hand tools and metric fasteners. 
 
-\subsubsection{Camera}
-Unlike the Gigapixel or CaptuRING, the camera is a machine vision camera rather than a handheld professional camera. Choosing the Raspberry Pi HQ Camera provided many lens options, significant
-forum support, and includes an Obsolescence Statement that the camera will be in production until January 2030. Combined with a 180mm C-mount microscope lens, the images can reach above 20,000 dots per inch (DPI).
+% \subsubsection{Computer}
+% The computer which runs the graphical user interface (GUI), gantry control, camera streaming, and image stitching is the NVIDIA Jetson Orin Nano Developer Kit (Orin Nano). Using a computer
+% which is compatible with CSI cameras such as the Raspberry Pi HQ Camera was essential to maintain cost effectiveness. The Orin Nano, like others in the Jetson line of products, has hardware
+% accelerators for common GPU tasks such as image streaming, which is vital to retain CPU power for GUI tasks and robot control. 
 
-\subsection{Software Design}
-All software was written in Python VERSION and a variety of packages for the GUI, image stitching, and calculations (Should I include all the packages in writing?). Care was taken to segment the
-software design into abstracted object oriented code. 
+% \subsubsection{Camera}
+% Unlike the Gigapixel or CaptuRING, the camera is a machine vision camera rather than a handheld professional camera. Choosing the Raspberry Pi HQ Camera provided many lens options, significant
+% forum support, and includes an Obsolescence Statement that the camera will be in production until January 2030. Combined with a 180mm C-mount microscope lens, the images can reach above 20,000 dots per inch (DPI).
 
-\subsubsection{Graphical User Interface}
-The GUI to control the machine launches from a Python script. Included are a viewer to see the live stream from the camera, buttons to jog the machine throughout the XYZ coordinate system,
-setting the size of samples, and running the process to capture and stitch images. The system was designed to allow for multiple samples to be prepared in a queue for bulk digitization. 
+% \subsection{Software Design}
+% All software was written in Python VERSION and a variety of packages for the GUI, image stitching, and calculations (Should I include all the packages in writing?). Care was taken to segment the
+% software design into abstracted object oriented code. 
 
-\subsubsection{Sample Digitization}
-The digitization of a sample can be reduced to a few processes - capturing a grid of overlapping images, image focusing, and image stitching. 
+% \subsubsection{Graphical User Interface}
+% The GUI to control the machine launches from a Python script. Included are a viewer to see the live stream from the camera, buttons to jog the machine throughout the XYZ coordinate system,
+% setting the size of samples, and running the process to capture and stitch images. The system was designed to allow for multiple samples to be prepared in a queue for bulk digitization. 
 
-Inside the GUI, the program is populated with the height and width of the sample as well as the height and width of the image. The user then navigates to the center of the sample and can choose 
-to begin imaging the sample or add the sample to a queue for bulk digitization. This provides the machine enough data to calculate the necessary rows and columns for traversing the entire surface
-area of the sample while maintaining a level of overlap between adjacent images. Image overlap is what allows for images to be stitched together as there is nonzero error when the robot translates 
-from one coordinate to another. 
+% \subsubsection{Sample Digitization}
+% The digitization of a sample can be reduced to a few processes - capturing a grid of overlapping images, image focusing, and image stitching. 
 
-To stitch adjacent images, feature based image stitching from a Python package Stitch2D was used. The underlying functions were based on the processing libraries
-OpenCV and NumPy. Multiple other image stitching packages were tested but none were able to successfully piece together our samples. (***Sounds kinda bad to not have data on a comparison as well as not having a metric to see how 'well' an image is stitched... but this is non trivial. Can we get away with it?***)
+% Inside the GUI, the program is populated with the height and width of the sample as well as the height and width of the image. The user then navigates to the center of the sample and can choose 
+% to begin imaging the sample or add the sample to a queue for bulk digitization. This provides the machine enough data to calculate the necessary rows and columns for traversing the entire surface
+% area of the sample while maintaining a level of overlap between adjacent images. Image overlap is what allows for images to be stitched together as there is nonzero error when the robot translates 
+% from one coordinate to another. 
 
-One major difficulty with using the Raspberry Pi HQ Camera is the lack of a lens with auto-focus. An in focus image in this regime is dependent on the focal length of the lens set by the user and the
-distance from the sample. The microscope lens has a very small depth of field and goes from in-focus to out-of-focus in less than a 1mm step in the distance to the sample. Two cooperative solutions were implemented 
-to achieve a focused image for the entire surface area of the sample - taking images from multiple distances from the sample and automatic control. 
+% To stitch adjacent images, feature based image stitching from a Python package Stitch2D was used. The underlying functions were based on the processing libraries
+% OpenCV and NumPy. Multiple other image stitching packages were tested but none were able to successfully piece together our samples. (***Sounds kinda bad to not have data on a comparison as well as not having a metric to see how 'well' an image is stitched... but this is non trivial. Can we get away with it?***)
 
-\subsubsection{Image Stack Focusing}
-When the sample is placed on the table to be digitized, it is assumed that there will, at best, very slight variations in height across the surface area of the sample. A levelling table 
-assists in reducing this error although it will never be nonzero. At each location (X, Y) on the grid of overlapping images, 11 images are captured in equally distanced Z steps across a 1mm range. 
-Each of these images have a normalized variance score calculated - the maximum value represents the most in focus image \citep{sampat_extensive_2014}. In practice, stopping and starting the motor causes 
-enough vibration to require upwards to two seconds of pause time before the motion blur stops to take each photo. Instead of stopping and starting each image, an additional distance is added to the 
-Z-motion to allow the stepper to accelerate and reach constant velocity. At this speed, images are then taken with constant time steps instead of constant distance steps across the 1mm range. This eliminates
-the motion blur due to acceleration and dramatically reduces imaging time. 
+% One major difficulty with using the Raspberry Pi HQ Camera is the lack of a lens with auto-focus. An in focus image in this regime is dependent on the focal length of the lens set by the user and the
+% distance from the sample. The microscope lens has a very small depth of field and goes from in-focus to out-of-focus in less than a 1mm step in the distance to the sample. Two cooperative solutions were implemented 
+% to achieve a focused image for the entire surface area of the sample - taking images from multiple distances from the sample and automatic control. 
+
+% \subsubsection{Image Stack Focusing}
+% When the sample is placed on the table to be digitized, it is assumed that there will, at best, very slight variations in height across the surface area of the sample. A levelling table 
+% assists in reducing this error although it will never be nonzero. At each location (X, Y) on the grid of overlapping images, 11 images are captured in equally distanced Z steps across a 1mm range. 
+% Each of these images have a normalized variance score calculated - the maximum value represents the most in focus image \citep{sampat_extensive_2014}. In practice, stopping and starting the motor causes 
+% enough vibration to require upwards to two seconds of pause time before the motion blur stops to take each photo. Instead of stopping and starting each image, an additional distance is added to the 
+% Z-motion to allow the stepper to accelerate and reach constant velocity. At this speed, images are then taken with constant time steps instead of constant distance steps across the 1mm range. This eliminates
+% the motion blur due to acceleration and dramatically reduces imaging time. 
 
 $$\frac{1}{MN\mu} \sum\limits_{x=0}^{M-1} \sum\limits_{y=0}^{N-1}(f(x,y) - \mu)^2$$
 
