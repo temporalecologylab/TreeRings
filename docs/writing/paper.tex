@@ -57,6 +57,29 @@ The functionality of this system allows for the major steps in tree cookie and c
 To do this, the system traverses the surface area of the sample after being given its dimensions. After the capturing process, the images are stitched and are stored on the device along with metadata of relevant machine
 settings and sample parameters. 
 
+The frame, camera, computer, software, and sample leveling tables, work cohesively to address the nuances of digitizing both cookies and cores. 
+Each of these subsystems will be reviewed along with the design considerations involved to make a complete machine. 
+Considering Tina is an imaging machine, we will start off by looking at the camera and move outward.
+
+\subsection{System Overview}
+Camera, computer, software, XYZ frame, adapters. 
+
+\subsection{Camera}
+In the Gigapixel and CaptuRING, a professional handheld camera was used to capture images. While this benefits from a wide variety of lens and camera choices - and principally autofocus - they come at a cost. 
+Beyond its literal price tag, a professional camera also carries a significant weight, demanding a more robust and therefore more costly machine frame. 
+These cameras are also optimized for handheld use, not for integration into computer driven machines. This results in clunky access to images from software. 
+Designing around a machine vision camera such as the 12MP Raspberry Pi HQ Camera drastically reduced the camera cost while improving the access to the data stream coming from the camera sensor.
+Pairing the Raspberry Pi HQ Camera with a high magnification C-Mount lens allows for images with very high resolution in dots-per-inch (DPI) to be captured. (THIS IS AN ESTIMATE, GET THE REAL VALUES FROM TINA) If the field of view of the image
+could be optically zoomed to 5mm x 3mm, the resolution can reach a theoretical 32,000 DPI. 
+
+\subsubsection{Focusing}
+Normalized variance process goes here.
+
+Achieving a focused image across the entire surface area of the sample is the basis for an accurate stitch and effective analysis. By saving costs on a fixed focus camera and lens, it was necessary to implement a method to focus the images. 
+Focus is solely a function of distance to the subject in the regime. With this high magnification lens, having an image go from in-focus to out-of-focus was sensitive to sub millimeter variation in distance to the lens. 
+This requires cores and especially cookies to be as close to orthogonally aligned to the lens as possible. A 3D printed levelling table and bullseye level were used to correct plane misalignment of up to 10 degrees in cookies (CALCULATE THIS?). 
+Slight sample misalignments are corrected within a closed loop automatic control PID algorithm. 
+
 
 %% Previous Methods is commented out so I can reorder things 
 % \subsection{Hardware Design}
@@ -107,31 +130,31 @@ settings and sample parameters.
 % Z-motion to allow the stepper to accelerate and reach constant velocity. At this speed, images are then taken with constant time steps instead of constant distance steps across the 1mm range. This eliminates
 % the motion blur due to acceleration and dramatically reduces imaging time. 
 
-$$\frac{1}{MN\mu} \sum\limits_{x=0}^{M-1} \sum\limits_{y=0}^{N-1}(f(x,y) - \mu)^2$$
+% $$\frac{1}{MN\mu} \sum\limits_{x=0}^{M-1} \sum\limits_{y=0}^{N-1}(f(x,y) - \mu)^2$$
 
-\subsubsection{Automatic Control}
-While the image stack provides a basis to obtain an in focus image, it is statically limited to the 1mm range in the Z axis. Instead of spending significant time guaranteeing that the sample
-is within the the Z axis range across the entire surface area, a PID control algorithm takes the wheel \citep{odwyer_summary_2000}. The information previously calculated in the image stack is sufficient 
-to inform the PID controller of how to adjust the initial the Z axis for the next image stack. The controller is constantly trying to make the most in focus image be at the center of the image stack,
-index value 5. This allows for the most flexibility moving to the next location of the image grid. 
+% \subsubsection{Automatic Control}
+% While the image stack provides a basis to obtain an in focus image, it is statically limited to the 1mm range in the Z axis. Instead of spending significant time guaranteeing that the sample
+% is within the the Z axis range across the entire surface area, a PID control algorithm takes the wheel \citep{odwyer_summary_2000}. The information previously calculated in the image stack is sufficient 
+% to inform the PID controller of how to adjust the initial the Z axis for the next image stack. The controller is constantly trying to make the most in focus image be at the center of the image stack,
+% index value 5. This allows for the most flexibility moving to the next location of the image grid. 
 
-\begin{figure}
-    \centering
-    \begin{subfigure}{.5\textwidth}
-      \centering
-      \includegraphics[height=0.75\linewidth]{../diagrams/sample_setup_ideal.png}
-      \caption{Ideal sample leveling}
-      \label{fig:sub1}
-    \end{subfigure}%
-    \begin{subfigure}{.5\textwidth}
-      \centering
-      \includegraphics[height=0.75\linewidth]{../diagrams/sample_setup_realistic.png}
-      \caption{Realistic sample leveling}
-      \label{fig:sub2}
-    \end{subfigure}
-    \caption{Side view of the camera and sample on top of a leveling table. The ideal sample leveling shows a uniform distance d at all (x,y) coordinates on the sample. This is impossible to achieve in reality, the true sample leveling has a non uniform distance at unique (x,y) coordinates.}
-    \label{fig:test}
-\end{figure}
+% \begin{figure}
+%     \centering
+%     \begin{subfigure}{.5\textwidth}
+%       \centering
+%       \includegraphics[height=0.75\linewidth]{../diagrams/sample_setup_ideal.png}
+%       \caption{Ideal sample leveling}
+%       \label{fig:sub1}
+%     \end{subfigure}%
+%     \begin{subfigure}{.5\textwidth}
+%       \centering
+%       \includegraphics[height=0.75\linewidth]{../diagrams/sample_setup_realistic.png}
+%       \caption{Realistic sample leveling}
+%       \label{fig:sub2}
+%     \end{subfigure}
+%     \caption{Side view of the camera and sample on top of a leveling table. The ideal sample leveling shows a uniform distance d at all (x,y) coordinates on the sample. This is impossible to achieve in reality, the true sample leveling has a non uniform distance at unique (x,y) coordinates.}
+%     \label{fig:test}
+% \end{figure}
 
 
 \section{Results}
