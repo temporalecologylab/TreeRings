@@ -6,10 +6,9 @@
 \usepackage{amsmath, amssymb}   % For math symbols
 \usepackage{graphicx}           % For including graphics
 \usepackage{geometry}           % For setting page margins
-\usepackage{natbib}             % For citations
+\usepackage[numbers]{natbib}             % For citations
 \usepackage{hyperref}           % For clickable links in references
 \usepackage{subcaption}         % For side by side subfigures
-
 % Page layout
 \geometry{margin=1in}           % Set margins to 1 inch
 
@@ -17,6 +16,9 @@
 \title{Tina Paper In Development}
 \author{Your Name}
 \date{\today}
+
+
+
 
 \begin{document}
 
@@ -46,38 +48,108 @@ Gigapixel takes a different approach by moving the camera relative to the sample
 While these machines can all digitize cores, none have been shown to digitize cookies.
 
 Tina was made to combine the defining features of the previously mentioned machines into one while making the code open-source and chassis open-hardware device. 
-We designed Tina to digitize both cookies and cores, extend the maximum sample length, perform image stitching without user intervention, while minimizing cost. 
+We designed Tina to digitize both cookies and cores, extend the maximum sample length, perform image stitching without operator intervention, while minimizing cost. 
+Successful functionality of this system is dependent on the major steps in tree cookie and core digitization to be automated. 
 The only specialized piece of equipment needed to build Tina is a 3D printer, but the parts can be readily ordered through 3D print shops if preferred.
 Excluding 3D printed parts, the total cost of the machine is approximately \$2,200 USD compared to the \$70,000 USD of the Gigapixel \citep{griffin_gigapixel_2021}.
 The total cost of the machine is almost comparable in price or less to many professional camera and macro lens combinations.
 Additional savings can also be made when factoring in the cost of a professional stitching software license such as PTGui. 
 
-\section{Methods}
-The functionality of this system allows for the major steps in tree cookie and core digitization to be automated. Capturing images and stitching them together is handled without the need for user intervention. 
-To do this, the system traverses the surface area of the sample after being given its dimensions. After the capturing process, the images are stitched and are stored on the device along with metadata of relevant machine
-settings and sample parameters. 
+\section{System Overview} % this is so dry fix later
+
+Tina can be thought of as a combination of multiple subsystems: the camera, computer, and gantry machine. The first system is the camera and computer. 
+A 12MP Raspberry Pi HQ Camera equipped with a SEEED studio microscope lens is connected to an NVIDIA Jetson Orin Nano (Jetson) through a CSI cable. 
+The Jetson is a powerful SoC edge computer which drives a computer monitor for a GUI, sends commands to the motor controller to move the machine, runs image processing calculations for automatic control, and performs calculations to stitch individual images into one mosaic. 
+The gantry machine is built using the extruded aluminum and premade adapters from the OpenBuilds ACRO kit. 
+Movement of the machine is originates from NEMA 17 stepper motors and is transferred to
+linear motion in the X and Y direction using timing belts and timing pulleys. 
+Motion in the Z-direction is controlled by a NEMA 17 lead screw based linear actuator also supplied by OpenBuilds.
+Custom 3D models were designed in SolidWorks to create adapters to mount the camera to the Z axis as well as mounting the Z axis to the XY plate of the ACRO. 
+The OpenBuilds X32 Motor Controller running GRBL firmware converts G-Code commands received via serial from the Jetson. GRBL then converts them to electrical signals to spin the lead screw and timing belts. 
+
+Interacting with the Jetson is similar to working with any Ubuntu based Linux distribution. 
+
+\section{Sample Digitization} % Methods
+The subsystems can be best understood by following the path from sample setup through the computing process to create the stitched image. 
+
+To achieve this with a fixed focus camera, the samples must be nearly orthogonal to the camera lens. Misalignments between the sample and lens can be corrected by using the 3D printed sample levelling table we designed.
+Once the sample is level, the operator interacts with the machine through the GUI to navigate the camera to the center of the sample, and initializes focus to be sharp. The height and width dimensions are then entered in the GUI
+to be saved along with the center XYZ coordinate of the sample. This procedure can be repeated to create a queue of samples to digitize.
+
+Sample height, width, identifiers, and centering an in focus sample is sufficient information to digitize.
+
+\subsection{Image Capturing}
+Once prompted the system begins to exhaustively traverse the surface area of the sample. 
+The goal of this traversal is to obtain in-focus images that have a region of overlap with all its neighbors - the basis of image stitching. 
+Digitizing cores can often be done without needing to traverse in both the X and Y axis as the field of view in an image can capture the core's entire axial diameter in its field of view when moving along the core's length. % confusing wording fix later
+Spanning the surface area of a cookie is more complicated as it needs move in both the X and Y axis (see Figure).
+
+By centering the design around a fixed focus camera and lens, it is necessary to implement some sense of automatic control to focus the images. 
+In this system, the only way to control focus is by changing the lens's distance to the sample. 
+And with the microscope lens, the depth of field of the image is so sensitive that a perturbation of less half of a millimeter can move an entire image out of focus.
+Solving this in a time efficient manner involves two stages. 
+The first stage takes advantage of the requirement to navigate and focus the camera to the center of the sample.
+This allows the initial $Z_0$ value from $(X_0, Y_0, Z_0)$ to be a fantastic initial guess as to what value would have an in focus image across the entire surface. 
+Sample surface misalignment and a non flat sample (bumpy) surfaces require more than one image to be taken at each image $(X, Y)$. 
+From the first $(X_0, Y_0)$ coordinate captured, 11 images are taken at different $Z$ values in $\boldsymbol{Z_{\text{focus}}}$. 
+So long as $Z_{sample}$ is within this set, an in focus image exists.
+
+\[
+Z_{sample} \in
+\boldsymbol{Z_{\text{focus}}} = 
+Z_0 + 
+\begin{bmatrix}
+-0.5 \\
+-0.4 \\
+\vdots \\
+0.4 \\
+0.5 \\
+\end{bmatrix}
+\exists 
+Z_{focused}
+\] % unsure if this makes sense
+
+Beginning at 0.5 mm above $Z_0$ and the last image finishing at 0.5 mm below $Z_0$.
+To reduce motion blur in the images, this $\boldsymbol{Z_{\text{focus}}}$ is traversed at constant velocity and images are captured without stopping. 
+The 11 images then have their normalized variance calculated in a separate thread to measure the image sharpness \citep{sampat_extensive_2014}.
+The image with the maximum score is saved while the rest are deleted from storage.
+
+
+\[
+    i_{\max} = \arg\max_{i} \boldsymbol{Z_{\text{focus}}}
+\]
+    
+This focusing procedure works well alone when the sample alignment has a difference in height no greater than 1 mm. 
+Greater alignment error can be managed by having the control over adjusting $Z_{0,k}$ for $(X_k,Y_k)$.
+The likelihood of an adjacent $(X_{k+1}, Y_{k+1})$ containing an in focus image is highest when the current $i_{{\max,k}}$ is at the middle index of $\boldsymbol{Z_{focus}}$. 
+A PID control algorithm with a process variable of $i_{max}$ and control variable of $Z_{0,k}$ allows a negative feedback loop to improve focusing across the entire sample \citep{odwyer_summary_2000}. 
+
+After the capturing process, the images are stitched and are stored on the device along with metadata of relevant machine
+settings and sample information. 
 
 The frame, camera, computer, software, and sample leveling tables, work cohesively to address the nuances of digitizing both cookies and cores. 
 Each of these subsystems will be reviewed along with the design considerations involved to make a complete machine. 
 Considering Tina is an imaging machine, we will start off by looking at the camera and move outward.
 
-\subsection{System Overview}
-Camera, computer, software, XYZ frame, adapters. 
 
 \subsection{Camera}
-In the Gigapixel and CaptuRING, a professional handheld camera was used to capture images. While this benefits from a wide variety of lens and camera choices - and principally autofocus - they come at a cost. 
+In the Gigapixel and CaptuRING, a professional handheld camera was used to capture images. 
+While this benefits from a wide variety of lens and camera choices - and principally autofocus - they come at a cost. 
 Beyond its literal price tag, a professional camera also carries a significant weight, demanding a more robust and therefore more costly machine frame. 
-These cameras are also optimized for handheld use, not for integration into computer driven machines. This results in clunky access to images from software. 
+These cameras are also optimized for handheld use, not for integration into computer driven machines. 
+This results in clunky access to images from software. 
 Designing around a machine vision camera such as the 12MP Raspberry Pi HQ Camera drastically reduced the camera cost while improving the access to the data stream coming from the camera sensor.
 Pairing the Raspberry Pi HQ Camera with a high magnification C-Mount lens allows for images with very high resolution in dots-per-inch (DPI) to be captured. (THIS IS AN ESTIMATE, GET THE REAL VALUES FROM TINA) If the field of view of the image
-could be optically zoomed to 5mm x 3mm, the resolution can reach a theoretical 32,000 DPI. 
 
 \subsubsection{Focusing}
 Normalized variance process goes here.
 
-Achieving a focused image across the entire surface area of the sample is the basis for an accurate stitch and effective analysis. By saving costs on a fixed focus camera and lens, it was necessary to implement a method to focus the images. 
-Focus is solely a function of distance to the subject in the regime. With this high magnification lens, having an image go from in-focus to out-of-focus was sensitive to sub millimeter variation in distance to the lens. 
-This requires cores and especially cookies to be as close to orthogonally aligned to the lens as possible. A 3D printed levelling table and bullseye level were used to correct plane misalignment of up to 10 degrees in cookies (CALCULATE THIS?). 
+Achieving a focused image across the entire surface area of the sample is the basis for an accurate stitch and effective analysis. 
+By saving costs on a fixed focus camera and lens, it was necessary to implement a method to focus the images. 
+Focus is solely a function of distance to the subject in the regime. 
+With this high magnification lens, having an image go from in-focus to out-of-focus was sensitive to sub millimeter variation in distance to the lens. 
+This requires cores and especially cookies to be as close to orthogonally aligned to the lens as possible. 
+A 3D printed levelling table and bullseye level were used to correct plane misalignment of up to 10 degrees in cookies (CALCULATE THIS?). 
 Slight sample misalignments are corrected within a closed loop automatic control PID algorithm. 
 
 
