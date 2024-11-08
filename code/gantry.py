@@ -3,12 +3,14 @@ import serial
 import time
 from threading import Thread, Lock
 import re
+import utils
 
 log.basicConfig(format='%(process)d-%(levelname)s-%(message)s', level=log.INFO)
 
 class Gantry:
     def __init__(self, serial_port = "/dev/ttyUSB0", quiet=True):
-        
+        self.config = utils.load_config()
+
 
         self.quiet = quiet
         self._serial_port = serial_port # windows should be a "COM[X]" port which will vary per device
@@ -16,8 +18,8 @@ class Gantry:
         # machine settings
         # fast z is 100, slow z is 15
         # fast xy is 500, slow xy is 200
-        self.feed_rate_z = 300
-        self.feed_rate_xy = 300 
+        self.feed_rate_z = self.config["gantry"]["FEED_RATE_DEFAULT_Z"]
+        self.feed_rate_xy = self.config["gantry"]["FEED_RATE_DEFAULT_XY"] 
 
         # sample information
         self.cookie_samples = []

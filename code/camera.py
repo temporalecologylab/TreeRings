@@ -2,6 +2,8 @@ from threading import Thread
 import time
 import logging as log
 import gi
+import utils
+
 gi.require_version('Gst', '1.0')
 from gi.repository import Gst, GObject, GLib
 
@@ -11,10 +13,12 @@ class Camera:
 
     def __init__(self, quiet = True):
         # Adding hardcoded image size, will need to update to update DPI
-        CROP_W = 500
-        CROP_H = 100
-        W_PIXELS = 3840 - 2 * CROP_W
-        H_PIXELS = 2160 - 2 * CROP_H
+        self.config = utils.load_config()
+        
+        CROP_W = self.config["camera"]["CROP_W"]
+        CROP_H = self.config["camera"]["CROP_H"]
+        W_PIXELS = self.config["camera"]["W_PIXELS_NO_CROP"] - 2 * CROP_W
+        H_PIXELS = self.config["camera"]["H_PIXELS_NO_CROP"] - 2 * CROP_H
 
         Gst.init(None)
         # Create the pipeline with both display and save frame functionality

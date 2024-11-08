@@ -44,11 +44,11 @@ class Cookie:
         self.image_width_mm = image_width_mm
         self.image_height_mm = image_height_mm
         self.rows, self.cols, self.x_step_size, self.y_step_size = self.calculate_grid()
-        self.background = np.zeros((self.rows, self.cols))
-        self.background_std = np.zeros((self.rows, self.cols))
-        self.coordinates = np.zeros((self.rows, self.cols, 3))
-        self.focus_index = np.zeros((self.rows, self.cols))
-        self.nvar = np.zeros((self.rows, self.cols, 9))
+        self.background = []
+        self.background_std = []
+        self.coordinates = []
+        self.focus_index = []
+        self.nvar = []
 
     def calculate_grid(self):
         """Calculates the amount of rows and columns necessary to traverse the cookie.

@@ -7,14 +7,17 @@ import logging as log
 import controller
 from datetime import datetime
 import time
+import utils
 
 log.basicConfig(format='%(process)d-%(levelname)s-%(message)s', level=log.INFO)
 
 class App(Gtk.Window):
     def __init__(self):
         super().__init__(title="Cookie Capture")
-        self.set_default_size(600, 400)
-        self.set_size_request(600, 400)
+        self.config = utils.load_config()
+
+        self.set_default_size(self.config["gui"]["DEFAULT_WINDOW_SIZE"][0], self.config["gui"]["DEFAULT_WINDOW_SIZE"][1])
+        self.set_size_request(self.config["gui"]["DEFAULT_WINDOW_SIZE"][0], self.config["gui"]["DEFAULT_WINDOW_SIZE"][1])
         self.connect("destroy", self.quit_program)
         
         self.controller = controller.Controller(3, 2)
@@ -120,7 +123,7 @@ class App(Gtk.Window):
         label_height_cookie = Gtk.Label(label="Enter Sample Height (mm):   ")
         box.pack_start(label_height_cookie, True, True, 0)
         self.entry_height_cookie = Gtk.Entry()
-        self.entry_height_cookie.set_text("45")
+        self.entry_height_cookie.set_text("{}".format(self.config["gui"]["DEFAULT_SAMPLE_HEIGHT_MM"]))
         box.pack_start(self.entry_height_cookie, True, True, 0)
         self.entry_height_cookie.connect('focus-out-event', self.print_cookie_height_entry)
 
@@ -128,7 +131,7 @@ class App(Gtk.Window):
         label_width_cookie = Gtk.Label(label="Enter Sample Width (mm):   ")
         box.pack_start(label_width_cookie, True, True, 0)
         self.entry_width_cookie = Gtk.Entry()
-        self.entry_width_cookie.set_text("45")
+        self.entry_width_cookie.set_text("{}".format(self.config["gui"]["DEFAULT_SAMPLE_WIDTH_MM"]))
         box.pack_start(self.entry_width_cookie, True, True, 0)
         self.entry_width_cookie.connect('focus-out-event', self.print_cookie_width_entry)
     
@@ -147,7 +150,7 @@ class App(Gtk.Window):
         self.zoom_combo.pack_start(renderer_text, True)
         self.zoom_combo.add_attribute(renderer_text, "text", 0)
 
-        self.zoom_combo.set_active(5)
+        self.zoom_combo.set_active(self.config["gui"]["DEFAULT_ZOOM_LEVEL"])
 
         self.zoom_combo.connect("changed", self.on_zoom_combo_changed)
 
@@ -157,7 +160,7 @@ class App(Gtk.Window):
         label_height_img = Gtk.Label(label="Enter Image Height (mm):   ")
         box.pack_start(label_height_img, True, True, 0)
         self.entry_height_img = Gtk.Entry()
-        self.entry_height_img.set_text("3.00")
+        self.entry_height_img.set_text("{}".format(3.00))
         box.pack_start(self.entry_height_img, True, True, 0)
         self.entry_height_img.connect('focus-out-event', self.print_img_height_entry)
 
@@ -165,7 +168,7 @@ class App(Gtk.Window):
         label_width_img = Gtk.Label(label="Enter Image Width (mm):   ")
         box.pack_start(label_width_img, True, True, 0)
         self.entry_width_img = Gtk.Entry()
-        self.entry_width_img.set_text("5.00")
+        self.entry_width_img.set_text("{}".format(5.0))
         box.pack_start(self.entry_width_img, True, True, 0)
         self.entry_width_img.connect('focus-out-event', self.print_img_width_entry)
 
@@ -217,7 +220,7 @@ class App(Gtk.Window):
         box.pack_start(label_jog_distance, True, True, 0)
         self.entry_jog_distance = Gtk.Entry()
         self.jog_distance=2.0
-        self.entry_jog_distance.set_text("".format(self.jog_distance))
+        self.entry_jog_distance.set_text("{}".format(self.jog_distance))
         box.pack_start(self.entry_jog_distance, True, True, 0)
         self.entry_jog_distance.connect('focus-out-event', self.cb_jog_distance)
         
@@ -374,9 +377,10 @@ class App(Gtk.Window):
             fraction = img_num/total_imgs
             estimated_total_time = elapsed_time * total_imgs
             remaining_time = estimated_total_time - (elapsed_time * img_num)
-            remaining_minutes = int(remaining_time/60)
-            remaining_seconds = int(remaining_time % 60)
-            remaining_time_text = "Estimated time remaining: {}min {}sec".format(remaining_minutes, remaining_seconds)
+            remaining_hours = int(remaining_time/3600)
+            remaining_minutes = int(remaining_time%3600 / 60)
+            # remaining_seconds = int(remaining_time % 60)
+            remaining_time_text = "Estimated time remaining: {} hr {} min".format(remaining_hours, remaining_minutes)
             image_left_text = "Image {} of {}".format(img_num, total_imgs)
             GLib.idle_add(self.images_left_label.set_text, image_left_text)
             GLib.idle_add(self.time_remaining_label.set_text, remaining_time_text)

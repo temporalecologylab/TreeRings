@@ -5,18 +5,26 @@ import numpy as np
 import os
 from pathlib import Path
 from PID import AsynchronousPID 
+import utils
 
 log.basicConfig(format='%(process)d-%(levelname)s-%(message)s', level=log.INFO)
 
 class Focus:
 
     def __init__(self, delete_flag, setpoint):
+        self.config = utils.load_config()
+
         self.DELETE_FLAG = delete_flag
         self.scale_factor = 0.05
-        self.PID = AsynchronousPID(Kp=1.0, Ki=0.1, Kd=0.05, setpoint=setpoint) 
+
+        self.kp = self.config["focus"]["Kp"]        
+        self.ki = self.config["focus"]["Ki"]        
+        self.kd = self.config["focus"]["Kd"]     
+        self.background_std_threshold = self.config["focus"]["BACKGROUND_STD_THRESHOLD"]  # low zoom = 0.015, high zoom = 0.125
+        self.PID = AsynchronousPID(Kp=self.kp, Ki=self.ki, Kd=self.kd, setpoint=setpoint) 
         self.TESTINGLOG = []
 
-    def find_focus(self, focus_queue, pid_queue, pid_lock, directory, nvars: np.array, index:np.array, background:np.array, background_std:np.array):
+    def find_focus(self, focus_queue, pid_queue, pid_lock, directory, nvars: list, index:list, background:list, background_std:list):
         while True:
             image_files = focus_queue.get()
             pid_lock.acquire()
@@ -37,10 +45,10 @@ class Focus:
                 Path("{}/focused_images".format(self.directory)).mkdir(exist_ok=True)
                 shutil.copy(focused_image_name, "{}/focused_images/{}".format(directory,filename))
             
-            background_std[row][col] = std
-            background[row][col] = self.is_background(std)
-            index[row][col] = stack_number
-            nvars[row][col][:] = nv
+            background_std.append(std)
+            background.append(self.is_background(std))
+            index.append(stack_number)
+            nvars.append(nv)
 
             if not self.is_background(std):
                 control_variable = self.PID.update(int(stack_number))
@@ -76,7 +84,7 @@ class Focus:
                 if var > best_var:
                     best_image_filepath = image_name
                     best_var = var
-
+            
         std = np.std(vars)
 
         return best_image_filepath, std, vars
@@ -87,7 +95,7 @@ class Focus:
     
     def is_background(self, std):
         # High zoom, 0.125 seemed to work. Low zoom, 0.015 seems to work
-        if std > 0.015:
+        if std > self.background_std_threshold:
             return False
         else:
             return True

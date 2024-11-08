@@ -1,0 +1,52 @@
+{
+    "config":
+    {
+        "camera":
+        {
+            "CROP_H": 0,
+            "CROP_W": 0,
+            "W_PIXELS_NO_CROP": 3840,
+            "H_PIXELS_NO_CROP": 2160
+        },
+        "controller":
+        {
+            "N_IMAGES_MULTIPLE_DISTANCES": 11,
+            "HEIGHT_RANGE_MM": 1,
+            "ACCELERATION_BUFFER_MM": 0.2,
+            "STITCH_SIZES": [0.3],
+            "SLOW_FEED_RATE_XY": 300,
+            "SLOW_FEED_RATE_Z": 20,
+            "FAST_FEED_RATE_XY": 1250,
+            "FAST_FEED_RATE_Z": 150,
+            "MAX_FILE_SIZE_GB": 10
+        },
+        "focus":
+        {
+            "PID_SCALE_FACTOR": 0.05,
+            "Kp": 1.0,
+            "Ki": 0,
+            "Kd": 0.05,
+            "BACKGROUND_STD_THRESHOLD": 0.125
+        },
+        "gantry":
+        {
+            "FEED_RATE_DEFAULT_XY": 600,
+            "FEED_RATE_DEFAULT_Z": 150
+        },
+        "gui":
+        {
+            "DEFAULT_WINDOW_SIZE": [600, 400],
+            "DEFAULT_SAMPLE_HEIGHT_MM": 45,
+            "DEFAULT_SAMPLE_WIDTH_MM": 45,
+            "DEFAULT_ZOOM_LEVEL": 5,
+            "DEFAULT_IMAGE_HEIGHT_MM": 3.00,
+            "DEFAULT_IMAGE_WIDTH_MM": 5.00,
+            "DEFAULT_JOG_DISTANCE": 5.0,
+            "DEFAULT_PERCENT_OVERLAP": 33
+        },
+        "stitcher":
+        {
+            "MAX_FILE_SIZE_GB": 10
+        }
+    }
+}

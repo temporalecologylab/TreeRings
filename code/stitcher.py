@@ -13,6 +13,8 @@ import imutils
 import logging as log
 # from memory_profiler import profile
 import sys 
+import time
+import utils
 
 log.basicConfig(format='%(process)d-%(levelname)s-%(message)s', level=log.INFO)
 
@@ -25,15 +27,13 @@ class MaxFileSizeException(Exception):
 
 class Stitcher:
     def __init__(self, frame_dir):
+        config = utils.load_config()
         self._memmaps = []
         self._tiles = []
         self._mosaic = None
-        self._sizes = [1.0, 0.4, 0.3, 0.2, 0.1, 0.05, 0.01] # percentage of full resolution
-        self._full_resolution = round(3840 * 2160 / 1e6, 2)
         self._frame_dir = frame_dir
-        self._resolution = round(3840 * 2160 / 1e6, 2)        
         self._metadata = None
-        self._max_file_size = 10000 # 10 GBs
+        self._max_file_size = config["stitcher"]["MAX_FILE_SIZE_GB"] * 1000 # GBs
 
         self.load_metadata()
         
@@ -129,7 +129,7 @@ class Stitcher:
             self._metadata = j
             f.close()
 
-    def write_metadata(self, new_dir, shape):
+    def write_metadata(self, new_dir, shape, stitch_time):
         new_metadata = {}
         new_metadata["species"]=self._metadata["species"]
         new_metadata["id1"]=self._metadata["id1"]
@@ -143,7 +143,8 @@ class Stitcher:
         new_metadata["pixels_h"] = shape[0]
         new_metadata["pixels_w"] = shape[1]
         new_metadata["depth"] = shape[2]
-        
+        new_metadata["stitch_time"] = stitch_time
+         
 
         with open(os.path.join(new_dir, 'metadata.json'), 'w', encoding='utf-8') as f:
             json.dump(new_metadata, f, ensure_ascii=False, indent=4)
@@ -173,6 +174,8 @@ class Stitcher:
         return sorted_paths
     # @profile
     def stitch(self, resize=None):
+        start_time = time.time()
+
         if resize is not None and resize < 1.0 and resize > 0:
             path = os.path.join(self._frame_dir, "{}per".format(int(resize * 100)))
             mosaic_dat_path = os.path.join(path, "mosaic_{}per.dat".format(int(resize *100)))
@@ -198,7 +201,9 @@ class Stitcher:
 
         shape = self._mosaic.save(mosaic_dat_path)
 
-        self.write_metadata(path, shape)
+        end_time = time.time()
+        stitch_time = end_time - start_time
+        self.write_metadata(path, shape, stitch_time)
 
         # no need in writing a normal tiff if it's going to be greater than the maximum tiff filesize
         if (shape[0] * shape[1] * shape[2]) / 1e6  < 3500:

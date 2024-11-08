@@ -13,6 +13,7 @@ from multiprocessing import Process
 from pathlib import Path
 import json
 from typing import Callable
+import utils
 
 
 class Controller:
@@ -24,9 +25,18 @@ class Controller:
             image_height_mm (float): Initial image height
         """
         #Settings for capturing images from multiple distances
-        self.n_images = 9 #make sure you're not going faster than the frame rate of the GStreamer feed... 
-        self.height_range = 1
-        
+        # self.n_images = 11 #make sure you're not going faster than the frame rate of the GStreamer feed... 
+        self.config = utils.load_config()
+        self.n_images = self.config["controller"]["N_IMAGES_MULTIPLE_DISTANCES"] #make sure you're not going faster than the frame rate of the GStreamer feed... 
+        # self.height_range = 1
+        self.height_range = self.config["controller"]["HEIGHT_RANGE_MM"]
+        self.acceleration_buffer = self.config["controller"]["ACCELERATION_BUFFER_MM"]
+        self.stitch_sizes = self.config["controller"]["STITCH_SIZES"]
+        self.slow_feed_rate_xy = self.config["controller"]["SLOW_FEED_RATE_XY"]
+        self.slow_feed_rate_z = self.config["controller"]["SLOW_FEED_RATE_Z"]
+        self.fast_feed_rate_xy = self.config["controller"]["FAST_FEED_RATE_XY"]
+        self.fast_feed_rate_z = self.config["controller"]["FAST_FEED_RATE_Z"]
+    
         #Objects
         self.cookies = []
         self._gantry = gantry.Gantry()
@@ -152,7 +162,8 @@ class Controller:
         Args:
             frame_dir (str): Directory of where the frames are. 
         """
-        sizes = [0.05, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
+        # sizes = [0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
+        sizes = self.config["controller"]["STITCH_PERCENTAGES"]
         for size in sizes:
             st = stitcher.Stitcher(frame_dir) 
             #st.stitch(resize=size)
@@ -207,16 +218,16 @@ class Controller:
                     current_col = None
                     if row % 2 == 1:
                         current_col = cols - col - 1
-                        coordinates[row][current_col] = self._gantry.get_xyz()
-                        imgs = self.capture_images_multiple_distances(d, n_images, self._gantry.feed_rate_z, height_range, 0.2, row, current_col, z_start)
+                        coordinates.append(self._gantry.get_xyz())
+                        imgs = self.capture_images_multiple_distances(d, n_images, self._gantry.feed_rate_z, height_range, self.acceleration_buffer, row, current_col, z_start)
                         pid_lock.acquire()
                         self.jog_relative_x(-x_dist)
                         pid_lock.release()
                     # Even rows go right
                     else:
                         current_col = col
-                        coordinates[row][current_col] = self._gantry.get_xyz()
-                        imgs = self.capture_images_multiple_distances(d, n_images, self._gantry.feed_rate_z, height_range, 0.2, row, current_col, z_start)
+                        coordinates.append(self._gantry.get_xyz())
+                        imgs = self.capture_images_multiple_distances(d, n_images, self._gantry.feed_rate_z, height_range, self.acceleration_buffer, row, current_col, z_start)
                         pid_lock.acquire()
                         self.jog_relative_x(x_dist)
 
@@ -243,15 +254,15 @@ class Controller:
                 if row % 2 == 1:
                     # imgs = self.capture_images_multiple_distances(0.1, z_steps, row, 0)
                     current_col = 0
-                    coordinates[row][current_col] = self._gantry.get_xyz()
-                    imgs = self.capture_images_multiple_distances(d, n_images, self._gantry.feed_rate_z, height_range, 0.2, row, current_col, z_start)
+                    coordinates.append(self._gantry.get_xyz())
+                    imgs = self.capture_images_multiple_distances(d, n_images, self._gantry.feed_rate_z, height_range, self.acceleration_buffer, row, current_col, z_start)
 
                 else:
                     # imgs = self.capture_images_multiple_distances(0.05, z_steps, row, cols - 1)
                     current_col = cols - 1
-                    coordinates[row][current_col] = self._gantry.get_xyz()
+                    coordinates.append(self._gantry.get_xyz())
 
-                    imgs = self.capture_images_multiple_distances(d, n_images, self._gantry.feed_rate_z, height_range, 0.2, row, current_col, z_start)
+                    imgs = self.capture_images_multiple_distances(d, n_images, self._gantry.feed_rate_z, height_range, self.acceleration_buffer, row, current_col, z_start)
                 focus_queue.put(imgs)
 
                 pid_lock.acquire()    
@@ -333,7 +344,7 @@ class Controller:
             elapsed_time (float): Time to capture 
         """
         pixels = self.camera.h_pixels * self.camera.w_pixels
-        dpi = self.camera.w_pixels/self.image_width_mm * 25.4  
+        dpi = self.camera.w_pixels/cookie.image_width_mm * 25.4  
         metadata = {
             "species": cookie.species,
             "rows": cookie.rows,
@@ -356,11 +367,11 @@ class Controller:
             "notes": cookie.notes,
             "center": cookie.get_center_location(),
             "top_left": cookie.get_top_left_location(),
-            "coordinates": cookie.coordinates.tolist(),
-            "background": cookie.background.tolist(),
-            "background_std": cookie.background_std.tolist(),
-            "focus_index": cookie.focus_index.tolist(),
-            "normalized_variance": cookie.nvar.tolist()  
+            "coordinates": cookie.coordinates,
+            "background": cookie.background,
+            "background_std": cookie.background_std,
+            "focus_index": cookie.focus_index,
+            "normalized_variance": cookie.nvar  
         }
 
         with open ("{}/metadata.json".format(self.directory), "w", encoding="utf-8") as f:
@@ -440,12 +451,12 @@ class Controller:
         """
         # Slow mode
         if mode == 1:
-            self._gantry.feed_rate_xy = 300
-            self._gantry.feed_rate_z = 20
+            self._gantry.feed_rate_xy = self.slow_feed_rate_xy
+            self._gantry.feed_rate_z = self.slow_feed_rate_z
         # Fast mode
         if mode == 2:
-            self._gantry.feed_rate_xy = 1250
-            self._gantry.feed_rate_z = 150
+            self._gantry.feed_rate_xy = self.fast_feed_rate_xy
+            self._gantry.feed_rate_z = self.fast_feed_rate_z
 
     def navigate_to_cookie_tl(self, cookie: cookie.Cookie):
         """Navigate to the to the top left of a cookie
