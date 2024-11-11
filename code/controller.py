@@ -14,10 +14,11 @@ from pathlib import Path
 import json
 from typing import Callable
 import utils
+import numpy as np
 
 
 class Controller:
-    def __init__(self, image_width_mm: float, image_height_mm: float):
+    def __init__(self):
         """Abstraction of the controller which moves the gantry, gets information from the GUI, operates the camera, and determines when to stitch.
 
         Args:
@@ -41,11 +42,11 @@ class Controller:
         self.cookies = []
         self._gantry = gantry.Gantry()
         self.camera = camera.Camera()
-        self.focus = focus.Focus(delete_flag=True, setpoint=round(self.n_images / 2))
+        self.focus = focus.Focus(delete_flag=True, setpoint=math.floor(self.n_images / 2))
 
         #attributes
-        self.image_height_mm = image_height_mm
-        self.image_width_mm = image_width_mm
+        self.image_height_mm = self.config["gui"]["DEFAULT_IMAGE_HEIGHT_MM"]
+        self.image_width_mm = self.config["gui"]["DEFAULT_IMAGE_WIDTH_MM"]
         self.directory = "."
 
 
@@ -108,10 +109,8 @@ class Controller:
             self.set_directory(cookie.directory)
 
             start_time = time.time()
-
-            _, _, z = cookie.get_center_location()
         
-            gantry_thread = Thread(target=self.capture_grid_photos, args=(cookie.coordinates, cookie.directory, focus_queue, pid_queue, pid_lock, cookie.rows, cookie.cols, cookie.y_step_size, cookie.x_step_size, z, self.n_images, self.height_range, progress_callback, stop_capture))
+            gantry_thread = Thread(target=self.capture_grid_photos, args=(cookie.coordinates, cookie.directory, cookie.targets_top, cookie.targets_bot, focus_queue, pid_queue, pid_lock, cookie.rows, cookie.cols, self.n_images, self.height_range, progress_callback, stop_capture))
             focus_thread = Thread(target=self.focus.find_focus, args=(focus_queue, pid_queue, pid_lock, cookie.directory, cookie.nvar, cookie.focus_index, cookie.background, cookie.background_std))
             gantry_thread.start()
             focus_thread.start()
@@ -141,9 +140,9 @@ class Controller:
                 width_est_pixels = cookie.width / cookie.image_width_mm * self.camera.w_pixels 
                 height_est_pixels = cookie.height / cookie.image_height_mm * self.camera.h_pixels
                 max_filesize_est = width_est_pixels * height_est_pixels * 3 / 10e6 # megabytes
-                log.info("MAX FILE SIZE ESTIMATE {}".format(max_filesize_est))
+                log.info("MAX FILE SIZE ESTIMATE {} MB".format(round(max_filesize_est, 2)))
                 progress_callback((True, True, "{}_{}_{}".format(cookie.species, cookie.id1, cookie.id2)))
-                self.navigate_to_cookie_tl(cookie)
+                # self.navigate_to_cookie_tl(cookie)
                 self.capture_cookie(cookie, progress_callback, stop_capture)
                 
                 # Only stitch if the capture complete successfully
@@ -163,8 +162,8 @@ class Controller:
             frame_dir (str): Directory of where the frames are. 
         """
         # sizes = [0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
-        sizes = self.config["controller"]["STITCH_PERCENTAGES"]
-        for size in sizes:
+        # sizes = self.config["controller"]["STITCH_SIZES"]
+        for size in self.stitch_sizes:
             st = stitcher.Stitcher(frame_dir) 
             #st.stitch(resize=size)
             try:
@@ -181,12 +180,14 @@ class Controller:
                 st.delete_dats()
                 del st
     
-    def capture_grid_photos(self, coordinates: list, d: Path, focus_queue: queue.Queue, pid_queue: queue.Queue, pid_lock, rows: int, cols: int, y_dist: float, x_dist: float, z_start: float, n_images: int, height_range: float, progress_callback: Callable, stop_capture: Event):
+    def capture_grid_photos(self, coordinates: list, d: Path, targets_top:np.array, targets_bot: np.array, focus_queue: queue.Queue, pid_queue: queue.Queue, pid_lock, rows:int, cols:int, n_images: int, height_range: float, progress_callback: Callable, stop_capture: Event):
         """Command to traverse the sample and capture an image at each location. 
 
         Args:
             coordinates (list): Container for holding the coordinates of where each image was taken. Useful for debugging.
             d (Path): Directory to save.
+            target_top (np.array): Targets for images, each column represents (X, Y, Z, row, col), execute in this order
+            target_bot (np.array): Targets for images, each column represents (X, Y, Z, row, col), execute in this order
             focus_queue (queue.Queue): Queue to have images added to for the focus thread to parse which is the most in focus.
             pid_queue (queue.Queue): Queue to determine if the z height needs to be adjusted to stay in focus.
             pid_lock (_type_): Lock to prevent race conditions
@@ -205,84 +206,117 @@ class Controller:
         self.set_feed_rate(1)
         while True and not stop_capture.is_set():
             img_num = 0
-            for row in range(rows):
-                if stop_capture.is_set():
-                    break
-                # for last column, we only want to take photo, not move.
-                for col in range(cols - 1):
-                    start_stack = time.time()
-                    # Odd rows go left
-                    if stop_capture.is_set():
-                        break
-                    
-                    current_col = None
-                    if row % 2 == 1:
-                        current_col = cols - col - 1
-                        coordinates.append(self._gantry.get_xyz())
-                        imgs = self.capture_images_multiple_distances(d, n_images, self._gantry.feed_rate_z, height_range, self.acceleration_buffer, row, current_col, z_start)
-                        pid_lock.acquire()
-                        self.jog_relative_x(-x_dist)
-                        pid_lock.release()
-                    # Even rows go right
-                    else:
-                        current_col = col
-                        coordinates.append(self._gantry.get_xyz())
-                        imgs = self.capture_images_multiple_distances(d, n_images, self._gantry.feed_rate_z, height_range, self.acceleration_buffer, row, current_col, z_start)
-                        pid_lock.acquire()
-                        self.jog_relative_x(x_dist)
 
-                        pid_lock.release()
-
-                    focus_queue.put(imgs)
-
-                    update_z = pid_queue.get()
-                    log.info(f"z move for update {update_z}")
-                    z_start+=update_z
-                    pid_queue.task_done()
-
-                    # Allow for PID calculations to continue while x is still jogging. Imagine a very large x jog which takes a  while.
-                    self._gantry.block_for_jog()
-                    img_num=img_num+1
-                    elapsed_time = time.time() - start_stack
-                    progress_callback((elapsed_time, img_num, rows*cols))
-
+            targets = np.vstack((targets_top, targets_bot))
+            for target in targets:
                 start_stack = time.time()
-                # Take final photo in row before jogging down
                 if stop_capture.is_set():
                     break
-                
-                if row % 2 == 1:
-                    # imgs = self.capture_images_multiple_distances(0.1, z_steps, row, 0)
-                    current_col = 0
-                    coordinates.append(self._gantry.get_xyz())
-                    imgs = self.capture_images_multiple_distances(d, n_images, self._gantry.feed_rate_z, height_range, self.acceleration_buffer, row, current_col, z_start)
 
+                x, y, z, row, col = target[0], target[1], target[2], int(target[3]), int(target[4])
+
+                if img_num == 0 or img_num == len(targets_top):
+                    self._gantry.jog_absolute_xyz(x, y, z)
                 else:
-                    # imgs = self.capture_images_multiple_distances(0.05, z_steps, row, cols - 1)
-                    current_col = cols - 1
-                    coordinates.append(self._gantry.get_xyz())
-
-                    imgs = self.capture_images_multiple_distances(d, n_images, self._gantry.feed_rate_z, height_range, self.acceleration_buffer, row, current_col, z_start)
-                focus_queue.put(imgs)
-
-                pid_lock.acquire()    
-                self.jog_relative_y(-y_dist)
-                pid_lock.release()
-
-                update_z = pid_queue.get()
-                log.info(f"z move for update {update_z}")
-                z_start += update_z
-                pid_queue.task_done()
+                    self._gantry.jog_absolute_xy(x, y)
+                    pid_lock.acquire()
+                    update_z = pid_queue.get()
+                    pid_lock.release()
+                    z += update_z
+                    log.info(f"PID update Z by {update_z} mm")
+                    if update_z != 0:
+                        self._gantry.jog_relative_z(update_z)
 
                 self._gantry.block_for_jog()
-                img_num=img_num+1
-                elapsed_time = time.time() - start_stack
-                progress_callback((elapsed_time, img_num, rows*cols))    
+                coordinates.append(self._gantry.get_xyz())
+                img_filenames = self.capture_images_multiple_distances(d, n_images, self._gantry.feed_rate_z, height_range, self.acceleration_buffer, row, col)
+                focus_queue.put(img_filenames)
+                img_num += 1
 
+                elapsed_time = time.time() - start_stack
+                progress_callback((elapsed_time, img_num, rows*cols))
+            
+
+            pid_queue.task_done() # pretty sure we don't need this 
             focus_queue.put([-1])
             break
+        
+            
+            # for row in range(rows):
+            #     if stop_capture.is_set():
+            #         break
+            #     # for last column, we only want to take photo, not move.
+            #     for col in range(cols - 1):
+            #         start_stack = time.time()
+            #         # Odd rows go left
+            #         if stop_capture.is_set():
+            #             break
+                    
+            #         current_col = None
+            #         if row % 2 == 1:
+            #             current_col = cols - col - 1
+            #             coordinates.append(self._gantry.get_xyz())
+            #             imgs = self.capture_images_multiple_distances(d, n_images, self._gantry.feed_rate_z, height_range, self.acceleration_buffer, row, current_col, z_start)
+            #             pid_lock.acquire()
+            #             self.jog_relative_x(-x_dist)
+            #             pid_lock.release()
+            #         # Even rows go right
+            #         else:
+            #             current_col = col
+            #             coordinates.append(self._gantry.get_xyz())
+            #             imgs = self.capture_images_multiple_distances(d, n_images, self._gantry.feed_rate_z, height_range, self.acceleration_buffer, row, current_col, z_start)
+            #             pid_lock.acquire()
+            #             self.jog_relative_x(x_dist)
 
-    def capture_images_multiple_distances(self, d: str, image_count: int, feed_rate: int, r: float, acceleration_buffer:float, row:int, col:int, z_start:float):
+            #             pid_lock.release()
+
+            #         focus_queue.put(imgs)
+
+            #         update_z = pid_queue.get()
+            #         log.info(f"z move for update {update_z}")
+            #         z_start+=update_z
+            #         pid_queue.task_done()
+
+            #         # Allow for PID calculations to continue while x is still jogging. Imagine a very large x jog which takes a  while.
+            #         self._gantry.block_for_jog()
+            #         img_num=img_num+1
+            #         elapsed_time = time.time() - start_stack
+            #         progress_callback((elapsed_time, img_num, rows*cols))
+
+            #     start_stack = time.time()
+            #     # Take final photo in row before jogging down
+            #     if stop_capture.is_set():
+            #         break
+                
+            #     if row % 2 == 1:
+            #         # imgs = self.capture_images_multiple_distances(0.1, z_steps, row, 0)
+            #         current_col = 0
+            #         coordinates.append(self._gantry.get_xyz())
+            #         imgs = self.capture_images_multiple_distances(d, n_images, self._gantry.feed_rate_z, height_range, self.acceleration_buffer, row, current_col, z_start)
+
+            #     else:
+            #         # imgs = self.capture_images_multiple_distances(0.05, z_steps, row, cols - 1)
+            #         current_col = cols - 1
+            #         coordinates.append(self._gantry.get_xyz())
+
+            #         imgs = self.capture_images_multiple_distances(d, n_images, self._gantry.feed_rate_z, height_range, self.acceleration_buffer, row, current_col, z_start)
+            #     focus_queue.put(imgs)
+
+            #     pid_lock.acquire()    
+            #     self.jog_relative_y(-y_dist)
+            #     pid_lock.release()
+
+            #     update_z = pid_queue.get()
+            #     log.info(f"z move for update {update_z}")
+            #     z_start += update_z
+            #     pid_queue.task_done()
+
+            #     self._gantry.block_for_jog()
+            #     img_num=img_num+1
+            #     elapsed_time = time.time() - start_stack
+            #     progress_callback((elapsed_time, img_num, rows*cols))    
+
+    def capture_images_multiple_distances(self, d: str, image_count: int, feed_rate: int, r: float, acceleration_buffer:float, row:int, col:int):
         """A method to move the camera through a Z range to allow for multiple images to be taken. This implementation is designed to reduce motion blur by taking advantage of a slow feed rate and avoiding a deceleration then sleep cycle to get an in focus image.
 
         Args:
@@ -293,15 +327,10 @@ class Controller:
             acceleration_buffer (float): Extra distance beyond the range to allow for the z-axis to reach constant velocity
             row (int): Row location of where on the cookie grid the images are in 
             col (int): Col location of where on the cookie grid the images are in 
-            z_start (float): Starting z location as it's a bit more accurate to jog to a specific coordinate than to use relative position jogging
 
         """
         # adding absolute jogging to start point because there is slight stochasticity between relative jogs. Resulting in drift
-        _, _, z = self._gantry.get_xyz()
-        start_z = z
-
-        self.jog_absolute_z(start_z)
-        self._gantry.block_for_jog()
+        _, _, z_start = self._gantry.get_xyz()
 
         image_filenames = []
 
@@ -331,7 +360,8 @@ class Controller:
         # This might take a while so do not send the next jog until we finish the previous
         self._gantry.block_for_jog()
         # Return to original location
-        self.jog_absolute_z(z_start)
+        # self.jog_absolute_z(z_start)
+        self.jog_relative_z(-1 * bottom / 2)
         self._gantry.block_for_jog()        
 
         return image_filenames
@@ -543,8 +573,10 @@ class Controller:
             id2 (str): ID2 for sample
             notes (str): Notes for sample
         """
+        time.sleep(1) # guarantee the position monitor is updated
         center_x, center_y, center_z = self._gantry.get_xyz()
-
+        print("CENTER")
+        print(center_x, center_y, center_z)
         if overlap == '':
             overlap = 50
         if species == '':

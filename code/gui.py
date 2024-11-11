@@ -20,7 +20,7 @@ class App(Gtk.Window):
         self.set_size_request(self.config["gui"]["DEFAULT_WINDOW_SIZE"][0], self.config["gui"]["DEFAULT_WINDOW_SIZE"][1])
         self.connect("destroy", self.quit_program)
         
-        self.controller = controller.Controller(3, 2)
+        self.controller = controller.Controller()
 
         grid = Gtk.Grid()
         grid.set_row_homogeneous(False)
