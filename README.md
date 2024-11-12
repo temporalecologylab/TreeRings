@@ -60,51 +60,37 @@ These instructions will get you a copy of the project up and running on your loc
 #### Rendering of Components Back View
 ![Tina Rendering Back](./docs/content/assembly_back.png)
 
-Above are two renderings of the machine. All of the gray components are from the OpenBuilds ACRO kit or the OpenBuilds Linear Actuator kit. All pink parts are necessary 3D printed components. 
+Above are two renderings of the machine. All of the gray components are from the OpenBuilds ACRO kit or the OpenBuilds Linear Actuator kit. All pink parts are necessary 3D printed components. Following is a list of the minimum number of 3D prints.
+
+#### Attaching Z Axis
+1. Z axis adapter to connect Linear Actuator (Z axis) to the ACRO (XY plane)
+    - Hardware: M5 x 16mm (x2), M5 T-nut (x2), M5 washer (x6) (need many washers for shims as connecting this with T-nut is cumbersome)
+
+#### Attaching Legs
+1. 4 corner brackets
+2. 250mm x 20mm x 20mm (x4) aluminum extrusion
+    - Hardware: (should be included with the corner bracket kit)
+
+#### Camera Adapter
+1. Lens build plate adapter
+    - Hardware: M3 x 16mm (x2), M3 locknut (x2), M4 x 16mm (x2), M4 locknut (x2)
+2. Lens build plate spacer
+3. Jetson Orin Nano carriage
+    - Hardware: 1/4" tripod screw
+4. Jetson Orin Nano lock
+    - Hardware: M4 x 20mm (x2), M4 locknut (x2)
+
+#### Torsion Correction
+1. Torsion correction plate adapter
+2. Torsion correction v slot adapter
+3. 2mm Torsion correction shim
+4. 1mm torsion correction shim 
+    - Hardware: M5 x 16mm (x2), M5 washer (x2), M5 T-nut (x1), M5 Locknut (x1), M4 x 20mm (x2), M4 locknuts (x2) 
+
 
 ## Running the tests TODO
 
 Explain how to run the automated tests for this system
-
-### Break down into end to end tests TODO
-
-Explain what these tests test and why
-
-```
-Give an example
-```
-
-### And coding style tests TODO 
-
-Explain what these tests test and why
-
-```
-Give an example
-```
-
-## Deployment TODO
-
-Add additional notes about how to deploy this on a live system
-
-## Built With TODO
-
-* [Dropwizard](http://www.dropwizard.io/1.0.2/docs/) - The web framework used
-* [Maven](https://maven.apache.org/) - Dependency Management
-* [ROME](https://rometools.github.io/rome/) - Used to generate RSS Feeds
-
-## Contributing TODO
-
-Please read [CONTRIBUTING.md](https://gist.github.com/PurpleBooth/b24679402957c63ec426) for details on our code of conduct, and the process for submitting pull requests to us.
-
-## Versioning TODO 
-
-We use [SemVer](http://semver.org/) for versioning. For the versions available, see the [tags on this repository](https://github.com/your/project/tags). 
-
-## Authors TODO
-
-* **Billie Thompson** - *Initial work* - [PurpleBooth](https://github.com/PurpleBooth)
-
-See also the list of [contributors](https://github.com/your/project/contributors) who participated in this project.
 
 ## License TODO
 
