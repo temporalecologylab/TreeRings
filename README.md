@@ -54,21 +54,13 @@ These instructions will get you a copy of the project up and running on your loc
 
 ### Installing TODO
 
-A step by step series of examples that tell you how to get a development env running
+#### Rendering of Components Front View
+![Tina Rendering Front](./docs/content/assembly_front.png)
 
-Say what the step will be
+#### Rendering of Components Back View
+![Tina Rendering Back](./docs/content/assembly_back.png)
 
-```
-Give the example
-```
-
-And repeat
-
-```
-until finished
-```
-
-End with an example of getting some data out of the system or using it for a little demo
+Above are two renderings of the machine. All of the gray components are from the OpenBuilds ACRO kit or the OpenBuilds Linear Actuator kit. All pink parts are necessary 3D printed components. 
 
 ## Running the tests TODO
 
