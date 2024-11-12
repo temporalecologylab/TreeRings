@@ -52,17 +52,20 @@ These instructions will get you a copy of the project up and running on your loc
 
 
 
-### Installing TODO
+### Machine Assembly
 
 #### Rendering of Components Front View
-![Tina Rendering Front](./docs/content/assembly_front.png)
+<img src="./docs/content/assembly_front.png" width=50% height=50%>
 
 #### Rendering of Components Back View
-![Tina Rendering Back](./docs/content/assembly_back.png)
+<img src="./docs/content/assembly_back.png" width=50% height=50%>
 
 Above are two renderings of the machine. All of the gray components are from the OpenBuilds ACRO kit or the OpenBuilds Linear Actuator kit. All pink parts are necessary 3D printed components. Following is a list of the minimum number of 3D prints.
 
 #### Attaching Z Axis
+<img src="./docs/content/z_axis_plate_exploded.png" width=50% height=50%>
+
+
 1. Z axis adapter to connect Linear Actuator (Z axis) to the ACRO (XY plane)
     - Hardware: M5 x 16mm (x2), M5 T-nut (x2), M5 washer (x6) (need many washers for shims as connecting this with T-nut is cumbersome)
 
@@ -71,7 +74,9 @@ Above are two renderings of the machine. All of the gray components are from the
 2. 250mm x 20mm x 20mm (x4) aluminum extrusion
     - Hardware: (should be included with the corner bracket kit)
 
-#### Camera Adapter
+#### Camera/Computer Adapter
+<img src="./docs/content/camera_lens_holder_exploded.png" width=50% height=50%>
+
 1. Lens build plate adapter
     - Hardware: M3 x 16mm (x2), M3 locknut (x2), M4 x 16mm (x2), M4 locknut (x2)
 2. Lens build plate spacer
@@ -81,6 +86,8 @@ Above are two renderings of the machine. All of the gray components are from the
     - Hardware: M4 x 20mm (x2), M4 locknut (x2)
 
 #### Torsion Correction
+<img src="./docs/content/torsion_correction_exploded.png" width=50% height=50%>
+
 1. Torsion correction plate adapter
 2. Torsion correction v slot adapter
 3. 2mm Torsion correction shim
