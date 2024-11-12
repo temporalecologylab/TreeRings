@@ -55,28 +55,45 @@ Excluding 3D printed parts, the total cost of the machine is approximately \$2,2
 The total cost of the machine is almost comparable in price or less to many professional camera and macro lens combinations.
 Additional savings can also be made when factoring in the cost of a professional stitching software license such as PTGui. 
 
-\section{System Overview} % this is so dry fix later
+\section{Methods}
 
-Tina can be thought of as a combination of multiple subsystems: the camera, computer, and gantry machine. The first system is the camera and computer. 
-A 12MP Raspberry Pi HQ Camera equipped with a SEEED studio microscope lens is connected to an NVIDIA Jetson Orin Nano (Jetson) through a CSI cable. 
+\subsection{System Overview} % this is so dry fix later
+
+Tina can be thought of as a combination of multiple subsystems: the camera, computer, and gantry machine. 
+Cartesian movement in the X, Y and Z directions is a result of two kits and a motor controller from OpenBuilds - the ACRO 1010, the NEMA 17 lead screw linear actuator, and the X32 Motor Controller running GRBL firmware. 
+The ACRO provides build plates for custom attachments, we made an adapter to combine the linear actuator to the build plate to add a third degree of freedom.
+On the linear actuator's build plate, adapters were made to hold a 12MP Raspberry Pi HQ Camera equipped with a SEEED studio microscope lens connected to an NVIDIA Jetson Orin Nano (Jetson) through a CSI cable.
+By choosing this combination, we were able to reduce the weight and cost of the camera significantly - trickling the budget into an efficient computer which can handle intensive image processing. 
 The Jetson is a powerful SoC edge computer which drives a computer monitor for a GUI, sends commands to the motor controller to move the machine, runs image processing calculations for automatic control, and performs calculations to stitch individual images into one mosaic. 
-The gantry machine is built using the extruded aluminum and premade adapters from the OpenBuilds ACRO kit. 
-Movement of the machine is originates from NEMA 17 stepper motors and is transferred to
-linear motion in the X and Y direction using timing belts and timing pulleys. 
-Motion in the Z-direction is controlled by a NEMA 17 lead screw based linear actuator also supplied by OpenBuilds.
-Custom 3D models were designed in SolidWorks to create adapters to mount the camera to the Z axis as well as mounting the Z axis to the XY plate of the ACRO. 
-The OpenBuilds X32 Motor Controller running GRBL firmware converts G-Code commands received via serial from the Jetson. GRBL then converts them to electrical signals to spin the lead screw and timing belts. 
+Despite the weight reductions, torsion on the gantry arm still resulted in a non-zero torsional deflection. An torsion correcting adapter was designed to compensate.
 
-Interacting with the Jetson is similar to working with any Ubuntu based Linux distribution. 
-
-\section{Sample Digitization} % Methods
+\subsection{Sample Digitization} % Methods
 The subsystems can be best understood by following the path from sample setup through the computing process to create the stitched image. 
 
-To achieve this with a fixed focus camera, the samples must be nearly orthogonal to the camera lens. Misalignments between the sample and lens can be corrected by using the 3D printed sample levelling table we designed.
+To achieve this with a fixed focus camera, the samples must be nearly orthogonal to the camera lens. Misalignments between the sample and lens up to 10 degrees can be corrected by using the 3D printed sample levelling table we designed (See Figure \ref{fig:ideal_levelling}).
 Once the sample is level, the operator interacts with the machine through the GUI to navigate the camera to the center of the sample, and initializes focus to be sharp. The height and width dimensions are then entered in the GUI
 to be saved along with the center XYZ coordinate of the sample. This procedure can be repeated to create a queue of samples to digitize.
 
 Sample height, width, identifiers, and centering an in focus sample is sufficient information to digitize.
+
+\begin{figure}
+    \centering
+    \begin{subfigure}{.5\textwidth}
+      \centering
+      \includegraphics[height=0.5\linewidth]{../diagrams/sample_setup_ideal.png}
+      \caption{Ideal sample leveling}
+      \label{fig:ideal_levelling}
+    \end{subfigure}%
+    \begin{subfigure}{.5\textwidth}
+      \centering
+      \includegraphics[height=0.5\linewidth]{../diagrams/sample_setup_realistic.png}
+      \caption{Realistic sample leveling}
+      \label{fig:realistic_levelling}
+    \end{subfigure}
+    \caption{Side view of the camera and sample on top of a leveling table. The ideal sample leveling shows a uniform distance d at all $(X,Y)$ coordinates on the sample. This is impossible to achieve in reality, the true sample leveling has a non uniform distance at unique $(X_i, Y_i)$.}
+    \label{fig:sample_levelling}
+\end{figure}
+
 
 \subsection{Image Capturing}
 Once prompted the system begins to exhaustively traverse the surface area of the sample. 
@@ -111,123 +128,31 @@ Z_{focused}
 
 Beginning at 0.5 mm above $Z_0$ and the last image finishing at 0.5 mm below $Z_0$.
 To reduce motion blur in the images, this $\boldsymbol{Z_{\text{focus}}}$ is traversed at constant velocity and images are captured without stopping. 
-The 11 images then have their normalized variance calculated in a separate thread to measure the image sharpness \citep{sampat_extensive_2014}.
+The 11 images then have their normalized variance, $NV$, calculated in a separate thread to measure the image sharpness \citep{sampat_extensive_2014}.
 The image with the maximum score is saved while the rest are deleted from storage.
 
-
 \[
-    i_{\max} = \arg\max_{i} \boldsymbol{Z_{\text{focus}}}
+    i_{\max} = \arg\max_{i} NV(image(\boldsymbol{{Z_\text{focus}})})
 \]
     
-This focusing procedure works well alone when the sample alignment has a difference in height no greater than 1 mm. 
-Greater alignment error can be managed by having the control over adjusting $Z_{0,k}$ for $(X_k,Y_k)$.
+This focusing procedure works well alone when the sample alignment has a difference in height no greater than 0.5 mm, $d_1 - d_2 < 0.5 mm $ (See Figure \ref{fig:realistic_levelling}). 
+And while 1mm may sound like a small range, it is important to note that increases in time at each $(X_k, Y_k)$ are repeated $k$ times. 
+
+Rather than adjusting this range, a greater alignment error can be managed by controlling the center of the range - $Z_{0,k}$ for $(X_k,Y_k)$. 
 The likelihood of an adjacent $(X_{k+1}, Y_{k+1})$ containing an in focus image is highest when the current $i_{{\max,k}}$ is at the middle index of $\boldsymbol{Z_{focus}}$. 
 A PID control algorithm with a process variable of $i_{max}$ and control variable of $Z_{0,k}$ allows a negative feedback loop to improve focusing across the entire sample \citep{odwyer_summary_2000}. 
+Instead of $(Z_{max} - Z_{min}) < 0.5mm$, now the system can handle $(Z_{k} - Z_{k+1} < 0.5mm)$ which much more forgiving. 
 
-After the capturing process, the images are stitched and are stored on the device along with metadata of relevant machine
-settings and sample information. 
+After the capturing overlapping images across the entire surface area, the images are ready to be stitched.
 
-The frame, camera, computer, software, and sample leveling tables, work cohesively to address the nuances of digitizing both cookies and cores. 
-Each of these subsystems will be reviewed along with the design considerations involved to make a complete machine. 
-Considering Tina is an imaging machine, we will start off by looking at the camera and move outward.
+\subsection{Stitching}
 
-
-\subsection{Camera}
-In the Gigapixel and CaptuRING, a professional handheld camera was used to capture images. 
-While this benefits from a wide variety of lens and camera choices - and principally autofocus - they come at a cost. 
-Beyond its literal price tag, a professional camera also carries a significant weight, demanding a more robust and therefore more costly machine frame. 
-These cameras are also optimized for handheld use, not for integration into computer driven machines. 
-This results in clunky access to images from software. 
-Designing around a machine vision camera such as the 12MP Raspberry Pi HQ Camera drastically reduced the camera cost while improving the access to the data stream coming from the camera sensor.
-Pairing the Raspberry Pi HQ Camera with a high magnification C-Mount lens allows for images with very high resolution in dots-per-inch (DPI) to be captured. (THIS IS AN ESTIMATE, GET THE REAL VALUES FROM TINA) If the field of view of the image
-
-\subsubsection{Focusing}
-Normalized variance process goes here.
-
-Achieving a focused image across the entire surface area of the sample is the basis for an accurate stitch and effective analysis. 
-By saving costs on a fixed focus camera and lens, it was necessary to implement a method to focus the images. 
-Focus is solely a function of distance to the subject in the regime. 
-With this high magnification lens, having an image go from in-focus to out-of-focus was sensitive to sub millimeter variation in distance to the lens. 
-This requires cores and especially cookies to be as close to orthogonally aligned to the lens as possible. 
-A 3D printed levelling table and bullseye level were used to correct plane misalignment of up to 10 degrees in cookies (CALCULATE THIS?). 
-Slight sample misalignments are corrected within a closed loop automatic control PID algorithm. 
-
-
-%% Previous Methods is commented out so I can reorder things 
-% \subsection{Hardware Design}
-
-% \subsubsection{Frame}
-% The cartesian gantry machine was purchased from an open source parts supplier, OpenBuilds. They sell various sets of gantry robots, motor controllers, and power supplies
-% which can be conveniently purchased from one supplier. All metal components are cut and sized, and have very detailed assembly videos, an active community forum,
-% and customer support to fall back on. The OpenBuilds ACRO system circumvents the need for most power tools, machining, electrical connectors, and technical knowhow that would otherwise be necessary to build a robust robot.
-% All other parts were designed using SolidWorks and printed on an FDM 3D printer using ABS material. Mechanical assembly can be completed entirely with common hand tools and metric fasteners. 
-
-% \subsubsection{Computer}
-% The computer which runs the graphical user interface (GUI), gantry control, camera streaming, and image stitching is the NVIDIA Jetson Orin Nano Developer Kit (Orin Nano). Using a computer
-% which is compatible with CSI cameras such as the Raspberry Pi HQ Camera was essential to maintain cost effectiveness. The Orin Nano, like others in the Jetson line of products, has hardware
-% accelerators for common GPU tasks such as image streaming, which is vital to retain CPU power for GUI tasks and robot control. 
-
-% \subsubsection{Camera}
-% Unlike the Gigapixel or CaptuRING, the camera is a machine vision camera rather than a handheld professional camera. Choosing the Raspberry Pi HQ Camera provided many lens options, significant
-% forum support, and includes an Obsolescence Statement that the camera will be in production until January 2030. Combined with a 180mm C-mount microscope lens, the images can reach above 20,000 dots per inch (DPI).
-
-% \subsection{Software Design}
-% All software was written in Python VERSION and a variety of packages for the GUI, image stitching, and calculations (Should I include all the packages in writing?). Care was taken to segment the
-% software design into abstracted object oriented code. 
-
-% \subsubsection{Graphical User Interface}
-% The GUI to control the machine launches from a Python script. Included are a viewer to see the live stream from the camera, buttons to jog the machine throughout the XYZ coordinate system,
-% setting the size of samples, and running the process to capture and stitch images. The system was designed to allow for multiple samples to be prepared in a queue for bulk digitization. 
-
-% \subsubsection{Sample Digitization}
-% The digitization of a sample can be reduced to a few processes - capturing a grid of overlapping images, image focusing, and image stitching. 
-
-% Inside the GUI, the program is populated with the height and width of the sample as well as the height and width of the image. The user then navigates to the center of the sample and can choose 
-% to begin imaging the sample or add the sample to a queue for bulk digitization. This provides the machine enough data to calculate the necessary rows and columns for traversing the entire surface
-% area of the sample while maintaining a level of overlap between adjacent images. Image overlap is what allows for images to be stitched together as there is nonzero error when the robot translates 
-% from one coordinate to another. 
-
-% To stitch adjacent images, feature based image stitching from a Python package Stitch2D was used. The underlying functions were based on the processing libraries
-% OpenCV and NumPy. Multiple other image stitching packages were tested but none were able to successfully piece together our samples. (***Sounds kinda bad to not have data on a comparison as well as not having a metric to see how 'well' an image is stitched... but this is non trivial. Can we get away with it?***)
-
-% One major difficulty with using the Raspberry Pi HQ Camera is the lack of a lens with auto-focus. An in focus image in this regime is dependent on the focal length of the lens set by the user and the
-% distance from the sample. The microscope lens has a very small depth of field and goes from in-focus to out-of-focus in less than a 1mm step in the distance to the sample. Two cooperative solutions were implemented 
-% to achieve a focused image for the entire surface area of the sample - taking images from multiple distances from the sample and automatic control. 
-
-% \subsubsection{Image Stack Focusing}
-% When the sample is placed on the table to be digitized, it is assumed that there will, at best, very slight variations in height across the surface area of the sample. A levelling table 
-% assists in reducing this error although it will never be nonzero. At each location (X, Y) on the grid of overlapping images, 11 images are captured in equally distanced Z steps across a 1mm range. 
-% Each of these images have a normalized variance score calculated - the maximum value represents the most in focus image \citep{sampat_extensive_2014}. In practice, stopping and starting the motor causes 
-% enough vibration to require upwards to two seconds of pause time before the motion blur stops to take each photo. Instead of stopping and starting each image, an additional distance is added to the 
-% Z-motion to allow the stepper to accelerate and reach constant velocity. At this speed, images are then taken with constant time steps instead of constant distance steps across the 1mm range. This eliminates
-% the motion blur due to acceleration and dramatically reduces imaging time. 
-
-% $$\frac{1}{MN\mu} \sum\limits_{x=0}^{M-1} \sum\limits_{y=0}^{N-1}(f(x,y) - \mu)^2$$
-
-% \subsubsection{Automatic Control}
-% While the image stack provides a basis to obtain an in focus image, it is statically limited to the 1mm range in the Z axis. Instead of spending significant time guaranteeing that the sample
-% is within the the Z axis range across the entire surface area, a PID control algorithm takes the wheel \citep{odwyer_summary_2000}. The information previously calculated in the image stack is sufficient 
-% to inform the PID controller of how to adjust the initial the Z axis for the next image stack. The controller is constantly trying to make the most in focus image be at the center of the image stack,
-% index value 5. This allows for the most flexibility moving to the next location of the image grid. 
-
-% \begin{figure}
-%     \centering
-%     \begin{subfigure}{.5\textwidth}
-%       \centering
-%       \includegraphics[height=0.75\linewidth]{../diagrams/sample_setup_ideal.png}
-%       \caption{Ideal sample leveling}
-%       \label{fig:sub1}
-%     \end{subfigure}%
-%     \begin{subfigure}{.5\textwidth}
-%       \centering
-%       \includegraphics[height=0.75\linewidth]{../diagrams/sample_setup_realistic.png}
-%       \caption{Realistic sample leveling}
-%       \label{fig:sub2}
-%     \end{subfigure}
-%     \caption{Side view of the camera and sample on top of a leveling table. The ideal sample leveling shows a uniform distance d at all (x,y) coordinates on the sample. This is impossible to achieve in reality, the true sample leveling has a non uniform distance at unique (x,y) coordinates.}
-%     \label{fig:test}
-% \end{figure}
-
+Image stitching is a well explored field, ranging from panoramic images taken on most smart phones to highly tuned microscopy slide stitching. 
+But the basis of stitching requires adjacent images to have a region of overlap. 
+Of the stitching tools with a software API that we tested, only the python package Stitch2D was able to stitch our images successfully into a grid. % need to reference this
+This package wraps OpenCV functions for finding distinctive image features from SIFT and feature matching \citep{lowe_distinctive_2004}. 
+The default implementation of the package works very well but has a very high memory space complexity and fails due to out-of-memory errors when stitching more than a thousand images. %is this wording correct?, I'm trying to kindly say it was memory inefficient
+With a few key memory conscious changes to the algorithm, the package was able to run on the Jetson without a problem - confirming the ability to stitch images with filesizes greater than total RAM. 
 
 \section{Results}
 \subsection{Scans of Cookies and Cores}
@@ -238,7 +163,6 @@ both high resolution flatbed scanners (Epson® Perfection v750 PRO) and CaptuRIN
 With such high resolution, multiple logistics concerns arise. First is the file size. With such a high resolution, the size of the images can become extremely large. A cookie
 5 inches in diameter would result in an image with 67,000 pixels squared. This easily exceeds the 2.5 GB maximum file size in a TIFF - most software for viewing the file will also 
 be incompatible with any file this big as well. 
-
 
 \section{Discussion}
 Discuss the implications of your results here.

@@ -132,6 +132,8 @@
 		\item downscaled versions as high resolution is not necessary for all applications
 		\item Digitization time and file size as a function of surface area. Large cookies can scan only a portion of the cookie including the center and half of the rings.
 		\item large surface areas can produce files that are inconveniently large
+		\item FIGURE: Sample size vs image capturing time graph
+		\item FIGURE: Scale test image, proves the generated DPI calculation negates need to image with a ruler in frame
 		\end{enumerate}
 	\item File-size results in functional limits 
 		\begin{enumerate}
@@ -139,12 +141,9 @@
 		\item other lossless filetypes for larger images are not compatible with standard image viewers
 		\item workaround with NumPy memory maps and cropped viewing 
 		\end{enumerate}
-	\item Images/tables	
+	\item RCNN
 		\begin{enumerate}
-		\item Scale test image, proves the generated DPI calculation negates need to image with a ruler in frame
-		\item Sample size vs image capturing time graph
-		\item Hopefully sample size, dpi, automated tree ring time
-		\item Table with results of Equation for uncompressed filesize, emphasize lossy vs lossless compression, and true filesize %image filesize = DPI x 25.4 x sample-h-mm x sample-w-mm x 8bits x 3 colors
+		\item TABLE: RCNN results, sample height and width, dpi, automated tree ring time
 		\end{enumerate}
 	\end{enumerate}
 \item Discussion (for MEE Only) 
@@ -177,6 +176,7 @@
 		\end{enumerate}
 	\item opportunities for improvements %combine into strengths and opportunities? 
 		\begin{enumerate}
+		\item TABLE: with results of Equation for uncompressed filesize, emphasize lossy vs lossless compression, and true filesize %image filesize = DPI x 25.4 x sample-h-mm x sample-w-mm x 8bits x 3 colors
 		\item Software support for large files than 2.5GB >
 			\begin{enumerate}
 			\item Not all software can support this, especially if the computer is RAM constrained. Ring analysis tool which uses BigTIFF, HD5, or memory maps and loads only partial portions of the full image would be useful
