@@ -58,6 +58,8 @@ Building the frame is mostly a fun process as OpenBuilds makes our lives easy by
 
 Before assembling, it's valuable to see what the final product should contain. Above are renderings of the front and back of the machine. All of the gray components are from the OpenBuilds ACRO kit or the OpenBuilds Linear Actuator kit. All pink parts are necessary 3D printed components. 3D printed components are necessary for connecting the Linear Actuator to the attachment plate on the ACRO. They are also necessary for mounting the camera, lens, and jetson to the attachment plate of the linear actuator. The final mandatory system with 3D printed parts is the torsion correction system. All of the 3D printed stl files are located on our NIH 3D page.
 
+[3D Printer Files](https://3d.nih.gov/entries/3DPX-021561)
+
 NOTE: The renderings lack the leg extensions and display a significantly longer Z-axis linear actuator than needed. This is due to lack of available 3D models. 
 
 <img src="./docs/content/assembly_front.png" width=45% height=50%>
@@ -75,7 +77,7 @@ Before everything else is connected, it's best to try to test out the machine. W
 
 | Component Type | Component Name               | Quantity |
 |----------------|-------------------------|----------|
-| **3D Prints**  | leg_height_tool.stl  | 1        |
+| [**3D Prints**](https://3d.nih.gov/entries/3DPX-021561)  | leg_height_tool.stl| 1        |
 | **Hardware**   | M3 x 16mm bolts         | 2        |
 |                | M3 locknuts             | 2        |
 |                | M4 x 16mm bolts         | 2        |
@@ -91,10 +93,10 @@ Add more height to the ACRO with the use of more aluminum extrusion. Use the cor
 #### Components Required:
 | Component Type | Component Name               | Quantity |
 |----------------|-------------------------|----------|
-| **3D Prints**  | lens_plate_adapter.stl  | 1        |
-|                | lens_plate_spacer.stl   | 1        |
-|                | jetson_carriage.stl     | 1        |
-|                | jetson_lock.stl         | 1        |
+| [**3D Prints**](https://3d.nih.gov/entries/3DPX-021561)  | z_axis_plate_adapter.stl  | 1        |
+|                | z_axis_plate_spacer.stl   | 1        |
+|                | z_axis_jetson_carriage.stl     | 1        |
+|                | z_axis_jetson_lock.stl         | 1        |
 | **Hardware**   | M3 x 16mm bolts         | 2        |
 |                | M3 locknuts             | 2        |
 |                | M4 x 16mm bolts         | 2        |
@@ -110,7 +112,7 @@ Once again we benefit from [OpenBuilds great documentation](https://www.youtube.
 
 | Component Type | Component Name               | Quantity |
 |----------------|-------------------------|----------|
-| **3D Prints**  | z_axis_adapter.stl  | 1        |
+| [**3D Prints**](https://3d.nih.gov/entries/3DPX-021561)  | z_axis_adapter.stl  | 1        |
 |                | lens_plate_spacer.stl   | 1        |
 | **Hardware**   | M5 x 16mm bolts         | 2        |
 |                | M5 T-nuts             | 2        |
@@ -124,7 +126,7 @@ The attachment plate that comes with the ACRO is not designed to easily connect 
 
 | Component Type | Component Name               | Quantity |
 |----------------|-------------------------|----------|
-| **3D Prints**  |   |         |
+| [**3D Prints**](https://3d.nih.gov/entries/3DPX-021561)  |   |         |
 | **Hardware**   |          |         |
 | **Extra** |   Jetson Orin Nano  | 1 |
 | | Raspberry Pi HQ Camera | 1 |
@@ -138,10 +140,10 @@ Now that the Z axis has been added to the ACRO, add the camera with lens attache
 
 | Component Type | Component Name               | Quantity |
 |----------------|-------------------------|----------|
-| **3D Prints**  | torsion_correction_plate_adapter.stl  | 1        |
+| [**3D Prints**](https://3d.nih.gov/entries/3DPX-021561)  | torsion_correction_plate_adapter.stl  | 1        |
 |                | torsion_correction_extrusion_adapter.stl   | 1        |
-| | torsion_shim_2mm.stl | 2 |
-| | torsion_shim_1mm.stl | 2 |
+| | torsion_2mm_shim.stl | 2 |
+| | torsion_1mm_shim.stl | 2 |
 | **Hardware**   | M5 x 16mm bolts         | 2        |
 |                | M5 T-nuts             | 1        |
 |                | M5 washer         | 2       |
