@@ -1,8 +1,8 @@
 # TreeRings
 
-The TreeRings project is under development by students in the Temporal Ecology Lab at UBC. The project aims to create an open source and reproducible system to digitize ultra high resolution images of tree cookies. This is accomplished with a robot having control of a microscope camera that can navigate the X, Y, and Z directions. By systematically capturing images across the surface of the cookie, it is possible to stitch subframes of the cookie together into one large mosaic with the help of feature matching techniques. 
+The TreeRings project is under development by students in the Temporal Ecology Lab at UBC. The project aims to create an open source and reproducible system to digitize ultra high resolution images of tree cookies. This is accomplished with a robot having control of a microscope camera that can navigate the X, Y, and Z directions. By systematically capturing images across the surface of the cookie, it is possible to stitch subframes of the cookie together into one large mosaic with the help of feature matching techniques.
 
-While this was designed to capture tree cookies, in theory this should also be able to be used to scan other planar objects such as planed mineral samples or pencil drawings. 
+While this was designed to capture tree cookies, in theory this should also be able to be used to scan other planar objects such as planed mineral samples or pencil drawings.
 
 ## Current Functionality
 
@@ -19,18 +19,18 @@ While this was designed to capture tree cookies, in theory this should also be a
 - Larger cookies are less functional then smaller cookies as the filesizes can become prohibitively large
 - Stochastic insufficient system memory while capturing for long periods of time (large cookies or many cookies)
 
-## Getting Started TODO
+## Getting Started
 
-These instructions will get you a copy of the project up and running on your local machine for development and testing purposes. See deployment for notes on how to deploy the project on a live system.
+To get a TIM of your own, you'll have to acquire the materials itemized below. There are two paths that can be taken independently of each other first, the frame assembly. Second, getting the Jetson Orin Nano ready for use.
 
-### Prerequisites / Equipment
+## Step 1. Materials / Equipment
 
 | Item                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      | Cost per unit CAD   | Material Type |
 | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------- | ------------- |
-| FDM 3D Printer                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            | Many components are 3D printed to allow for rapid prototyping. Printing quality varies across platforms and materials. Choose what is best for your lab - our parts were made with a [Bambu Carbon X1](https://ca.store.bambulab.com/products/x1-carbon?variant=46286179270896&currency=CAD&utm_medium=product_sync&utm_source=google&utm_content=sag_organic&utm_campaign=sag_organic&gad_source=1&gclid=Cj0KCQjww5u2BhDeARIsALBuLnPN2AA2AAOx9SfhR0Slt6G1aFqrriQxQIsDFw2W-HsvmBLvWzmlFU4aAoNQEALw_wcB) printer. | $1900               | Equipment     |
+| FDM 3D Printer                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            | Many components are 3D printed to allow for rapid prototyping. Printing quality varies across platforms and materials. Choose what is best for your lab - our parts were made with a [Bambu Carbon X1](https://ca.store.bambulab.com/products/x1-carbon?variant=46286179270896&currency=CAD&utm_medium=product_sync&utm_source=google&utm_content=sag_organic&utm_campaign=sag_organic&gad_source=1&gclid=Cj0KCQjww5u2BhDeARIsALBuLnPN2AA2AAOx9SfhR0Slt6G1aFqrriQxQIsDFw2W-HsvmBLvWzmlFU4aAoNQEALw_wcB) printer. Ordering 3D prints should also be possible at your university or through many online services. | $1900               | Equipment     |
 | [Jetson Orin Nano](https://www.seeedstudio.com/NVIDIAr-Jetson-Orintm-Nano-Developer-Kit-p-5617.html?gad_source=1&gclid=Cj0KCQjww5u2BhDeARIsALBuLnM4tGqXsBM7JNxW5mwzGraFG74Qjp_JeM_HpbXGEc9Mlnl9b1s2fv8aAsPREALw_wcB)                                                                                                                                                                                                                                                                                                      | This acts as the main computing device, running the GUI, stitching software, driving the camera, etc.                                                                                                                                                                                                                                                                                                                                                                                                            | $879                | Computer      |
 | [1 TB NVME SSD](https://www.amazon.ca/dp/B09QV692XY?ref=ppx_yo2ov_dt_b_fed_asin_title)                                                                                                                                                                                                                                                                                                                                                                                                                                    | For storage on the Jetson.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       | $99                 | Computer      |
-| [OpenBuilds Acro](https://us.openbuilds.com/openbuilds-acro-1010-40-x-40/)                                                                                                                                                                                                                                                                                                                                                                                                                                                | The chassis for the gantry robot has already been designed and greatly documented by OpenBuilds. Building on top of this system has many benefits such as a library of documentation and customer service!                                                                                                                                                                                                                                                                                                       | $497 USD. ~$700 CAD | Frame         |
+| [OpenBuilds Acro](https://us.openbuilds.com/openbuilds-acro-1010-40-x-40/)                                                                                                                                                                                                                                                                                                                                                                                                                                                | The chassis for the gantry robot has already been designed and greatly documented by OpenBuilds. Building on top of this system has many benefits such as a library of documentation and customer service! Any size ACRO will work, although this is the what limits the maximum sample dimension that can be digitized.                                                                                                                                                                                                                                                                                                        | $497 USD. ~$700 CAD | Frame         |
 | [OpenBuilds BlackBox X32](https://openbuildspartstore.com/BlackBox-Motion-Control-System-X32)                                                                                                                                                                                                                                                                                                                                                                                                                             | The motor controller to convert G-Code commands into electrical signals for the stepper motors. This was originally an Arduino - with a CNC hat and GRBL firmware. Sadly this quickly became a mess of wires and lacked the robust and clean wiring that the BlackBox has out of the box.                                                                                                                                                                                                                        | $333 USD ~$470 CAD  | Computer      |
 | [OpenBuilds NEMA17 Linear  Actuator 250mm (Lead Screw)](https://us.openbuilds.com/v-slot-nema-17-linear-actuator-bundle-lead-screw/)                                                                                                                                                                                                                                                                                                                                                                                      | Linear actuator to control the Z axis of the machine.                                                                                                                                                                                                                                                                                                                                                                                                                                                            | $170 USD ~$240 CAD  | Frame         |
 | [Raspberry Pi HQ Camera](https://www.digikey.ca/en/products/detail/raspberry-pi/SC1220/12339164?utm_adgroup=&utm_source=google&utm_medium=cpc&utm_campaign=PMax%20Product_Low%20ROAS%20Categories&utm_term=&productid=12339164&utm_content=&utm_id=go_cmp-20291741422_adg-_ad-__dev-c_ext-_prd-12339164_sig-Cj0KCQjww5u2BhDeARIsALBuLnPqCH09hu75KK18zBjZjUBQatUt-5BTpTnjI5q8qJso41ViaZUtn34aAnrvEALw_wcB&gad_source=1&gclid=Cj0KCQjww5u2BhDeARIsALBuLnPqCH09hu75KK18zBjZjUBQatUt-5BTpTnjI5q8qJso41ViaZUtn34aAnrvEALw_wcB) | The Raspberry Pi HQ camera is guaranteed to be made for a few more years. It is also a cheap and convenient alternative to a professional camera. Although this lacks built in autofocus, making the control of the system long.                                                                                                                                                                                                                                                                                 | $78.28              | Camera        |
@@ -38,7 +38,8 @@ These instructions will get you a copy of the project up and running on your loc
 | [Ring light for lens](https://www.amazon.ca/dp/B0B1JQLXG7?ref=ppx_yo2ov_dt_b_fed_asin_title)                                                                                                                                                                                                                                                                                                                                                                                                                              | Conveniently fits on the Seeed studio lens                                                                                                                                                                                                                                                                                                                                                                                                                                                                       | $40                 | Camera        |
 | USB / Wireless Keyboard                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   | Generic                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          | $30                 | Interface     |
 | USB / Wireless Mouse                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      | Generic                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          | $30                 | Interface     |
-| USBC Flash Drive                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          | Generic, for transferring files from the device to your main computer. Good to have 256GB +                                                                                                                                                                                                                                                                                                                                                                                                                      | $40                 | Interface     |
+| USBC Flash Drive or SSD (preferred)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         | Generic, for transferring files from the device to your main computer. Good to have 256GB +                                                                                                                                                                                                                                                                                                                                                                                                                      | $40                 | Interface     |
+| [Bullseye Level](https://www.amazon.ca/HARFINGTON-Circular-Bullseye-Telescope-Turntable/dp/B0BYMTCHK8/ref=asc_df_B0BYMTCHK8/?tag=googleshopc0c-20&linkCode=df0&hvadid=706725384426&hvpos=&hvnetw=g&hvrand=1791285935097800402&hvpone=&hvptwo=&hvqmt=&hvdev=c&hvdvcmdl=&hvlocint=&hvlocphy=9001559&hvtargid=pla-2187028849649&psc=1&mcid=2d80a47b3628327fa0314216fa6ec08a&gad_source=1) | For leveling the samples and machine | $15 | Tools |
 | [Display Port to HDMI adapter](https://www.amazon.ca/dp/B07ZNNRYFL?ref=nb_sb_ss_w_as-reorder_k1_1_19&amp=&crid=1A3SR8HZ8W838&sprefix=display%2Bport%2Bto%2Bhdm&th=1)                                                                                                                                                                                                                                                                                                                                                      | Any adapter should work if using a HDMI monitor                                                                                                                                                                                                                                                                                                                                                                                                                                                                  | $15                 | Interface     |
 | Monitor                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   | Computer monitor of some sort to use the GUI.                                                                                                                                                                                                                                                                                                                                                                                                                                                                    | $100                | Interface     |
 | 3m HDMI Cord                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              | Generic                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          | $15                 | Interface     |
@@ -47,57 +48,120 @@ These instructions will get you a copy of the project up and running on your loc
 | [20mm x 20mm x 250mm V-Slot Aluminum](https://www.amazon.ca/dp/B0CL49ZGZX?ref=ppx_yo2ov_dt_b_fed_asin_title)                                                                                                                                                                                                                                                                                                                                                                                                              | Used for extending the height of the Acro. Need four pieces. Can be any V slot extrusion.                                                                                                                                                                                                                                                                                                                                                                                                                        | $40                 | Frame         |
 | [M3 M4 M5 Hammer Head Drop in T Nuts](https://www.amazon.ca/YMAISS-195Pcs-Assortment-Aluminum-Profile/dp/B0BL1F55S5?pd_rd_w=8S5QH&content-id=amzn1.sym.ffb3ec7b-f4ff-4f0b-9941-80eb445d59e0&pf_rd_p=ffb3ec7b-f4ff-4f0b-9941-80eb445d59e0&pf_rd_r=MSGJ043DF5WV8KTZNHBA&pd_rd_wg=OEc95&pd_rd_r=55495543-7107-4e8a-8cb5-68b528ea311e&pd_rd_i=B0BL1F55S5&psc=1&ref_=pd_bap_d_grid_rp_0_24_t) | Used to attach adapters to aluminum extrusion. | $16 | Frame |  
 | [Metric Lock Nut Assortment](https://www.amazon.ca/Swpeet-100Pcs-Stainless-Assortment-Locknut/dp/B07VPDZ2KJ?pd_rd_w=0fYW5&content-id=amzn1.sym.dfe4a08c-5f84-4843-8949-98bd6055875f&pf_rd_p=dfe4a08c-5f84-4843-8949-98bd6055875f&pf_rd_r=AGQMF5HGSP75ZH2T3RAC&pd_rd_wg=oIS95&pd_rd_r=4226f91e-26f0-4632-8d19-9dfefd0a0387&pd_rd_i=B07VPDZ2KJ&psc=1&ref_=pd_basp_d_rpt_ba_s_2_t) | Used for adapter assembly | $14.99 | Frame |
-| [Metric Nuts and Bolts Assortment](https://www.amazon.ca/1700PCS-Metric-Nuts-Bolts-Assortment/dp/B0C6ZYVF32?pd_rd_w=0fYW5&content-id=amzn1.sym.dfe4a08c-5f84-4843-8949-98bd6055875f&pf_rd_p=dfe4a08c-5f84-4843-8949-98bd6055875f&pf_rd_r=AGQMF5HGSP75ZH2T3RAC&pd_rd_wg=oIS95&pd_rd_r=4226f91e-26f0-4632-8d19-9dfefd0a0387&pd_rd_i=B0C6ZYVF32&ref_=pd_basp_d_rpt_ba_s_3_t&th=1) | Used for adapter assembly | $29.99 | Frame |
-| Total                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  | $2,983              |               |
+| [Metric Nuts and Bolts Assortment](https://www.amazon.ca/1700PCS-Metric-Nuts-Bolts-Assortment/dp/B0C6ZYVF32?pd_rd_w=0fYW5&content-id=amzn1.sym.dfe4a08c-5f84-4843-8949-98bd6055875f&pf_rd_p=dfe4a08c-5f84-4843-8949-98bd6055875f&pf_rd_r=AGQMF5HGSP75ZH2T3RAC&pd_rd_wg=oIS95&pd_rd_r=4226f91e-26f0-4632-8d19-9dfefd0a0387&pd_rd_i=B0C6ZYVF32&ref_=pd_basp_d_rpt_ba_s_3_t&th=1) | Used for adapter assembly. We won't use nearly as many fasteners but it's convenient to have around. | $29.99 | Frame |
+| Total                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  | $2,983        CAD      |               |
 
 
 
-### Machine Assembly
+## 2a. Frame Assembly
 
-#### Rendering of Components Front View
-<img src="./docs/content/assembly_front.png" width=50% height=50%>
+Before assembling, it's valuable to see what the final product should contain. Above are renderings of the front and back of the machine. All of the gray components are from the OpenBuilds ACRO kit or the OpenBuilds Linear Actuator kit. All pink parts are necessary 3D printed components. 3D printed components are necessary for connecting the Linear Actuator to the attachment plate on the ACRO. They are also necessary for mounting the camera, lens, and jetson to the attachment plate of the linear actuator. The final mandatory system with 3D printed parts is the torsion correction system. All of the 3D printed stl files are located on our NIH 3D page.
 
-#### Rendering of Components Back View
-<img src="./docs/content/assembly_back.png" width=50% height=50%>
-
-Above are two renderings of the machine. All of the gray components are from the OpenBuilds ACRO kit or the OpenBuilds Linear Actuator kit. All pink parts are necessary 3D printed components. Following is a list of the minimum number of 3D prints.
-
-#### Attaching Z Axis
-<img src="./docs/content/z_axis_plate_exploded.png" width=50% height=50%>
+<img src="./docs/content/assembly_front.png" width=45% height=50%>
 
 
-1. Z axis adapter to connect Linear Actuator (Z axis) to the ACRO (XY plane)
-    - Hardware: M5 x 16mm (x2), M5 T-nut (x2), M5 washer (x6) (need many washers for shims as connecting this with T-nut is cumbersome)
+<img src="./docs/content/assembly_back.png" width=45% height=50%>
 
-#### Attaching Legs
-1. 4 corner brackets
-2. 250mm x 20mm x 20mm (x4) aluminum extrusion
-    - Hardware: (should be included with the corner bracket kit)
+### Building the ACRO
+We lean heavily on the great design and [instructions provided by the OpenBuilds team](https://builds.openbuilds.com/builds/openbuilds-acro-system.5416/) to build the ACRO system. Their videos and forums do a great job of summarizing most common problems that you might run into. Once you have this built, it's time to add our attachments.
 
-#### Camera/Computer Adapter
+### Attaching Legs
+
+| Component Type | Component Name               | Quantity |
+|----------------|-------------------------|----------|
+| **3D Prints**  | leg_height_tool.stl  | 1        |
+| **Hardware**   | M3 x 16mm bolts         | 2        |
+|                | M3 locknuts             | 2        |
+|                | M4 x 16mm bolts         | 2        |
+|                | M4 locknuts             | 2        |
+| **Extra** |    Extruded aluminum corner bracketes | 4 |
+| | 250mm x 20mm x 20mm aluminum extrusion | 4 | 
+
+Add more height to the ACRO with the use of more aluminum extrusion. Use the corner brackets you have to connect the aluminum extrusion as legs. The 3D printed leg height tool makes it very easy to ensure all of the legs are the same length.
+
+ADD PICTURE 
+
+### Camera/Computer Adapter
 <img src="./docs/content/camera_lens_holder_exploded.png" width=50% height=50%>
 
-1. Lens build plate adapter
-    - Hardware: M3 x 16mm (x2), M3 locknut (x2), M4 x 16mm (x2), M4 locknut (x2)
-2. Lens build plate spacer
-3. Jetson Orin Nano carriage
-    - Hardware: 1/4" tripod screw
-4. Jetson Orin Nano lock
-    - Hardware: M4 x 20mm (x2), M4 locknut (x2)
+#### Components Required:
+| Component Type | Component Name               | Quantity |
+|----------------|-------------------------|----------|
+| **3D Prints**  | lens_plate_adapter.stl  | 1        |
+|                | lens_plate_spacer.stl   | 1        |
+|                | jetson_carriage.stl     | 1        |
+|                | jetson_lock.stl         | 1        |
+| **Hardware**   | M3 x 16mm bolts         | 2        |
+|                | M3 locknuts             | 2        |
+|                | M4 x 16mm bolts         | 2        |
+|                | M4 locknuts             | 2        |
+| **Extra** |    OpenBuilds Linear Actuator attachment plate | 1 |
 
-#### Torsion Correction
+### Attaching Z Axis
+
+<img src="./docs/content/z_axis_plate_exploded.png" width=50% height=50%>
+
+| Component Type | Component Name               | Quantity |
+|----------------|-------------------------|----------|
+| **3D Prints**  | z_axis_adapter.stl  | 1        |
+|                | lens_plate_spacer.stl   | 1        |
+| **Hardware**   | M5 x 16mm bolts         | 2        |
+|                | M5 T-nuts             | 2        |
+|                | M5 washer         | 6       |
+| **Extra** |    OpenBuilds Linear Actuator | 1 |
+
+The attachment plate that comes with the ACRO is not designed to easily connect to the Linear Actuator. To work around this, we created the Z axis adapter which has slots which align with the aluminum extrusion. The washers are included as spacers to shim between the bolt and the adapter to make adjustments on the bolt's length. 
+
+### Install Camera / Computer
+| Component Type | Component Name               | Quantity |
+|----------------|-------------------------|----------|
+| **3D Prints**  |   |         |
+| **Hardware**   |          |         |
+| **Extra** |   Jetson Orin Nano  | 1 |
+| | Raspberry Pi HQ Camera | 1 |
+| | SEEED Studio Lens | 1 |
+| | CSI cable | 1 |
+
+Now that the Z axis has been added to the ACRO, add the camera with lens attached into it's resting spot underneath the Jetson Orin Nano. Put the Orin in the carriage and tighten the lock down to prevent it from falling. 
+
+### Torsion Correction
 <img src="./docs/content/torsion_correction_exploded.png" width=50% height=50%>
 
-1. Torsion correction plate adapter
-2. Torsion correction v slot adapter
-3. 2mm Torsion correction shim
-4. 1mm torsion correction shim 
-    - Hardware: M5 x 16mm (x2), M5 washer (x2), M5 T-nut (x1), M5 Locknut (x1), M4 x 20mm (x2), M4 locknuts (x2) 
+| Component Type | Component Name               | Quantity |
+|----------------|-------------------------|----------|
+| **3D Prints**  | torsion_correction_plate_adapter.stl  | 1        |
+|                | torsion_correction_extrusion_adapter.stl   | 1        |
+| | torsion_shim_2mm.stl | 2 |
+| | torsion_shim_1mm.stl | 2 |
+| **Hardware**   | M5 x 16mm bolts         | 2        |
+|                | M5 T-nuts             | 1        |
+|                | M5 washer         | 2       |
+|   | M5 locknut | 1 |
+| | M4 x 20mm bolts | 2 |
+| | M4 locknut | 2 |
+| **Extra** |    OpenBuilds Linear Actuator | 1 |
+
+All the added weight from the computer, camera, lens, and the linear actuator itself results in a bit of torsional deflection on the ACRO gantry. It is extremely important to have the camera as parallel to the table it's sitting on to take good images. To counteract any deflection on the beam, the torsional correction system can add or remove shims which will adjust the angle of the linear actuator in relation to the table. Use a lightweight bullet level to verify if the system is level.
 
 
-## Running the tests TODO
+## 2b. Jetson Orin Nano Setup
 
-Explain how to run the automated tests for this system
+Roughly:
+1. Install SSD
+2. Follow NVIDIA's setup guide for Jetpack 5??
+    - Once finished, the Jetson Orin Nano is effectively the same as using a normal Ubuntu Linux distribution
+3. Get the control Python software on the device: <!--At some point it would be nice to not need wifi so we could just load a docker container instead.... NICE TO HAVE -->
+    - connect to your internet
+    - git clone the TreeRings repo to your device
+    - copy the TreeRings/code folder to your desktop
+    - install the requirements.txt file
+    - run the gui 
+<!-- 4. If NOT connecting to internet:
+    - git clone the TreeRings repo to a different device that does have internet access
+    - copy the TreeRings/code folder onto a flash drive or other mode of memory transfer
+    - connect the flash drive to the Jetson
+    - copy the TreeRings/code folder from the flash drive to the Jetson's desktop  -->
+NOTE: It is on the TODO list to convert this annoying software install to be a Docker container instead. We appreciate your grace and patience in the time being.
 
 ## License TODO
 
