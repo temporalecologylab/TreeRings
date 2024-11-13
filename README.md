@@ -172,16 +172,6 @@ Roughly:
     - copy the TreeRings/code folder from the flash drive to the Jetson's desktop  -->
 NOTE: It is on the TODO list to convert this annoying software install to be a Docker image instead. We appreciate your grace and patience in the time being.
 
-## License TODO
+## Issues
 
-This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details
-
-## Acknowledgments TODO
-
-* Hat tip to anyone whose code was used
-* Inspiration
-* etc
-
-## Serpentine G-Code Control Logic
-![Control Logic](./docs/diagrams/G_code_serpentine_logic.png)
-![Live Demo](./docs/content/serpentine_example.gif)
+If you have any issues building, please feel free to reach out in the [Issues](https://github.com/temporalecologylab/TreeRings/issues) page.
