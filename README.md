@@ -52,7 +52,7 @@ To get a TIM of your own, you'll have to acquire the materials itemized below.
 
 
 
-## 2a. Frame Assembly
+## Step 2. Frame Assembly
 
 Building the frame is mostly a fun process as OpenBuilds makes our lives easy by provided great video instructions. The ACRO assembly with wiring included takes about 4-5 hours to build. Attaching the 3D printed parts to this should be able to be done in a couple hours. No specialized power tools are necessary, although a drill would help for one step of the ACRO assembly. 
 
@@ -73,7 +73,7 @@ We lean heavily on the great design and [instructions provided by the OpenBuilds
 
 Before everything else is connected, it's best to try to test out the machine. Wire everything up according to [OpenBuilds' wiring documentation](https://www.youtube.com/watch?v=GrjqW2MDCvM&t=1s) and build the [OpenBuilds Blackbox](https://www.youtube.com/watch?v=nC6_GF2Cmsc). Once everything is assembled, download [Universal G-Code Sender](https://universalgcodesender.com/download/) for your system. UGS allows you to tune all of the settings on the OpenBuilds Blackbox and control the movement of the ACRO all in an intuitive GUI. I assume OpenBuilds software would also be simple to use to test out the ACRO. 
 
-### Attaching Legs
+### Step 3. Attaching Legs
 <img src="./docs/content/leg_tool.jpg" width=50% height=50%>
 
 | Component Type | Component Name               | Quantity |
@@ -88,7 +88,7 @@ Before everything else is connected, it's best to try to test out the machine. W
 
 Add more height to the ACRO with the use of more aluminum extrusion. Use the corner brackets you have to connect the aluminum extrusion as legs. The 3D printed leg height tool makes it very easy to ensure all of the legs are the same length.
 
-### Camera/Computer Adapter
+### Step 4. Camera/Computer Adapter
 <img src="./docs/content/camera_lens_holder_exploded.png" width=50% height=50%>
 
 #### Components Required:
@@ -104,7 +104,7 @@ Add more height to the ACRO with the use of more aluminum extrusion. Use the cor
 |                | M4 locknuts             | 2        |
 | **Extra** |    OpenBuilds Linear Actuator attachment plate | 1 |
 
-### Building the OpenBuilds Linear Actuator
+### Step 5. Building the OpenBuilds Linear Actuator
 Once again we benefit from [OpenBuilds great documentation](https://www.youtube.com/watch?v=X0Z_gfl-iGY&t=5s). You'll need everything that came in the linear actuator kit. And to prevent yourself from needing to take the attachment plate off, it's best to have the lens plate adapter and lens plate spacer already installed. 
 
 ### Attaching Z Axis
@@ -122,7 +122,7 @@ Once again we benefit from [OpenBuilds great documentation](https://www.youtube.
 
 The attachment plate that comes with the ACRO is not designed to easily connect to the Linear Actuator. To work around this, we created the Z axis adapter which has slots which align with the aluminum extrusion. The washers are included as spacers to shim between the bolt and the adapter to make adjustments on the bolt's length. 
 
-### Install Camera / Computer
+### Step 6. Install Camera / Computer
 <img src="./docs/content/jetson_on_carriage.jpg" width=50% height=50%>
 
 | Component Type | Component Name               | Quantity |
@@ -136,7 +136,7 @@ The attachment plate that comes with the ACRO is not designed to easily connect 
 
 Now that the Z axis has been added to the ACRO, add the camera with lens attached into it's resting spot underneath the Jetson Orin Nano. Put the Orin in the carriage and tighten the lock down to prevent it from falling. 
 
-### Torsion Correction
+### Step 7. Torsion Correction
 <img src="./docs/content/torsion_correction_exploded.png" width=50% height=50%>
 
 | Component Type | Component Name               | Quantity |
@@ -156,7 +156,7 @@ Now that the Z axis has been added to the ACRO, add the camera with lens attache
 All the added weight from the computer, camera, lens, and the linear actuator itself results in a bit of torsional deflection on the ACRO gantry. It is extremely important to have the camera as parallel to the table it's sitting on to take good images. To counteract any deflection on the beam, the torsional correction system can add or remove shims which will adjust the angle of the linear actuator in relation to the table. Use a lightweight bullet level to verify if the system is level.
 
 
-## 2b. Jetson Orin Nano Setup
+## Step 8. Jetson Orin Nano Setup
 
 Roughly:
 1. Install SSD
