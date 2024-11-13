@@ -19,7 +19,7 @@ While this was designed to capture tree cookies, in theory this should also be a
 
 ## Getting Started
 
-To get a TIM of your own, you'll have to acquire the materials itemized below. There are two paths that can be taken independently of each other first, the frame assembly. Second, getting the Jetson Orin Nano ready for use.
+To get a TIM of your own, you'll have to acquire the materials itemized below. 
 
 ## Step 1. Materials / Equipment
 
@@ -84,8 +84,6 @@ Before everything else is connected, it's best to try to test out the machine. W
 | | 250mm x 20mm x 20mm aluminum extrusion | 4 | 
 
 Add more height to the ACRO with the use of more aluminum extrusion. Use the corner brackets you have to connect the aluminum extrusion as legs. The 3D printed leg height tool makes it very easy to ensure all of the legs are the same length.
-
-ADD PICTURE 
 
 ### Camera/Computer Adapter
 <img src="./docs/content/camera_lens_holder_exploded.png" width=50% height=50%>
