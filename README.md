@@ -19,7 +19,7 @@ While this was designed to capture tree cookies, in theory this should also be a
 
 ## Getting Started
 
-To get a TIM of your own, you'll have to acquire the materials itemized below. 
+To get a TIM of your own, you'll have to acquire the materials itemized below.
 
 ## Step 1. Materials / Equipment
 
@@ -167,7 +167,7 @@ Roughly:
     - git clone the TreeRings repo to your device
     - copy the TreeRings/code folder to your desktop
     - install the requirements.txt file
-    - run the gui 
+    - everything should be ready to go - refer to the [operation manual](./docs/writing/operation_manual.pdf)  
 <!-- 4. If NOT connecting to internet:
     - git clone the TreeRings repo to a different device that does have internet access
     - copy the TreeRings/code folder onto a flash drive or other mode of memory transfer
