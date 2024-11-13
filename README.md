@@ -13,11 +13,9 @@ While this was designed to capture tree cookies, in theory this should also be a
 - Multiple mosaic resolutions for one set of images
 - Data storage in .dat files to be used with a custom image viewer to view a subset of the image without loading into RAM
 
-## Current Problems
+## Current Limitations
 
 - Larger cookies (> 25cm in diameter) are more difficult to sand uniformly, resulting in poor stitching
-- Larger cookies are less functional then smaller cookies as the filesizes can become prohibitively large
-- Stochastic insufficient system memory while capturing for long periods of time (large cookies or many cookies)
 
 ## Getting Started
 
