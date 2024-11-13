@@ -55,17 +55,24 @@ To get a TIM of your own, you'll have to acquire the materials itemized below. T
 
 ## 2a. Frame Assembly
 
+Building the frame is mostly a fun process as OpenBuilds makes our lives easy by provided great video instructions. The ACRO assembly with wiring included takes about 4-5 hours to build. Attaching the 3D printed parts to this should be able to be done in a couple hours. No specialized power tools are necessary, although a drill would help for one step of the ACRO assembly. 
+
 Before assembling, it's valuable to see what the final product should contain. Above are renderings of the front and back of the machine. All of the gray components are from the OpenBuilds ACRO kit or the OpenBuilds Linear Actuator kit. All pink parts are necessary 3D printed components. 3D printed components are necessary for connecting the Linear Actuator to the attachment plate on the ACRO. They are also necessary for mounting the camera, lens, and jetson to the attachment plate of the linear actuator. The final mandatory system with 3D printed parts is the torsion correction system. All of the 3D printed stl files are located on our NIH 3D page.
+
+NOTE: The renderings lack the leg extensions and display a significantly longer Z-axis linear actuator than needed. This is due to lack of available 3D models. 
 
 <img src="./docs/content/assembly_front.png" width=45% height=50%>
 
 
 <img src="./docs/content/assembly_back.png" width=45% height=50%>
 
-### Building the ACRO
+### Building the OpenBuilds ACRO
 We lean heavily on the great design and [instructions provided by the OpenBuilds team](https://builds.openbuilds.com/builds/openbuilds-acro-system.5416/) to build the ACRO system. Their videos and forums do a great job of summarizing most common problems that you might run into. Once you have this built, it's time to add our attachments.
 
+Before everything else is connected, it's best to try to test out the machine. Wire everything up according to [OpenBuilds' wiring documentation](https://www.youtube.com/watch?v=GrjqW2MDCvM&t=1s) and build the [OpenBuilds Blackbox](https://www.youtube.com/watch?v=nC6_GF2Cmsc). Once everything is assembled, download [Universal G-Code Sender](https://universalgcodesender.com/download/) for your system. UGS allows you to tune all of the settings on the OpenBuilds Blackbox and control the movement of the ACRO all in an intuitive GUI. I assume OpenBuilds software would also be simple to use to test out the ACRO. 
+
 ### Attaching Legs
+<img src="./docs/content/leg_tool.jpg" width=50% height=50%>
 
 | Component Type | Component Name               | Quantity |
 |----------------|-------------------------|----------|
@@ -97,6 +104,9 @@ ADD PICTURE
 |                | M4 locknuts             | 2        |
 | **Extra** |    OpenBuilds Linear Actuator attachment plate | 1 |
 
+### Building the OpenBuilds Linear Actuator
+Once again we benefit from [OpenBuilds great documentation](https://www.youtube.com/watch?v=X0Z_gfl-iGY&t=5s). You'll need everything that came in the linear actuator kit. And to prevent yourself from needing to take the attachment plate off, it's best to have the lens plate adapter and lens plate spacer already installed. 
+
 ### Attaching Z Axis
 
 <img src="./docs/content/z_axis_plate_exploded.png" width=50% height=50%>
@@ -113,6 +123,8 @@ ADD PICTURE
 The attachment plate that comes with the ACRO is not designed to easily connect to the Linear Actuator. To work around this, we created the Z axis adapter which has slots which align with the aluminum extrusion. The washers are included as spacers to shim between the bolt and the adapter to make adjustments on the bolt's length. 
 
 ### Install Camera / Computer
+<img src="./docs/content/jetson_on_carriage.jpg" width=50% height=50%>
+
 | Component Type | Component Name               | Quantity |
 |----------------|-------------------------|----------|
 | **3D Prints**  |   |         |
