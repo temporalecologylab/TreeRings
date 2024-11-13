@@ -62,6 +62,7 @@ Before assembling, it's valuable to see what the final product should contain. A
 
 NOTE: The renderings lack the leg extensions and display a significantly longer Z-axis linear actuator than needed. This is due to lack of available 3D models. 
 
+### Rendered Final Product
 <img src="./docs/content/assembly_front.png" width=45% height=50%>
 
 
