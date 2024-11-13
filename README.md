@@ -172,7 +172,7 @@ Roughly:
     - copy the TreeRings/code folder onto a flash drive or other mode of memory transfer
     - connect the flash drive to the Jetson
     - copy the TreeRings/code folder from the flash drive to the Jetson's desktop  -->
-NOTE: It is on the TODO list to convert this annoying software install to be a Docker container instead. We appreciate your grace and patience in the time being.
+NOTE: It is on the TODO list to convert this annoying software install to be a Docker image instead. We appreciate your grace and patience in the time being.
 
 ## License TODO
 
