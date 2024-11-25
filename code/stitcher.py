@@ -15,6 +15,7 @@ import logging as log
 import sys 
 import time
 import utils
+import math
 
 log.basicConfig(format='%(process)d-%(levelname)s-%(message)s', level=log.INFO)
 
@@ -82,9 +83,10 @@ class Stitcher:
                 del dataset
                 del data
         
-        print(sys.getsizeof(self._memmaps))
+        # print(sys.getsizeof(self._memmaps))
         gc.collect()
-        print("Wrote dats")
+        log.info("Wrote dats")
+        return self._memmap_shape
 
     # @profile
     def read_dats(self):
@@ -99,11 +101,11 @@ class Stitcher:
     def create_tiles(self):
         for path in self._memmap_paths:
             self._tiles.append(tile_memmap.MemmapOpenCVTile(path, self._memmap_shape))
-        print("Created tiles")
+        log.info("Created tiles")
 
     def create_mosaic(self):
         self._mosaic = mosaic_memmap.MemmapStructuredMosaic(self._tiles, dim=self._metadata["cols"])
-        print("Created mosaic")
+        log.info("Created mosaic")
 
     def delete_dats(self):
         # make sure files close after being done stitching
@@ -129,7 +131,7 @@ class Stitcher:
             self._metadata = j
             f.close()
 
-    def write_metadata(self, new_dir, shape, stitch_time):
+    def write_metadata(self, new_dir, shape, frame_shape, stitch_time):
         new_metadata = {}
         new_metadata["species"]=self._metadata["species"]
         new_metadata["id1"]=self._metadata["id1"]
@@ -137,13 +139,15 @@ class Stitcher:
         new_metadata["notes"]=self._metadata["notes"]
         new_metadata["camera_pixels"]=self._metadata["camera_pixels"]
         new_metadata["percent_overlap"]=self._metadata["percent_overlap"]
-        new_metadata["DPI"] = round(shape[0] / self._metadata["cookie_height_mm"] * 25.4, 2)
+        new_metadata["DPI"] = int((frame_shape[0] / self._metadata["image_height_mm"]) * 25.4) # fixing bug... cannot assume the overall mosaic height and cookie height can be related perfectly
         new_metadata["cookie_height_mm"] = self._metadata["cookie_height_mm"]
         new_metadata["cookie_width_mm"] = self._metadata["cookie_width_mm"]
         new_metadata["pixels_h"] = shape[0]
         new_metadata["pixels_w"] = shape[1]
         new_metadata["depth"] = shape[2]
         new_metadata["stitch_time"] = stitch_time
+        new_metadata["frame_pixels_h"] = frame_shape[0]
+        new_metadata["frame_pixels_w"] = frame_shape[1]
          
 
         with open(os.path.join(new_dir, 'metadata.json'), 'w', encoding='utf-8') as f:
@@ -184,15 +188,15 @@ class Stitcher:
             mosaic_dat_path = os.path.join(path, "mosaic_100per.dat")
         
         self.dats_path = os.path.join(path, "dats")
-        print("Writing dats with resize {}".format(resize))
-        self.write_dats(self.dats_path, resize = resize)
-        print("Creating Tiles")
+        log.info("Writing dats with resize {}".format(resize))
+        memmap_shape = self.write_dats(self.dats_path, resize = resize)
+        log.info("Creating Tiles")
         # self.read_dats()
-        # print("Reading dats")
+        # log.info("Reading dats")
         self.create_tiles()
-        print("Creating Mosaic")
+        log.info("Creating Mosaic")
         self.create_mosaic()
-        print("Aligning")
+        log.info("Aligning")
         self._mosaic.align()
         # self._mosaic.smooth_seams()
 
@@ -203,7 +207,7 @@ class Stitcher:
 
         end_time = time.time()
         stitch_time = end_time - start_time
-        self.write_metadata(path, shape, stitch_time)
+        self.write_metadata(path, shape, memmap_shape, stitch_time)
 
         # no need in writing a normal tiff if it's going to be greater than the maximum tiff filesize
         if (shape[0] * shape[1] * shape[2]) / 1e6  < 3500:

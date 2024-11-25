@@ -384,7 +384,7 @@ class Controller:
             "resolution_h": self.camera.h_pixels,
             "resolution_w": self.camera.w_pixels,
             "elapsed_time": elapsed_time,
-            "DPI": round(dpi,2),
+            "DPI": int(dpi), # choosing ceil would also be an option but either way they introduce close to random error across all samples
             "photo_count": cookie.rows * cookie.cols,
             "image_height_mm": self.image_height_mm,
             "image_width_mm": self.image_width_mm,
