@@ -57,14 +57,9 @@ def click_pit(tiff_path):
                     dot, = event.inaxes.plot(pit[0], pit[1], 'bo')  # Blue dot for pit
                     plt.draw()  # Redraw the plot
         
-            # Right mouse button: Confirm points
+            # Right mouse button: Confirm point and plot guidelines
             elif event.button == 3:  # Right button
-                if pit and not confirmed_pit:
-                    # Confirm pit
-                    confirmed_pit = True
-                    print(f"Pit confirmed: {pit}")
-                elif confirmed_pit: # Right click to go from one guideline to the next
-
+                if pit:
                         # Calulate theta = 0 line
                         dot.remove()
                         
@@ -107,7 +102,6 @@ def click_pit(tiff_path):
                         m = -math.atan(60) # -60 degrees in radians, positive slope
                         b = y0 - m * x0 # b = y0 - m*x0
 
-                        # CHECK THE TRIGONOMETRY
                         # does the second point intersect the bottom boundary of the image or the left boundary
                         # x = (y - b)/m  
                         y3_pot = image.shape[0]
@@ -166,7 +160,8 @@ def main():
         tiff_path = os.path.join(root, tiff_file)
 
         click_pit(tiff_path)
-        write_guidelines(tiff_path, points[0], points[1], points[2], points[3])
+        if len(points) == 4:
+            write_guidelines(tiff_path, points[0], points[1], points[2], points[3])
         reset()
 
     print("Pit confirmation complete. Proceeding to the next steps...")
