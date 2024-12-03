@@ -4,13 +4,16 @@ import tkinter as tk
 from tkinter import filedialog
 import os
 import tifffile
-import imutils
 import math
+import utils
+import cv2
 
+ONE_DIR = True
 confirmed_pit = False
 pit = None
 dot = None
 line = None
+finished = False
 points = []
 
 def prompt_directory():
@@ -40,13 +43,13 @@ def click_pit(tiff_path):
 
     def on_click(event):
         """Callback function for mouse click events."""
-        global pit, confirmed_pit, dot, line, counter, points
+        global pit, confirmed_pit, dot, line, points, finished
 
         # Check if the click is within the plot area
         if event.inaxes:
             # Left mouse button: Select or overwrite points
             if event.button == 1:  # Left button
-                if not confirmed_pit:
+                if not finished:
                     # Update pit
                     pit = (int(event.xdata), int(event.ydata))
                     print(f"Pit selected: {pit}")
@@ -59,7 +62,7 @@ def click_pit(tiff_path):
         
             # Right mouse button: Confirm point and plot guidelines
             elif event.button == 3:  # Right button
-                if pit:
+                if pit and not finished:
                         # Calulate theta = 0 line
                         dot.remove()
                         
@@ -122,6 +125,7 @@ def click_pit(tiff_path):
                         line, = event.inaxes.plot(x_values_1, y_values_1, 'g-')
                         line, = event.inaxes.plot(x_values_2, y_values_2, 'b-')
 
+                        finished = True
                         plt.draw()
 
     ax.imshow(image)
@@ -130,17 +134,45 @@ def click_pit(tiff_path):
     cid = fig.canvas.mpl_connect('button_press_event', on_click)
     plt.show(block=True)
     
-def write_guidelines(path, center, endpoint0, endpoint1, endpoint2):
-    pass
+def write_guidelines(image_path, metadata_path, center, endpoint0, endpoint1, endpoint2, one_directory = False):
+    metadata = utils.load_metadata(metadata_path)
+    image = tifffile.imread(image_path)
+    thickness = 1
+    r = (255, 0, 0)
+    g = (0, 255, 0)
+    b = (0, 0, 255)
+    image = cv2.line(image, center, endpoint0, r, thickness) 
+    image = cv2.line(image, center, endpoint1, g, thickness) 
+    image = cv2.line(image, center, endpoint2, b, thickness) 
+
+    if one_directory:
+        i = 1
+        if not os.path.exists("./cookies_with_guides"):
+            os.makedirs("./cookies_with_guides")
+            
+        final_path = os.path.join("./cookies_with_guides", "{}_{}_{}_guides.tif".format(metadata["species"], metadata['id1'], metadata["id2"]))
+        while os.path.exists(final_path):
+            final_path = os.path.join(os.path.dirname(final_path), "{}_{}_{}_guides_{}.tif".format(metadata["species"], metadata['id1'], metadata["id2"], i))
+            i+=1
+    else:
+        final_path = os.path.join(os.path.dirname(image_path), "{}_{}_{}_guides.tif".format(metadata["species"], metadata['id1'], metadata["id2"]))
+
+    tifffile.imwrite(
+                final_path,
+                image,
+                photometric='rgb',
+                compression='LZW'
+    )
+    print("Guidelines saved at {}".format(final_path))
 
 def reset():
-    global confirmed_pit, pit, dot, line, counter, points
+    global confirmed_pit, pit, dot, line, points, finished
     confirmed_pit = False
     pit = None
     dot = None
     line = None
-    counter = 0
     points = []
+    finished = False
 
 def main():
     parent_dir = prompt_directory()
@@ -149,19 +181,18 @@ def main():
         return
 
     tiff_files = []
+    metadata_files = []
     for root, dirs, files in os.walk(parent_dir):
         for filename in files:
             if '.tif' in filename:
                 tiff_files.append(os.path.join(root, filename))
-        # for dirname in dirs:
-            # doSomethingWithDir(os.path.join(root, dirname))
+                metadata_files.append(os.path.join(root, 'metadata.json'))
 
-    for tiff_file in tiff_files:
-        tiff_path = os.path.join(root, tiff_file)
+    for tiff_file, metadata_file in zip(tiff_files, metadata_files):
 
-        click_pit(tiff_path)
+        click_pit(tiff_file)
         if len(points) == 4:
-            write_guidelines(tiff_path, points[0], points[1], points[2], points[3])
+            write_guidelines(tiff_file, metadata_file, points[0], points[1], points[2], points[3], ONE_DIR)
         reset()
 
     print("Pit confirmation complete. Proceeding to the next steps...")
