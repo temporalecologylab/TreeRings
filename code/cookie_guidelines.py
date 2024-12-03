@@ -149,21 +149,27 @@ def write_guidelines(image_path, metadata_path, center, endpoint0, endpoint1, en
         i = 1
         if not os.path.exists("./cookies_with_guides"):
             os.makedirs("./cookies_with_guides")
-            
-        final_path = os.path.join("./cookies_with_guides", "{}_{}_{}_guides.tif".format(metadata["species"], metadata['id1'], metadata["id2"]))
-        while os.path.exists(final_path):
-            final_path = os.path.join(os.path.dirname(final_path), "{}_{}_{}_guides_{}.tif".format(metadata["species"], metadata['id1'], metadata["id2"], i))
+
+        image_path_final = os.path.join("./cookies_with_guides", "{}_{}_{}_guides.tif".format(metadata["species"], metadata['id1'], metadata["id2"]))
+        metadata_path_final =  os.path.join("./cookies_with_guides", "{}_{}_{}_metadata.json".format(metadata["species"], metadata['id1'], metadata["id2"]))
+        while os.path.exists(image_path_final):
+            image_path_final = os.path.join(os.path.dirname(image_path_final), "{}_{}_{}_guides_{}.tif".format(metadata["species"], metadata['id1'], metadata["id2"], i))
+            metadata_path_final =  os.path.join(os.path.dirname(image_path_final), "{}_{}_{}_metadata_{}.json".format(metadata["species"], metadata['id1'], metadata["id2"], i))
             i+=1
+
+        # write metadata if saving to the new folder
+        utils.write_metadata(metadata, metadata_path_final)
     else:
-        final_path = os.path.join(os.path.dirname(image_path), "{}_{}_{}_guides.tif".format(metadata["species"], metadata['id1'], metadata["id2"]))
+        image_path_final = os.path.join(os.path.dirname(image_path), "{}_{}_{}_guides.tif".format(metadata["species"], metadata['id1'], metadata["id2"]))
+        metadata_path_final =  os.path.join(os.path.dirname(image_path), "{}_{}_{}_metadata.json".format(metadata["species"], metadata['id1'], metadata["id2"]))
 
     tifffile.imwrite(
-                final_path,
+                image_path_final,
                 image,
                 photometric='rgb',
                 compression='LZW'
     )
-    print("Guidelines saved at {}".format(final_path))
+    print("Guidelines saved at {}".format(image_path_final))
 
 def reset():
     global confirmed_pit, pit, dot, line, points, finished

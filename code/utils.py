@@ -15,3 +15,7 @@ def load_metadata(dir):
     f.close()
 
     return metadata
+
+def write_metadata(metadata, dir):
+    with open (dir, "w", encoding="utf-8") as f:
+        json.dump(metadata, f, ensure_ascii=False, indent=4)
