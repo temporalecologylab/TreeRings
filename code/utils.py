@@ -8,3 +8,10 @@ def load_config(path = "."):
     f.close()
 
     return config["config"]
+
+def load_metadata(dir):
+    f = open(dir)
+    metadata = json.load(f)
+    f.close()
+
+    return metadata
