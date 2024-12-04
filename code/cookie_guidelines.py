@@ -27,7 +27,7 @@ def prompt_directory():
     directory = filedialog.askdirectory(title="Select Parent Directory")
     return directory
 
-def click_pit(tiff_path):
+def click_pit(tiff_path: str):
     """
     Allows user to click the center of a pit in an image using the standard Matplotlib image viewer. Left click selects a pit. Right click confirms the selection. 
     Right click again to close the window.
@@ -137,17 +137,17 @@ def click_pit(tiff_path):
     cid = fig.canvas.mpl_connect('button_press_event', on_click)
     plt.show(block=True)
     
-def write_guidelines(image_path, metadata_path, center, endpoint0, endpoint1, endpoint2, one_directory = False):
+def write_guidelines(image_path:str , metadata_path:str, center:list[int], endpoint0:list[int], endpoint1:list[int], endpoint2:list[int], one_directory:bool = False):
     """Use the guidelines generated from the user clicks to draw on the original image and save the result. Default is to save the new image in the source directory of the image but
     this can also be saved to one general directory using the one_directory = True.
 
     Args:
         image_path (str): Path to source tiff image.
         metadata_path (str): Path to source metadata for the tiff image.
-        center (list(int)): Coordinates of the pit.
-        endpoint0 (list(int)): Coordinates of the first endpoint, with an angle of theta = 0 degrees.
-        endpoint1 (list(int)): Coordinates of the second endpoint, with an angle of theta = 120 degrees.
-        endpoint2 (list(int)): Coordinates of the third endpoint, with an angle of theta = 240 degrees.
+        center (list[int]): Coordinates of the pit.
+        endpoint0 (list[int]): Coordinates of the first endpoint, with an angle of theta = 0 degrees.
+        endpoint1 (list[int]): Coordinates of the second endpoint, with an angle of theta = 120 degrees.
+        endpoint2 (list[int]): Coordinates of the third endpoint, with an angle of theta = 240 degrees.
         one_directory (bool, optional): Set as False if the image with a guideline wants to be saved in the original path. If True, all images will be saved in the working directory under './cookies_with_guidelines'. In this case, metadata is also copied with an associated filename. Defaults to False.
     """
 
