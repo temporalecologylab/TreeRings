@@ -29,11 +29,13 @@ def prompt_directory():
 
 def click_pit(tiff_path):
     """
-    Wait for the user to click on the pit in the image using matplotlib.
+    Allows user to click the center of a pit in an image using the standard Matplotlib image viewer. Left click selects a pit. Right click confirms the selection. 
+    Move to the next cookie by exiting the window after. 
+
     Args:
         tiff_path (str): Path of the image to load.
     Returns:
-        tuple: (x, y) coordinates of the clicked pit.
+        None
     """
     coords = []
 
@@ -127,7 +129,8 @@ def click_pit(tiff_path):
 
                         finished = True
                         plt.draw()
-
+                else: 
+                    plt.close()
     ax.imshow(image)
     ax.set_title("Left click the pit, Right click to progress")
     plt.axis("off")
