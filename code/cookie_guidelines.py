@@ -30,7 +30,7 @@ def prompt_directory():
 def click_pit(tiff_path):
     """
     Allows user to click the center of a pit in an image using the standard Matplotlib image viewer. Left click selects a pit. Right click confirms the selection. 
-    Move to the next cookie by exiting the window after. 
+    Right click again to close the window.
 
     Args:
         tiff_path (str): Path of the image to load.
@@ -138,21 +138,43 @@ def click_pit(tiff_path):
     plt.show(block=True)
     
 def write_guidelines(image_path, metadata_path, center, endpoint0, endpoint1, endpoint2, one_directory = False):
+    """Use the guidelines generated from the user clicks to draw on the original image and save the result. Default is to save the new image in the source directory of the image but
+    this can also be saved to one general directory using the one_directory = True.
+
+    Args:
+        image_path (str): Path to source tiff image.
+        metadata_path (str): Path to source metadata for the tiff image.
+        center (list(int)): Coordinates of the pit.
+        endpoint0 (list(int)): Coordinates of the first endpoint, with an angle of theta = 0 degrees.
+        endpoint1 (list(int)): Coordinates of the second endpoint, with an angle of theta = 120 degrees.
+        endpoint2 (list(int)): Coordinates of the third endpoint, with an angle of theta = 240 degrees.
+        one_directory (bool, optional): Set as False if the image with a guideline wants to be saved in the original path. If True, all images will be saved in the working directory under './cookies_with_guidelines'. In this case, metadata is also copied with an associated filename. Defaults to False.
+    """
+
+    # Load data 
     metadata = utils.load_metadata(metadata_path)
     image = tifffile.imread(image_path)
+
+    # Set line parameters
     thickness = 1
     r = (255, 0, 0)
     g = (0, 255, 0)
     b = (0, 0, 255)
+
+    # Draw lines
     image = cv2.line(image, center, endpoint0, r, thickness) 
     image = cv2.line(image, center, endpoint1, g, thickness) 
     image = cv2.line(image, center, endpoint2, b, thickness) 
 
+    # Save in one directory 
     if one_directory:
         i = 1
+
+        # Create the directory
         if not os.path.exists("./cookies_with_guides"):
             os.makedirs("./cookies_with_guides")
 
+        # It's possible for multiple samples of the same plot to exist... must append values to their names if they already exist to not overwrite
         image_path_final = os.path.join("./cookies_with_guides", "{}_{}_{}_guides.tif".format(metadata["species"], metadata['id1'], metadata["id2"]))
         metadata_path_final =  os.path.join("./cookies_with_guides", "{}_{}_{}_metadata.json".format(metadata["species"], metadata['id1'], metadata["id2"]))
         while os.path.exists(image_path_final):
@@ -162,10 +184,12 @@ def write_guidelines(image_path, metadata_path, center, endpoint0, endpoint1, en
 
         # write metadata if saving to the new folder
         utils.write_metadata(metadata, metadata_path_final)
+    # Save in source directory. No need to write metadata again if in source directory
     else:
         image_path_final = os.path.join(os.path.dirname(image_path), "{}_{}_{}_guides.tif".format(metadata["species"], metadata['id1'], metadata["id2"]))
         metadata_path_final =  os.path.join(os.path.dirname(image_path), "{}_{}_{}_metadata.json".format(metadata["species"], metadata['id1'], metadata["id2"]))
 
+    # Write file
     tifffile.imwrite(
                 image_path_final,
                 image,
@@ -175,6 +199,8 @@ def write_guidelines(image_path, metadata_path, center, endpoint0, endpoint1, en
     print("Guidelines saved at {}".format(image_path_final))
 
 def reset():
+    """Resets the global variables that are accessed by the event based 'on_click' callback.
+    """
     global confirmed_pit, pit, dot, line, points, finished
     confirmed_pit = False
     pit = None
@@ -184,21 +210,25 @@ def reset():
     finished = False
 
 def main():
+    # Get directory
     parent_dir = prompt_directory()
     if not parent_dir:
         print("No directory selected. Exiting.")
         return
 
+    # Data stubs
     tiff_files = []
     metadata_files = []
-    for root, dirs, files in os.walk(parent_dir):
+
+    # Walk the parent directory and find all tif files. Make sure to get the metadata as well
+    for root, _, files in os.walk(parent_dir):
         for filename in files:
             if '.tif' in filename:
                 tiff_files.append(os.path.join(root, filename))
                 metadata_files.append(os.path.join(root, 'metadata.json'))
 
+    # Iterate through all of the tiff files found
     for tiff_file, metadata_file in zip(tiff_files, metadata_files):
-
         click_pit(tiff_file)
         if len(points) == 4:
             write_guidelines(tiff_file, metadata_file, points[0], points[1], points[2], points[3], ONE_DIR)
