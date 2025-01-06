@@ -41,40 +41,41 @@ Analysis which relies on higher resolution larger samples require a different di
 
 The second digitization model was introduced with ATRICS \citep{levanic_atrics_2007}. 
 Rather than scanning a whole sample at once, a high resolution camera takes multiple images across the surface of the sample and uses image stitching software techniques to combine them into one ultra high resolution image \citep{muhlich_stitching_2022}.
-This methodology is often seen in other fields such as mineralogy and cellular biology \citep{ro_image_2021,mohammadi_fast_2024}. 
+Stitching multiple images into one mosaic has been applied in other fields such as mineralogy and cellular biology \citep{ro_image_2021,mohammadi_fast_2024}. 
 This method requires either the camera objective to move relative to the sample, or the sample move underneath a stationary camera. 
 For ATRICS and a more modern do-it-yourself alternative, CaptuRING, the sample is moved relative to the camera \citep{garcia-hidalgo_capturing_2022}. 
 Gigapixel takes a different approach by moving the camera relative to the sample, allowing for multiple samples to be recorded in sequence. 
 While these machines can all digitize cores, none have been shown to digitize cookies.
 
-Tina was made to combine the defining features of the previously mentioned machines into one while making the code open-source and chassis open-hardware device. 
-We designed Tina to digitize both cookies and cores, extend the maximum sample length, perform image stitching without operator intervention, while minimizing cost. 
+Tina was made to combine the defining features of the previously mentioned machines into one while making the project open-source and open-hardware. 
+We designed Tina to digitize both cookies and cores, increase the maximum sample length, perform image stitching without operator intervention, all while minimizing cost. 
 Successful functionality of this system is dependent on the major steps in tree cookie and core digitization to be automated. 
 The only specialized piece of equipment needed to build Tina is a 3D printer, but the parts can be readily ordered through 3D print shops if preferred.
 Excluding 3D printed parts, the total cost of the machine is approximately \$2,200 USD compared to the \$70,000 USD of the Gigapixel \citep{griffin_gigapixel_2021}.
 The total cost of the machine is almost comparable in price or less to many professional camera and macro lens combinations.
-Additional savings can also be made when factoring in the cost of a professional stitching software license such as PTGui. 
+Additional savings can also be had when factoring in the cost of a professional stitching software license such as PTGui. 
 
 \section{Methods}
 
 \subsection{System Overview} % this is so dry fix later
 
 Tina can be thought of as a combination of multiple subsystems: the camera, computer, and gantry machine. 
-Cartesian movement in the X, Y and Z directions is a result of two kits and a motor controller from OpenBuilds - the ACRO 1010, the NEMA 17 lead screw linear actuator, and the X32 Motor Controller running GRBL firmware. 
-The ACRO provides build plates for custom attachments, we made an adapter to combine the linear actuator to the build plate to add a third degree of freedom.
+Cartesian movement in the X, Y and Z directions is a result of two machine kits and a motor controller from OpenBuilds - the ACRO 1010, the NEMA 17 lead screw linear actuator, and the X32 Motor Controller running GRBL firmware. 
+Building on top of kits allowed for quick assembly and prefabricated parts saving development time. 
+To fit on the build plates of the ACRO system, we made an adapter to connect the linear actuator to the X and Y axis, thus creating motion in the Z axis.
 On the linear actuator's build plate, adapters were made to hold a 12MP Raspberry Pi HQ Camera equipped with a SEEED studio microscope lens connected to an NVIDIA Jetson Orin Nano (Jetson) through a CSI cable.
 By choosing this combination, we were able to reduce the weight and cost of the camera significantly - trickling the budget into an efficient computer which can handle intensive image processing. 
-The Jetson is a powerful SoC edge computer which drives a computer monitor for a GUI, sends commands to the motor controller to move the machine, runs image processing calculations for automatic control, and performs calculations to stitch individual images into one mosaic. 
-Despite the weight reductions, torsion on the gantry arm still resulted in a non-zero torsional deflection. An torsion correcting adapter was designed to compensate.
+The Jetson is a powerful edge computer which drives a computer monitor for a GUI, sends commands to the motor controller to move the machine, runs image processing calculations for automatic control, and performs calculations to stitch individual images into one mosaic. 
+Despite the weight reductions, torsion on the gantry arm still resulted in a non-zero torsional deflection. A torsion correcting adapter was designed to counteract this rotation and level the lens.
 
 \subsection{Sample Digitization} % Methods
-The subsystems can be best understood by following the path from sample setup through the computing process to create the stitched image. 
+The subsystems can be best understood by following the process from sample setup through the computing process to create the stitched image. 
 
 To achieve this with a fixed focus camera, the samples must be nearly orthogonal to the camera lens. Misalignments between the sample and lens up to 10 degrees can be corrected by using the 3D printed sample levelling table we designed (See Figure \ref{fig:ideal_levelling}).
-Once the sample is level, the operator interacts with the machine through the GUI to navigate the camera to the center of the sample, and initializes focus to be sharp. The height and width dimensions are then entered in the GUI
-to be saved along with the center XYZ coordinate of the sample. This procedure can be repeated to create a queue of samples to digitize.
+Once the sample is level, the operator interacts with the machine through the GUI to navigate the camera to the center of the sample, and focuses the preview image to be sharp. The height and width dimensions are then entered in the GUI
+to be saved along with the detected center coordinate of the sample. This procedure can be repeated to create a queue of samples to digitize.
 
-Sample height, width, identifiers, and centering an in focus sample is sufficient information to digitize.
+The height, width, identifiers, and centering of the sample is sufficient information to digitize.
 
 \begin{figure}
     \centering
@@ -106,7 +107,7 @@ In this system, the only way to control focus is by changing the lens's distance
 And with the microscope lens, the depth of field of the image is so sensitive that a perturbation of less half of a millimeter can move an entire image out of focus.
 Solving this in a time efficient manner involves two stages. 
 The first stage takes advantage of the requirement to navigate and focus the camera to the center of the sample.
-This allows the initial $Z_0$ value from $(X_0, Y_0, Z_0)$ to be a fantastic initial guess as to what value would have an in focus image across the entire surface. 
+This allows the initial $Z_0$ value from $(X_0, Y_0, Z_0)$ to be an informed initial guess as to what value would have an in focus image across the entire surface. 
 Sample surface misalignment and a non flat sample (bumpy) surfaces require more than one image to be taken at each image $(X, Y)$. 
 From the first $(X_0, Y_0)$ coordinate captured, 11 images are taken at different $Z$ values in $\boldsymbol{Z_{\text{focus}}}$. 
 So long as $Z_{sample}$ is within this set, an in focus image exists.
