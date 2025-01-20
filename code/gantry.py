@@ -117,7 +117,11 @@ class Gantry:
         return read_response(self.s)
 
     def jog_absolute_xyz(self, x, y, z) -> None:
-        cmd = "$J=G90 G21 X{} Y{} Z{} F{}".format(x, y, z, self.feed_rate_xy)
+        cmd = "$J=G90 G21 X{} F{}".format(x, self.feed_rate_xy)
+        self._send_command(cmd)
+        cmd = "$J=G90 G21 Y{} F{}".format(y, self.feed_rate_xy)
+        self._send_command(cmd)
+        cmd = "$J=G90 G21 Z{} F{}".format(z, self.feed_rate_xy)
         self._send_command(cmd)
         
     def jog_absolute_xy(self, x, y) -> None:
