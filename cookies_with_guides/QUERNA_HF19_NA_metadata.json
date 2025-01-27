@@ -1,0 +1,17 @@
+{
+    "species": "QUERNA",
+    "id1": "HF19",
+    "id2": "NA",
+    "notes": "",
+    "camera_pixels": 8294400,
+    "percent_overlap": 30.0,
+    "DPI": 5486,
+    "cookie_height_mm": 32,
+    "cookie_width_mm": 34,
+    "pixels_h": 8881,
+    "pixels_w": 9218,
+    "depth": 3,
+    "stitch_time": 76.24461065599462,
+    "frame_pixels_h": 648,
+    "frame_pixels_w": 1152
+}
