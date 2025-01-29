@@ -52,12 +52,12 @@ class Gantry:
                 self.position_lock.acquire()
                 try:
                     _x, _y, _z = self.parse_coordinates(res_str)
+                    self._x = _x
+                    self._y = _y
+                    self._z = _z
                 except:
                     log.info("Error reading parsing coordinates")
                     continue
-                self._x = _x
-                self._y = _y
-                self._z = _z
                 self.position_lock.release()
                 self.state = self.parse_state(res_str)
                 if not self.quiet:
