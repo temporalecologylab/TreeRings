@@ -128,18 +128,27 @@
 	\begin{enumerate}
 	\item scans of cookies / cores
 		\begin{enumerate}
-		\item ultra high resolution scans (DPI 13,500 +)
-		\item downscaled versions as high resolution is not necessary for all applications
+		\item ultra high resolution scans (DPI 22,000+)
+		%% TODO: Measure DPI at 4.5 zoom as well but explain that capturing time and is inconveniently long and files are huge 
+		\item DPI calculated with a slide microscopy scale with 0.01mm precision
+		%% TODO: Figure showing the scale and the tool to measure DPI. 
+		\item Can set the machine to computationally downscale images to different DPI values without changing zoom
 		\item Digitization time and file size as a function of surface area. Large cookies can scan only a portion of the cookie including the center and half of the rings.
 		\item large surface areas can produce files that are inconveniently large
 		\item FIGURE: Sample size vs image capturing time graph
+		%% TODO: get all the JSON files from scanning together in one folder for me to analyze
+		%% TODO: imaging _time = num_images * mu AND num_images = sample_height / (image_height * (1 - percent_overlap)) + sample_width / (image_width * (1 - percent_overlap))
+		%%  	 SEE IF ABOVE MODEL IS CORRECT WITH THE METADATA
 		\item FIGURE: Scale test image, proves the generated DPI calculation negates need to image with a ruler in frame
 		\end{enumerate}
 	\item File-size results in functional limits 
 		\begin{enumerate}
 		\item max filesize for TIFF files is 2.5 GB
+		\item the final file is compressed with lossless LZW compression
 		\item other lossless filetypes for larger images are not compatible with standard image viewers
-		\item workaround with NumPy memory maps and cropped viewing 
+		\item workaround with NumPy memory maps and cropped viewing but there isn't a solid large image viewer 
+		%% TODO: create a python script which opens the range of the image file but skips a lot of rows and columns 
+		%% 		 when opening a .dat file so that you can preview 
 		\end{enumerate}
 	\item RCNN
 		\begin{enumerate}
