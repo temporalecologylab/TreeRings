@@ -20,10 +20,6 @@ import numpy as np
 class Controller:
     def __init__(self):
         """Abstraction of the controller which moves the gantry, gets information from the GUI, operates the camera, and determines when to stitch.
-
-        Args:
-            image_width_mm (float): Initial image width
-            image_height_mm (float): Initial image height
         """
         #Settings for capturing images from multiple distances
         # self.n_images = 11 #make sure you're not going faster than the frame rate of the GStreamer feed... 
@@ -229,94 +225,19 @@ class Controller:
 
                 self._gantry.block_for_jog()
                 coordinates.append(self._gantry.get_xyz())
-                img_filenames = self.capture_images_multiple_distances(d, n_images, self._gantry.feed_rate_z, height_range, self.acceleration_buffer, row, col)
+                img_filenames = self.capture_images_multiple_z(d, n_images, self._gantry.feed_rate_z, height_range, self.acceleration_buffer, row, col)
                 focus_queue.put(img_filenames)
                 img_num += 1
 
                 elapsed_time = time.time() - start_stack
                 progress_callback((elapsed_time, img_num, rows*cols))
             
-
             pid_queue.task_done() # pretty sure we don't need this 
             focus_queue.put([-1])
             break
         
-            
-            # for row in range(rows):
-            #     if stop_capture.is_set():
-            #         break
-            #     # for last column, we only want to take photo, not move.
-            #     for col in range(cols - 1):
-            #         start_stack = time.time()
-            #         # Odd rows go left
-            #         if stop_capture.is_set():
-            #             break
-                    
-            #         current_col = None
-            #         if row % 2 == 1:
-            #             current_col = cols - col - 1
-            #             coordinates.append(self._gantry.get_xyz())
-            #             imgs = self.capture_images_multiple_distances(d, n_images, self._gantry.feed_rate_z, height_range, self.acceleration_buffer, row, current_col, z_start)
-            #             pid_lock.acquire()
-            #             self.jog_relative_x(-x_dist)
-            #             pid_lock.release()
-            #         # Even rows go right
-            #         else:
-            #             current_col = col
-            #             coordinates.append(self._gantry.get_xyz())
-            #             imgs = self.capture_images_multiple_distances(d, n_images, self._gantry.feed_rate_z, height_range, self.acceleration_buffer, row, current_col, z_start)
-            #             pid_lock.acquire()
-            #             self.jog_relative_x(x_dist)
 
-            #             pid_lock.release()
-
-            #         focus_queue.put(imgs)
-
-            #         update_z = pid_queue.get()
-            #         log.info(f"z move for update {update_z}")
-            #         z_start+=update_z
-            #         pid_queue.task_done()
-
-            #         # Allow for PID calculations to continue while x is still jogging. Imagine a very large x jog which takes a  while.
-            #         self._gantry.block_for_jog()
-            #         img_num=img_num+1
-            #         elapsed_time = time.time() - start_stack
-            #         progress_callback((elapsed_time, img_num, rows*cols))
-
-            #     start_stack = time.time()
-            #     # Take final photo in row before jogging down
-            #     if stop_capture.is_set():
-            #         break
-                
-            #     if row % 2 == 1:
-            #         # imgs = self.capture_images_multiple_distances(0.1, z_steps, row, 0)
-            #         current_col = 0
-            #         coordinates.append(self._gantry.get_xyz())
-            #         imgs = self.capture_images_multiple_distances(d, n_images, self._gantry.feed_rate_z, height_range, self.acceleration_buffer, row, current_col, z_start)
-
-            #     else:
-            #         # imgs = self.capture_images_multiple_distances(0.05, z_steps, row, cols - 1)
-            #         current_col = cols - 1
-            #         coordinates.append(self._gantry.get_xyz())
-
-            #         imgs = self.capture_images_multiple_distances(d, n_images, self._gantry.feed_rate_z, height_range, self.acceleration_buffer, row, current_col, z_start)
-            #     focus_queue.put(imgs)
-
-            #     pid_lock.acquire()    
-            #     self.jog_relative_y(-y_dist)
-            #     pid_lock.release()
-
-            #     update_z = pid_queue.get()
-            #     log.info(f"z move for update {update_z}")
-            #     z_start += update_z
-            #     pid_queue.task_done()
-
-            #     self._gantry.block_for_jog()
-            #     img_num=img_num+1
-            #     elapsed_time = time.time() - start_stack
-            #     progress_callback((elapsed_time, img_num, rows*cols))    
-
-    def capture_images_multiple_distances(self, d: str, image_count: int, feed_rate: int, r: float, acceleration_buffer:float, row:int, col:int):
+    def capture_images_multiple_z(self, d: str, image_count: int, feed_rate: int, r: float, acceleration_buffer:float, row:int, col:int):
         """A method to move the camera through a Z range to allow for multiple images to be taken. This implementation is designed to reduce motion blur by taking advantage of a slow feed rate and avoiding a deceleration then sleep cycle to get an in focus image.
 
         Args:
@@ -330,7 +251,6 @@ class Controller:
 
         """
         # adding absolute jogging to start point because there is slight stochasticity between relative jogs. Resulting in drift
-        _, _, z_start = self._gantry.get_xyz()
 
         image_filenames = []
 
@@ -366,6 +286,52 @@ class Controller:
 
         return image_filenames
     
+    def capture_images_multiple_x(self, d:str, image_count: int, feed_rate: int, r: float, acceleration_buffer:float):
+        """Aligning cores in the center of the field of view of the camera. Used to counteract the non zero error when jogging with the machine. Designed to run once per core. 
+
+        Args:
+            d (str): Directory of where to save frames
+            image_count (int): How many images do you want to take throughout the range
+            feed_rate (int): What is the feed rate of the Z-axis in mm/min
+            r (float): The distance in mm between the first and last image.
+            acceleration_buffer (float): Extra distance beyond the range to allow for the x-axis to reach constant velocity
+        """
+        # Assume that the machine has already jogged to the origin of the core (X0, Y0, Z0)
+        # adding absolute jogging to start point because there is slight stochasticity between relative jogs. Resulting in drift
+        image_filenames = []
+
+        time_between_photos_s = r / feed_rate * 60 / image_count # mm / (mm / min) * (s / min) is the dim analysis for units of seconds
+        time_zero_acceleration_s = acceleration_buffer / feed_rate * 60
+
+        # Jog to the top of the range + acceleration buffer
+        x_min = (r / 2) + acceleration_buffer
+        self.jog_relative_x(x_min)
+        self._gantry.block_for_jog()
+
+        time.sleep(0.5)  # sleep to prevent excessive vibration
+
+        # Jog to the x_max of the range. Begin taking photos after exiting the acceleration buffer zone
+        x_max = -1 * (r + (acceleration_buffer * 2))
+        self.jog_relative_x(x_max)
+        # Sleep until outside of the acceleration
+        time.sleep(time_zero_acceleration_s)
+        
+        # First photo at the x_min of the range 
+        for i in range(image_count):
+            file_location = f"{d}/frame_alignment_{i}.tiff"
+            image_filenames.append(file_location)
+            self.camera.save_frame(file_location)
+            time.sleep(time_between_photos_s)
+        
+        # This might take a while so do not send the next jog until we finish the previous
+        self._gantry.block_for_jog()
+        # Return to original location
+        self.jog_relative_x(-1 * x_max / 2)
+        self._gantry.block_for_jog()        
+
+        return image_filenames
+        
+
     def create_metadata(self, cookie: cookie.Cookie, elapsed_time: float):
         """Create metadata for the sample.
 
