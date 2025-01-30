@@ -60,8 +60,7 @@ class Focus:
                 log.info("Background detected, ignore focus index score")
             focus_queue.task_done()
             pid_lock.release()
-	    
-        
+    
     def compute_variance(self, image):
         # adapted from macro info at https://imagejdocu.list.lu/macro/normalized_variance
         mean = np.mean(image)
@@ -71,12 +70,12 @@ class Focus:
         normVar = b/(height * width * mean)
         return normVar
 
-    def best_focused_image(self, images):
+    def best_focused_image(self, image_filenames):
         best_image_filepath = None
         best_var = 0
         vars = []
 
-        for image_name in images:
+        for image_name in image_filenames:
             image = cv2.imread(image_name, cv2.IMREAD_GRAYSCALE)
             if type(image) == np.ndarray:
                 var = self.compute_variance(image)
