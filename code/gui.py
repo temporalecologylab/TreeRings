@@ -389,7 +389,7 @@ class App(Gtk.Window):
     def cb_add_sample_dialog(self, widget):
         width = int(self.entry_width_sample.get_text())
         height = int(self.entry_height_sample.get_text())
-        overlap, species, id1, id2, notes = self.show_metadata_dialog()
+        overlap, species, id1, id2, notes, is_core = self.show_metadata_dialog()
         if species == False:
             return
         if overlap == '':
@@ -399,7 +399,7 @@ class App(Gtk.Window):
             species = species.replace(" ", "_")
             id1 = id1.replace(" ", "_")
             id2 = id2.replace(" ", "_")
-        self.controller.add_sample(width, height, overlap, species, id1, id2, notes)
+        self.controller.add_sample(width, height, overlap, species, id1, id2, notes, is_core)
         log.info("Adding Sample \nW: {}\nH: {}\nO: {}\nS:  {}\nID1:  {}\nID2:  {}\nNotes:  {}\n".format(width, height, overlap, species, id1, id2, notes))
     
     def show_metadata_dialog(self):
@@ -420,6 +420,7 @@ class App(Gtk.Window):
         id2_label = Gtk.Label(label="ID 2")
         id2_entry = Gtk.Entry()
         notes_label = Gtk.Label(label="Notes")
+        is_core_button = Gtk.CheckButton(label = "Core Sample")
         
         #Create larger text box for notes 
         text_view = Gtk.TextView()
@@ -440,6 +441,7 @@ class App(Gtk.Window):
         box.add(overlap_entry)
         box.add(notes_label)
         box.add(notes_window)
+        box.add(is_core_button)
 
         species_label.show()
         species_entry.show()
@@ -451,9 +453,10 @@ class App(Gtk.Window):
         overlap_entry.show()
         notes_label.show()
         notes_window.show_all()
+        is_core_button.show()
 
-        overlap_entry.set_text("50")
-
+        overlap_entry.set_text("{}".format(self.config["gui"]["DEFAULT_PERCENT_OVERLAP"]))
+        is_core_button.set_active(True) #default to core
         # Run the dialog and capture the response
         response = dialog.run()
 
@@ -464,6 +467,7 @@ class App(Gtk.Window):
             id2 = id2_entry.get_text()
             buffer = text_view.get_buffer()
             notes = buffer.get_text(buffer.get_start_iter(), buffer.get_end_iter(), True)
+            is_core = is_core_button.get_active()
             log.info("Adding Sample")
         else:
             overlap = False
@@ -471,10 +475,11 @@ class App(Gtk.Window):
             id1 =  False
             id2 = False
             notes = False
+            is_core = False
             log.info("Cancel Sample Add")
 
         dialog.destroy()
-        return overlap, species, id1, id2, notes
+        return overlap, species, id1, id2, notes, is_core
     
     def on_zoom_combo_changed(self, combo):
         zoom_size_dict = {
