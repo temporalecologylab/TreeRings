@@ -106,7 +106,7 @@ class Controller:
 
             start_time = time.time()
         
-            gantry_thread = Thread(target=self.capture_grid_photos, args=(sample.coordinates, sample.directory, sample.targets_top, sample.targets_bot, focus_queue, pid_queue, pid_lock, sample.rows, sample.cols, self.n_images, self.height_range, progress_callback, stop_capture))
+            gantry_thread = Thread(target=self.capture_grid_photos, args=(sample.coordinates, sample.directory, sample.targets_top, sample.targets_bot, focus_queue, pid_queue, pid_lock, sample.rows, sample.cols, self.n_images, self.height_range, progress_callback, stop_capture, sample.is_core))
             focus_thread = Thread(target=self.focus.find_focus, args=(focus_queue, pid_queue, pid_lock, sample.directory, sample.nvar, sample.focus_index, sample.background, sample.background_std))
             gantry_thread.start()
             focus_thread.start()
@@ -218,9 +218,11 @@ class Controller:
 
                     # If the sample is a vertically aligned core, try to center the core in the FOV on the first 
                     if is_core and is_vertical:
+                        log.info("Core centering procedure start.")
                         self._gantry.block_for_jog()
-                        r = 5
-                        filenames = self.capture_images_multiple_x(d, n_images, self._gantry.feed_rate_z, r, self.acceleration_buffer)
+                        r = self.config["controller"]["CORE_CENTERING_RANGE"] #5
+                        n_images_centering = self.config["controller"]["N_IMAGES_CORE_CENTERING"]
+                        filenames = self.capture_images_multiple_x(d, n_images_centering, self._gantry.feed_rate_z, r, self.acceleration_buffer)
                         self.recenter_core_naive(filenames, r, self._gantry.feed_rate_z)
 
                 # Jog x and y and allow PID to handle the Z
@@ -350,6 +352,7 @@ class Controller:
         self._gantry.block_for_jog()
         # Return to original location
         self.jog_relative_x(-1 * (r / 2 + acceleration_buffer), feed=feed_rate)
+        log.info("Jog to original location.")
         self._gantry.block_for_jog()        
 
         return image_filenames
@@ -367,8 +370,9 @@ class Controller:
         i = filenames.index(focused_filename)
         i_middle = len(filenames) // 2 # guaranteed to be middle because n_images must be odd
         damper = 0.75
-        self.jog_relative_x(((i - i_middle) / i_middle) * (r / 2) * damper, feed=feed) # max travel should be half of the range in either direction. Als
-        
+        d = ((i - i_middle) / i_middle) * (r / 2) * damper
+        self.jog_relative_x(d, feed=feed) # max travel should be half of the range in either direction. Als
+        log.info("Jog {} mm to recenter vertical core. i: {}, i_middle: {}".format(d, i, i_middle))
 
     def create_metadata(self, sample: sample.Sample, elapsed_time: float):
         """Create metadata for the sample.
@@ -395,6 +399,7 @@ class Controller:
             "image_crop_h": self.camera.crop_h,
             "image_crop_w": self.camera.crop_w,
             "percent_overlap": sample.percent_overlap,
+            "is_core": sample.is_core,
             "sample_height_mm": sample.height,
             "sample_width_mm":  sample.width,
             "camera_pixels": pixels,
@@ -573,7 +578,7 @@ class Controller:
     
     #### SAMPLE METHODS ####
 
-    def add_sample(self, width: float, height: float, overlap: int, species: str, id1: str, id2: str, notes: str):
+    def add_sample(self, width: float, height: float, overlap: int, species: str, id1: str, id2: str, notes: str, is_core: bool):
         """Callback for GUI to add a sample
 
         Args:
@@ -584,6 +589,7 @@ class Controller:
             id1 (str): ID1 for sample
             id2 (str): ID2 for sample
             notes (str): Notes for sample
+            is_core (bool): Is the sample a core? 
         """
         time.sleep(1) # guarantee the position monitor is updated
         center_x, center_y, center_z = self._gantry.get_xyz()
@@ -599,7 +605,7 @@ class Controller:
             id2 = "na"
 
         #path_name = self.cb_capture_image()
-        ck = sample.Sample(width, height, species, id1, id2, notes, self.image_width_mm, self.image_height_mm, overlap, center_x, center_y, center_z)
+        ck = sample.Sample(width, height, species, id1, id2, notes, self.image_width_mm, self.image_height_mm, is_core, percent_overlap=overlap, x=center_x, y=center_y, z=center_z)
         self.samples.append(ck)
 
     def get_samples(self):
