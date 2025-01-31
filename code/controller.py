@@ -157,8 +157,6 @@ class Controller:
         Args:
             frame_dir (str): Directory of where the frames are. 
         """
-        # sizes = [0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
-        # sizes = self.config["controller"]["STITCH_SIZES"]
         for size in self.stitch_sizes:
             st = stitcher.Stitcher(frame_dir) 
             #st.stitch(resize=size)
@@ -176,7 +174,7 @@ class Controller:
                 st.delete_dats()
                 del st
     
-    def capture_grid_photos(self, coordinates: list, d: Path, targets_top:np.array, targets_bot: np.array, focus_queue: queue.Queue, pid_queue: queue.Queue, pid_lock, rows:int, cols:int, n_images: int, height_range: float, progress_callback: Callable, stop_capture: Event):
+    def capture_grid_photos(self, coordinates: list, d: Path, targets_top:np.array, targets_bot: np.array, focus_queue: queue.Queue, pid_queue: queue.Queue, pid_lock, rows:int, cols:int, n_images: int, height_range: float, progress_callback: Callable, stop_capture: Event, is_core: bool = True, is_vertical: bool = True):
         """Command to traverse the sample and capture an image at each location. 
 
         Args:
@@ -196,6 +194,8 @@ class Controller:
             height_range (float): The range between the maximum and minimum z distance when trying to find an in focus image
             progress_callback (Callable): GUI widget to update progress bar
             stop_capture (Event): Event to stop capturing when possible
+            is_core (bool): Is the sample a core? 
+            is_vertical (bool): Only matters if is_core == True. Is the core vertically aligned?
         """
         # for loop capture
         # Change feed rate back to being slow
@@ -203,6 +203,7 @@ class Controller:
         while True and not stop_capture.is_set():
             img_num = 0
 
+            # Targets are XYZ coordinates to jog to to capture an image.
             targets = np.vstack((targets_top, targets_bot))
             for target in targets:
                 start_stack = time.time()
@@ -211,10 +212,31 @@ class Controller:
 
                 x, y, z, row, col = target[0], target[1], target[2], int(target[3]), int(target[4])
 
-                if img_num == 0 or img_num == len(targets_top):
+                # Jog to the origin of the core/cookie
+                if img_num == 0:
                     self._gantry.jog_absolute_xyz(x, y, z)
+
+                    # If the sample is a vertically aligned core, try to center the core in the FOV on the first 
+                    if is_core and is_vertical:
+                        self._gantry.block_for_jog()
+                        r = 5
+                        filenames = self.capture_images_multiple_x(d, n_images, self._gantry.feed_rate_z, r, self.acceleration_buffer)
+                        self.recenter_core_naive(filenames, r, self._gantry.feed_rate_z)
+
+                # Jog x and y and allow PID to handle the Z
+                elif img_num == len(targets_top):
+                    
+                    if is_core and is_vertical:
+                        self._gantry.jog_absolute_y(y)
+                        self._gantry.jog_absolute_z(z)
+                    else:
+                        self._gantry.jog_absolute_xyz(x,y,z)
+
                 else:
-                    self._gantry.jog_absolute_xy(x, y)
+                    if is_core and is_vertical:
+                        self._gantry.jog_absolute_y(y)
+                    else:
+                        self._gantry.jog_absolute_xy(x, y)
                     pid_lock.acquire()
                     update_z = pid_queue.get()
                     pid_lock.release()
@@ -239,6 +261,7 @@ class Controller:
 
     def capture_images_multiple_z(self, d: str, image_count: int, feed_rate: int, r: float, acceleration_buffer:float, row:int, col:int):
         """A method to move the camera through a Z range to allow for multiple images to be taken. This implementation is designed to reduce motion blur by taking advantage of a slow feed rate and avoiding a deceleration then sleep cycle to get an in focus image.
+            This is a key component for naive image focusing. 
 
         Args:
             d (str): Directory of where to save frames
@@ -288,7 +311,7 @@ class Controller:
     
     def capture_images_multiple_x(self, d:str, image_count: int, feed_rate: int, r: float, acceleration_buffer:float):
         """Aligning cores in the center of the field of view of the camera. Used to counteract the non zero error when jogging with the machine. Designed to run once per core. 
-
+            This is how naive core centering would work but this could be improved with an informed approach. 
         Args:
             d (str): Directory of where to save frames
             image_count (int): How many images do you want to take throughout the range
@@ -304,15 +327,15 @@ class Controller:
         time_zero_acceleration_s = acceleration_buffer / feed_rate * 60
 
         # Jog to the top of the range + acceleration buffer
-        x_min = (r / 2) + acceleration_buffer
-        self.jog_relative_x(x_min)
+        x_min = -(r / 2) - acceleration_buffer
+        self.jog_relative_x(x_min, feed=feed_rate)
         self._gantry.block_for_jog()
 
         time.sleep(0.5)  # sleep to prevent excessive vibration
 
         # Jog to the x_max of the range. Begin taking photos after exiting the acceleration buffer zone
-        x_max = -1 * (r + (acceleration_buffer * 2))
-        self.jog_relative_x(x_max)
+        x_max = r + (acceleration_buffer * 2)
+        self.jog_relative_x(x_max, feed=feed_rate)
         # Sleep until outside of the acceleration
         time.sleep(time_zero_acceleration_s)
         
@@ -326,10 +349,25 @@ class Controller:
         # This might take a while so do not send the next jog until we finish the previous
         self._gantry.block_for_jog()
         # Return to original location
-        self.jog_relative_x(-1 * x_max / 2)
+        self.jog_relative_x(-1 * (r / 2 + acceleration_buffer), feed=feed_rate)
         self._gantry.block_for_jog()        
 
         return image_filenames
+
+    def recenter_core_naive(self,  filenames: list, r: float, feed:int = None):
+        """After finding the best focused file from capture_images_multiple_x, center the core naively.
+
+        Args:
+            filenames (list): Filenames of all of the images captured at multiple x locations.
+            r (float): The distance in mm between the first and last image.
+            feed (int): Feed rate in mm/min.
+            acceleration_buffer (float): Extra distance beyond the range to allow for the x-axis to reach constant velocity
+        """
+        focused_filename, _, _ = self.focus.best_focused_image(filenames, delete = True)
+        i = filenames.index(focused_filename)
+        i_middle = len(filenames) // 2 # guaranteed to be middle because n_images must be odd
+        damper = 0.75
+        self.jog_relative_x(((i - i_middle) / i_middle) * (r / 2) * damper, feed=feed) # max travel should be half of the range in either direction. Als
         
 
     def create_metadata(self, cookie: cookie.Cookie, elapsed_time: float):
@@ -375,69 +413,77 @@ class Controller:
 
     #### JOG METHODS ####
 
-    def jog_relative_x(self, dist: float):
+    def jog_relative_x(self, dist: float, feed:int = None):
         """Abstraction of gantry to jog in the x direction relative to its current position.
 
         Args:
             dist (float): Distance in mm to jog. Negative and positive result in L/R 
+            feed (int): Feed rate in mm/min.
         """
-        self._gantry.jog_relative_x(dist)
+        self._gantry.jog_relative_x(dist, feed)
 
-    def jog_relative_y(self, dist: float):
+    def jog_relative_y(self, dist: float, feed:int = None):
         """Abstraction of gantry to jog in the Y direction relative to its current position.
 
         Args:
             dist (float): Distance in mm to jog. Negative and positive result in Up/Down
+            feed (int): Feed rate in mm/min.
         """
-        self._gantry.jog_relative_y(dist)
+        self._gantry.jog_relative_y(dist, feed)
 
-    def jog_relative_z(self, dist: float):
+    def jog_relative_z(self, dist: float, feed:int = None):
         """Abstraction of gantry to jog in the Z direction relative to its current position.
 
         Args:
             dist (float): Distance in mm to jog. Negative and positive result in Up/Down
+            feed (int): Feed rate in mm/min.
         """
-        self._gantry.jog_relative_z(dist)
+        self._gantry.jog_relative_z(dist, feed)
     
-    def jog_absolute_x(self, pos: float):
+    def jog_absolute_x(self, pos: float, feed:int = None):
         """Abstraction of gantry to jog in the X direction to an absolute coordinate
 
         Args:
             pos (float): Location to jog to in coordinate system
+            feed (int): Feed rate in mm/min.
         """
-        self._gantry.jog_absolute_x(pos)
+        self._gantry.jog_absolute_x(pos, feed)
 
-    def jog_absolute_y(self, pos: float):
+    def jog_absolute_y(self, pos: float, feed:int = None):
         """Abstraction of gantry to jog in the Y direction to an absolute coordinate
 
         Args:
             pos (float): Location to jog to in coordinate system
+            feed (int): Feed rate in mm/min.
         """
-        self._gantry.jog_absolute_y(pos)
+        self._gantry.jog_absolute_y(pos, feed)
 
-    def jog_absolute_z(self, pos: float):
+    def jog_absolute_z(self, pos: float, feed:int = None):
         """Abstraction of gantry to jog in the Z direction to an absolute coordinate
 
         Args:
             pos (float): Location to jog to in coordinate system
+            feed (int): Feed rate in mm/min.
         """
-        self._gantry.jog_absolute_z(pos)
+        self._gantry.jog_absolute_z(pos, feed)
 
-    def jog_absolute_xy(self, x: float, y: float):
+    def jog_absolute_xy(self, x: float, y: float, feed:int = None):
         """Abstraction of gantry to jog in the X and Y direction to an absolute coordinate. Executes both at the same time
 
         Args:
             pos (float): Location to jog to in coordinate system
+            feed (int): Feed rate in mm/min.
         """
-        self._gantry.jog_absolute_xy(x, y)
+        self._gantry.jog_absolute_xy(x, y, feed)
 
-    def jog_absolute_xyz(self, x: float, y: float, z: float):
+    def jog_absolute_xyz(self, x: float, y: float, z: float, feed:int = None):
         """Abstraction of gantry to jog in the X,Y,Z direction to an absolute coordinate. Executes all simultaneously
 
         Args:
             pos (float): Location to jog to in coordinate system
+            feed (int): Feed rate in mm/min.
         """
-        self._gantry.jog_absolute_xyz(x, y, z)
+        self._gantry.jog_absolute_xyz(x, y, z, feed)
 
     def set_feed_rate(self, mode: int):
         """Setting feed rate between fast and slow
