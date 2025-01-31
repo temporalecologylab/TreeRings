@@ -21,10 +21,6 @@ class Gantry:
         self.feed_rate_z = self.config["gantry"]["FEED_RATE_DEFAULT_Z"]
         self.feed_rate_xy = self.config["gantry"]["FEED_RATE_DEFAULT_XY"] 
 
-        # sample information
-        self.cookie_samples = []
-        self.core_samples = []
-
         self.s = None
         self.stop_threads = False
 

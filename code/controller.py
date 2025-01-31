@@ -1,6 +1,6 @@
 import gantry
 import focus
-import cookie
+import sample
 import camera
 import stitcher
 import logging as log
@@ -35,7 +35,7 @@ class Controller:
         self.fast_feed_rate_z = self.config["controller"]["FAST_FEED_RATE_Z"]
     
         #Objects
-        self.cookies = []
+        self.samples = []
         self._gantry = gantry.Gantry()
         self.camera = camera.Camera()
         self.focus = focus.Focus(delete_flag=True, setpoint=math.floor(self.n_images / 2))
@@ -80,12 +80,12 @@ class Controller:
 
     #### SERPENTINE METHODS ####
     
-    def capture_cookie(self, cookie: cookie.Cookie, progress_callback: Callable, stop_capture: Event):
+    def capture_sample(self, sample: sample.Sample, progress_callback: Callable, stop_capture: Event):
         """Abstraction to execute a capture sequence. This involves moving the the top left of the sample, traversing in a serpentining pattern 
         across the dimensions of the sample. At each step in the grid, multiple images are taken and only the most in focus is kept. 
 
         Args:
-            cookie (cookie.Cookie): Instance of a sample to be captured
+            sample (sample.Sample): Instance of a sample to be captured
             progress_callback (Callable): GUI Callback to update progress bar 
             stop_capture (Event): Event to stop capture after the current image sequence 
         """
@@ -98,16 +98,16 @@ class Controller:
             self.focus.set_setpoint(round(self.n_images/2))
 
             #set directories
-            species = cookie.species
-            id1 = cookie.id1
-            id2 = cookie.id2
+            species = sample.species
+            id1 = sample.id1
+            id2 = sample.id2
 
-            self.set_directory(cookie.directory)
+            self.set_directory(sample.directory)
 
             start_time = time.time()
         
-            gantry_thread = Thread(target=self.capture_grid_photos, args=(cookie.coordinates, cookie.directory, cookie.targets_top, cookie.targets_bot, focus_queue, pid_queue, pid_lock, cookie.rows, cookie.cols, self.n_images, self.height_range, progress_callback, stop_capture))
-            focus_thread = Thread(target=self.focus.find_focus, args=(focus_queue, pid_queue, pid_lock, cookie.directory, cookie.nvar, cookie.focus_index, cookie.background, cookie.background_std))
+            gantry_thread = Thread(target=self.capture_grid_photos, args=(sample.coordinates, sample.directory, sample.targets_top, sample.targets_bot, focus_queue, pid_queue, pid_lock, sample.rows, sample.cols, self.n_images, self.height_range, progress_callback, stop_capture))
+            focus_thread = Thread(target=self.focus.find_focus, args=(focus_queue, pid_queue, pid_lock, sample.directory, sample.nvar, sample.focus_index, sample.background, sample.background_std))
             gantry_thread.start()
             focus_thread.start()
             
@@ -118,34 +118,34 @@ class Controller:
             end_time = time.time()
             elapsed_time = end_time - start_time
 
-            self.create_metadata(cookie, elapsed_time)
+            self.create_metadata(sample, elapsed_time)
             
             return
             #stop_capture.set()
 
-    def capture_all_cookies(self, progress_callback: Callable, stop_capture: Event):
-        """Callable for the GUI to iterate through all cookies. For multiple cookie capture.
+    def capture_all_samples(self, progress_callback: Callable, stop_capture: Event):
+        """Callable for the GUI to iterate through all samples. For multiple sample capture.
 
         Args:
             progress_callback (Callable): GUI widget to update progress bar
             stop_capture (Event): Event to stop capture as soon as possible
         """
         while not stop_capture.is_set():
-            for i in range(len(self.cookies)):
-                cookie = self.cookies.pop(-1)
-                width_est_pixels = cookie.width / cookie.image_width_mm * self.camera.w_pixels 
-                height_est_pixels = cookie.height / cookie.image_height_mm * self.camera.h_pixels
+            for i in range(len(self.samples)):
+                sample = self.samples.pop(-1)
+                width_est_pixels = sample.width / sample.image_width_mm * self.camera.w_pixels 
+                height_est_pixels = sample.height / sample.image_height_mm * self.camera.h_pixels
                 max_filesize_est = width_est_pixels * height_est_pixels * 3 / 10e6 # megabytes
                 log.info("MAX FILE SIZE ESTIMATE {} MB".format(round(max_filesize_est, 2)))
-                progress_callback((True, True, "{}_{}_{}".format(cookie.species, cookie.id1, cookie.id2)))
-                # self.navigate_to_cookie_tl(cookie)
-                self.capture_cookie(cookie, progress_callback, stop_capture)
+                progress_callback((True, True, "{}_{}_{}".format(sample.species, sample.id1, sample.id2)))
+
+                self.capture_sample(sample, progress_callback, stop_capture)
                 
                 # Only stitch if the capture complete successfully
                 if not stop_capture.is_set():
                     print('stitching frames')
-                    self.stitch_frames(cookie.directory)
-                if len(self.cookies) == 0:
+                    self.stitch_frames(sample.directory)
+                if len(self.samples) == 0:
                     stop_capture.set()
 
             return
@@ -212,7 +212,7 @@ class Controller:
 
                 x, y, z, row, col = target[0], target[1], target[2], int(target[3]), int(target[4])
 
-                # Jog to the origin of the core/cookie
+                # Jog to the origin of the sample
                 if img_num == 0:
                     self._gantry.jog_absolute_xyz(x, y, z)
 
@@ -269,8 +269,8 @@ class Controller:
             feed_rate (int): What is the feed rate of the Z-axis in mm/min
             r (float): The distance in mm between the first and last image.
             acceleration_buffer (float): Extra distance beyond the range to allow for the z-axis to reach constant velocity
-            row (int): Row location of where on the cookie grid the images are in 
-            col (int): Col location of where on the cookie grid the images are in 
+            row (int): Row location of where on the sample grid the images are in 
+            col (int): Col location of where on the sample grid the images are in 
 
         """
         # adding absolute jogging to start point because there is slight stochasticity between relative jogs. Resulting in drift
@@ -370,42 +370,42 @@ class Controller:
         self.jog_relative_x(((i - i_middle) / i_middle) * (r / 2) * damper, feed=feed) # max travel should be half of the range in either direction. Als
         
 
-    def create_metadata(self, cookie: cookie.Cookie, elapsed_time: float):
+    def create_metadata(self, sample: sample.Sample, elapsed_time: float):
         """Create metadata for the sample.
 
         Args:
-            cookie (cookie.Cookie): Instance of the sample that was imaged
+            sample (sample.Sample): Instance of the sample that was imaged
             elapsed_time (float): Time to capture 
         """
         pixels = self.camera.h_pixels * self.camera.w_pixels
-        dpi = self.camera.w_pixels/cookie.image_width_mm * 25.4  
+        dpi = self.camera.w_pixels/sample.image_width_mm * 25.4  
         metadata = {
-            "species": cookie.species,
-            "rows": cookie.rows,
-            "cols": cookie.cols,
-            "id1": cookie.id1,
-            "id2": cookie.id2,
+            "species": sample.species,
+            "rows": sample.rows,
+            "cols": sample.cols,
+            "id1": sample.id1,
+            "id2": sample.id2,
             "resolution_h": self.camera.h_pixels,
             "resolution_w": self.camera.w_pixels,
             "elapsed_time": elapsed_time,
             "DPI": int(dpi), # choosing ceil would also be an option but either way they introduce close to random error across all samples
-            "photo_count": cookie.rows * cookie.cols,
+            "photo_count": sample.rows * sample.cols,
             "image_height_mm": self.image_height_mm,
             "image_width_mm": self.image_width_mm,
             "image_crop_h": self.camera.crop_h,
             "image_crop_w": self.camera.crop_w,
-            "percent_overlap": cookie.percent_overlap,
-            "cookie_height_mm": cookie.height,
-            "cookie_width_mm":  cookie.width,
+            "percent_overlap": sample.percent_overlap,
+            "sample_height_mm": sample.height,
+            "sample_width_mm":  sample.width,
             "camera_pixels": pixels,
-            "notes": cookie.notes,
-            "center": cookie.get_center_location(),
-            "top_left": cookie.get_top_left_location(),
-            "coordinates": cookie.coordinates,
-            "background": cookie.background,
-            "background_std": cookie.background_std,
-            "focus_index": cookie.focus_index,
-            "normalized_variance": cookie.nvar  
+            "notes": sample.notes,
+            "center": sample.get_center_location(),
+            "top_left": sample.get_top_left_location(),
+            "coordinates": sample.coordinates,
+            "background": sample.background,
+            "background_std": sample.background_std,
+            "focus_index": sample.focus_index,
+            "normalized_variance": sample.nvar  
         }
 
         with open ("{}/metadata.json".format(self.directory), "w", encoding="utf-8") as f:
@@ -500,34 +500,34 @@ class Controller:
             self._gantry.feed_rate_xy = self.fast_feed_rate_xy
             self._gantry.feed_rate_z = self.fast_feed_rate_z
 
-    def navigate_to_cookie_tl(self, cookie: cookie.Cookie):
-        """Navigate to the to the top left of a cookie
+    def navigate_to_sample_tl(self, sample: sample.Sample):
+        """Navigate to the to the top left of a sample
 
         Args:
-            cookie (cookie.Cookie): Instance of sample
+            sample (sample.Sample): Instance of sample
         """
-        x, y, z = cookie.get_top_left_location()
+        x, y, z = sample.get_top_left_location()
         self.jog_absolute_xyz(x, y, z)
 
-        log.info("Navigating to {}, X{}Y{}Z{}".format(cookie.species, x, y, z))
-        # Wait until we get to the cookie location
+        log.info("Navigating to {}, X{}Y{}Z{}".format(sample.species, x, y, z))
+        # Wait until we get to the sample location
         self._gantry.block_for_jog()
 
-    def traverse_cookie_boundary(self, cookie_width: float, cookie_height: float):
+    def traverse_sample_boundary(self, sample_width: float, sample_height: float):
         """Traverse the borders of the stitched field of view for sample setup purposes.
 
         Args:
-            cookie_width (float): Width of the sample
-            cookie_height (float): Height of the sample
+            sample_width (float): Width of the sample
+            sample_height (float): Height of the sample
         """
         
         try: 
             x, y, z = self._gantry.get_xyz()
 
-            l_x = x - (cookie_width / 2)
-            r_x = x + (cookie_width / 2)
-            b_y = y - (cookie_height/ 2)
-            t_y = y + (cookie_height / 2)
+            l_x = x - (sample_width / 2)
+            r_x = x + (sample_width / 2)
+            b_y = y - (sample_height/ 2)
+            t_y = y + (sample_height / 2)
 
             tl = (l_x, t_y)
             tr = (r_x, t_y)
@@ -551,7 +551,7 @@ class Controller:
             self.jog_absolute_xyz(x, y, z)
             self._gantry.block_for_jog()
         except:
-            log.info("cookie not defined")
+            log.info("sample not defined")
 
 
     #### CAMERA METHODS ####
@@ -571,9 +571,9 @@ class Controller:
         log.info("Saving {}".format(name))
         return name
     
-    #### COOKIE METHODS ####
+    #### SAMPLE METHODS ####
 
-    def add_cookie_sample(self, width: float, height: float, overlap: int, species: str, id1: str, id2: str, notes: str):
+    def add_sample(self, width: float, height: float, overlap: int, species: str, id1: str, id2: str, notes: str):
         """Callback for GUI to add a sample
 
         Args:
@@ -599,24 +599,24 @@ class Controller:
             id2 = "na"
 
         #path_name = self.cb_capture_image()
-        ck = cookie.Cookie(width, height, species, id1, id2, notes, self.image_width_mm, self.image_height_mm, overlap, center_x, center_y, center_z)
-        self.cookies.append(ck)
+        ck = sample.Sample(width, height, species, id1, id2, notes, self.image_width_mm, self.image_height_mm, overlap, center_x, center_y, center_z)
+        self.samples.append(ck)
 
-    def get_cookies(self):
-        """List cookies
+    def get_samples(self):
+        """List samples
 
         Returns:
-            list[cookie.Cookies]: List of the cookies for GUI usage
+            list[sample.Sample]: List of the samples for GUI usage
         """
-        return self.cookies
+        return self.samples
     
-    def set_cookies(self, cookies: list[cookie.Cookie]):
-        """Set the cookies attribute
+    def set_samples(self, samples: list[sample.Sample]):
+        """Set the samples attribute
 
         Args:
-            cookies (list[cookie.Cookie]): A list of cookie.Cookies
+            samples (list[sample.Sample]): A list of sample.Sample
         """
-        self.cookies=cookies
+        self.samples=samples
 
    #### GANTRY METHODS ####
 
