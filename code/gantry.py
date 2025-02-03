@@ -21,10 +21,6 @@ class Gantry:
         self.feed_rate_z = self.config["gantry"]["FEED_RATE_DEFAULT_Z"]
         self.feed_rate_xy = self.config["gantry"]["FEED_RATE_DEFAULT_XY"] 
 
-        # sample information
-        self.cookie_samples = []
-        self.core_samples = []
-
         self.s = None
         self.stop_threads = False
 
@@ -116,55 +112,88 @@ class Gantry:
         self.s.write(str.encode("{}\n".format(cmd))) # Send g-code block to grbl
         return read_response(self.s)
 
-    def jog_absolute_xyz(self, x, y, z) -> None:
-        cmd = "$J=G90 G21 X{} F{}".format(x, self.feed_rate_xy)
+    def jog_absolute_xyz(self, x, y, z, feed = None) -> None:
+        if feed is not None:
+            feed_rate = feed
+        else:
+            feed_rate = self.feed_rate_xy
+
+        cmd = "$J=G90 G21 X{} F{}".format(x, feed_rate)
         self._send_command(cmd)
-        cmd = "$J=G90 G21 Y{} F{}".format(y, self.feed_rate_xy)
+        cmd = "$J=G90 G21 Y{} F{}".format(y, feed_rate)
         self._send_command(cmd)
-        cmd = "$J=G90 G21 Z{} F{}".format(z, self.feed_rate_xy)
+        cmd = "$J=G90 G21 Z{} F{}".format(z, feed_rate)
         self._send_command(cmd)
         
-    def jog_absolute_xy(self, x, y) -> None:
-        cmd = "$J=G90 G21 X{} Y{} F{}".format(x, y, self.feed_rate_xy)
+    def jog_absolute_xy(self, x, y, feed = None) -> None:
+        if feed is not None:
+            feed_rate = feed
+        else:
+            feed_rate = self.feed_rate_xy
+        cmd = "$J=G90 G21 X{} Y{} F{}".format(x, y, feed_rate)
         self._send_command(cmd)
 
-    def jog_absolute_x(self, pos) -> None:
-        cmd = "$J=G90 G21 X{} F{}".format(pos, self.feed_rate_xy)
+    def jog_absolute_x(self, pos, feed = None) -> None:
+        if feed is not None:
+            feed_rate = feed
+        else:
+            feed_rate = self.feed_rate_xy
+        cmd = "$J=G90 G21 X{} F{}".format(pos, feed_rate)
         self._send_command(cmd)
 
-    def jog_absolute_y(self, pos) -> None:
-        cmd = "$J=G90 G21 Y{} F{}".format(pos, self.feed_rate_xy)
+    def jog_absolute_y(self, pos, feed = None) -> None:
+        if feed is not None:
+            feed_rate = feed
+        else:
+            feed_rate = self.feed_rate_xy
+        cmd = "$J=G90 G21 Y{} F{}".format(pos, feed_rate)
         self._send_command(cmd)
 
-    def jog_absolute_z(self, pos) -> None:
-        cmd = "$J=G90 G21 Z{} F{}".format(pos, self.feed_rate_z)
+    def jog_absolute_z(self, pos, feed = None) -> None:
+        if feed is not None:
+            feed_rate = feed
+        else:
+            feed_rate = self.feed_rate_z
+        cmd = "$J=G90 G21 Z{} F{}".format(pos, feed_rate)
         self._send_command(cmd)
 
-    def jog_relative_x(self, dist) -> None:
+    def jog_relative_x(self, dist, feed = None) -> None:
         '''
         Jog a distance (mm) from the current location in the x plane, NOT to an absolute position. 
         +dist moves to the +x
         -dist moves to the -x
         '''
-        cmd = "$J=G91 G21 X{} F{}".format(dist, self.feed_rate_xy)
+        if feed is not None:
+            feed_rate = feed
+        else:
+            feed_rate = self.feed_rate_xy
+        cmd = "$J=G91 G21 X{} F{}".format(dist, feed_rate)
         self._send_command(cmd)
 
-    def jog_relative_y(self, dist) -> None:
+    def jog_relative_y(self, dist, feed = None) -> None:
         '''
         Jog a distance (mm) from the current location in the y plane, NOT to an absolute position. 
         +dist moves to the +y
         -dist moves to the -y
         '''
-        cmd = "$J=G91 G21 Y{} F{}".format(dist, self.feed_rate_xy)
+        if feed is not None:
+            feed_rate = feed
+        else:
+            feed_rate = self.feed_rate_xy
+        cmd = "$J=G91 G21 Y{} F{}".format(dist, feed_rate)
         self._send_command(cmd)
 
-    def jog_relative_z(self, dist) -> None:
+    def jog_relative_z(self, dist, feed = None) -> None:
         '''
         Jog a distance (mm) from the current location in the z plane, NOT to an absolute position. 
         +dist moves to the +z
         -dist moves to the -z
         '''
-        cmd = "$J=G91 G21 Z{} F{}".format(dist, self.feed_rate_z)
+        if feed is not None:
+            feed_rate = feed
+        else:
+            feed_rate = self.feed_rate_z
+        cmd = "$J=G91 G21 Z{} F{}".format(dist, feed_rate)
         self._send_command(cmd)
 
     def jog_cancel(self) -> None:

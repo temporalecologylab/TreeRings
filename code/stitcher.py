@@ -139,9 +139,9 @@ class Stitcher:
         new_metadata["notes"]=self._metadata["notes"]
         new_metadata["camera_pixels"]=self._metadata["camera_pixels"]
         new_metadata["percent_overlap"]=self._metadata["percent_overlap"]
-        new_metadata["DPI"] = int((frame_shape[0] / self._metadata["image_height_mm"]) * 25.4) # fixing bug... cannot assume the overall mosaic height and cookie height can be related perfectly
-        new_metadata["cookie_height_mm"] = self._metadata["cookie_height_mm"]
-        new_metadata["cookie_width_mm"] = self._metadata["cookie_width_mm"]
+        new_metadata["DPI"] = int((frame_shape[0] / self._metadata["image_height_mm"]) * 25.4) # fixing bug... cannot assume the overall mosaic height and sample height can be related perfectly
+        new_metadata["sample_height_mm"] = self._metadata["sample_height_mm"]
+        new_metadata["sample_width_mm"] = self._metadata["sample_width_mm"]
         new_metadata["pixels_h"] = shape[0]
         new_metadata["pixels_w"] = shape[1]
         new_metadata["depth"] = shape[2]

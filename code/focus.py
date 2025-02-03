@@ -60,8 +60,7 @@ class Focus:
                 log.info("Background detected, ignore focus index score")
             focus_queue.task_done()
             pid_lock.release()
-	    
-        
+    
     def compute_variance(self, image):
         # adapted from macro info at https://imagejdocu.list.lu/macro/normalized_variance
         mean = np.mean(image)
@@ -71,12 +70,12 @@ class Focus:
         normVar = b/(height * width * mean)
         return normVar
 
-    def best_focused_image(self, images):
+    def best_focused_image(self, image_filenames, delete = False):
         best_image_filepath = None
         best_var = 0
         vars = []
 
-        for image_name in images:
+        for image_name in image_filenames:
             image = cv2.imread(image_name, cv2.IMREAD_GRAYSCALE)
             if type(image) == np.ndarray:
                 var = self.compute_variance(image)
@@ -87,7 +86,12 @@ class Focus:
             
         std = np.std(vars)
 
+        log.info(image_filenames)
+
+        if delete:
+            self.delete_unfocused(image_filenames)
         return best_image_filepath, std, vars
+        
 
     def delete_unfocused(self, images_to_delete):
         for file_name in images_to_delete:
@@ -110,3 +114,75 @@ class Focus:
 
     ''' pid moment:
         need to update from controller, methods go in focus? '''
+
+
+if __name__ == "__main__":
+
+    import glob
+    import matplotlib.pyplot as plt
+
+    filename_grep_1 = "C:\\code\\TreeRings\\code\\images_1\\image_*"
+    filename_grep_2 = "C:\\code\\TreeRings\\code\\images_2\\image_*"
+    filename_grep_3 = "C:\\code\\TreeRings\\code\\images_3\\image_*"
+    filename_grep_4 = "C:\\code\\TreeRings\\code\\images_4\\image_*"
+    filename_grep_5 = "C:\\code\\TreeRings\\code\\images_5\\image_*"
+
+    filenames = glob.glob(filename_grep_2)
+    # filenames.extend(glob.glob(filename_grep_2))
+    # filenames.extend(glob.glob(filename_grep_3))
+    # filenames.extend(glob.glob(filename_grep_4))
+    # filenames.extend(glob.glob(filename_grep_5))
+
+
+    def compute_variance(image):
+        # adapted from macro info at https://imagejdocu.list.lu/macro/normalized_variance
+        mean = np.mean(image)
+        width, height = image.shape
+        square_diff = (image - mean)**2
+        b = np.sum(square_diff)
+        normVar = b/(height * width * mean)
+        return normVar
+    
+    def horizontal_focus_distribution(filename, n_cols):
+        """Split a single image into n_cols and calculate the normalized variance for each column.
+
+        Args:
+            filename (_type_): Filename of the image to analyze.
+            n_cols (_type_): Number of columns to split the image into. Must be even to split correctly.
+        """
+        if n_cols % 2 == 1:
+            n_cols += 1
+
+        image = cv2.imread(filename, cv2.IMREAD_GRAYSCALE)
+        image = np.array(image) # seems like a silly conversion but is going to help with the math 
+        # plt.imshow(image)
+
+        # split the image into columns
+        columns = np.vsplit(image, n_cols)
+
+        best_var = 0
+        vars = []
+        for col in columns:
+            var = compute_variance(col)
+            vars.append(var)
+            if var > best_var:
+                best_var = var
+
+        return vars, best_var
+    
+
+        # calculate the normalized variance of each of the columns
+        
+    var_per_image = []
+    ids = []
+    for i, filename in enumerate(filenames):
+        image = cv2.imread(filename, cv2.IMREAD_GRAYSCALE)
+        vars, best_var = horizontal_focus_distribution(filename, 1)
+        var_per_image.append(vars[0])
+        ids.append(i)
+        print(filename)
+        # var_2.append(vars[1])
+    plt.bar(np.arange(len(var_per_image)), var_per_image)
+    # plt.plot(np.arange(len(var_2)), var_2, label = 2)
+    plt.legend()
+    plt.show()

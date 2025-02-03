@@ -18,7 +18,9 @@
             "SLOW_FEED_RATE_Z": 20,
             "FAST_FEED_RATE_XY": 1250,
             "FAST_FEED_RATE_Z": 150,
-            "MAX_FILE_SIZE_GB": 10
+            "MAX_FILE_SIZE_GB": 10,
+            "CORE_CENTERING_RANGE": 5,
+            "N_IMAGES_CORE_CENTERING": 9
         },
         "focus":
         {

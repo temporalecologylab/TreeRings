@@ -1,6 +1,6 @@
 import gantry
 import focus
-import cookie
+import sample
 import camera
 import stitcher
 import logging as log
@@ -20,10 +20,6 @@ import numpy as np
 class Controller:
     def __init__(self):
         """Abstraction of the controller which moves the gantry, gets information from the GUI, operates the camera, and determines when to stitch.
-
-        Args:
-            image_width_mm (float): Initial image width
-            image_height_mm (float): Initial image height
         """
         #Settings for capturing images from multiple distances
         # self.n_images = 11 #make sure you're not going faster than the frame rate of the GStreamer feed... 
@@ -39,7 +35,7 @@ class Controller:
         self.fast_feed_rate_z = self.config["controller"]["FAST_FEED_RATE_Z"]
     
         #Objects
-        self.cookies = []
+        self.samples = []
         self._gantry = gantry.Gantry()
         self.camera = camera.Camera()
         self.focus = focus.Focus(delete_flag=True, setpoint=math.floor(self.n_images / 2))
@@ -84,12 +80,12 @@ class Controller:
 
     #### SERPENTINE METHODS ####
     
-    def capture_cookie(self, cookie: cookie.Cookie, progress_callback: Callable, stop_capture: Event):
+    def capture_sample(self, sample: sample.Sample, progress_callback: Callable, stop_capture: Event):
         """Abstraction to execute a capture sequence. This involves moving the the top left of the sample, traversing in a serpentining pattern 
         across the dimensions of the sample. At each step in the grid, multiple images are taken and only the most in focus is kept. 
 
         Args:
-            cookie (cookie.Cookie): Instance of a sample to be captured
+            sample (sample.Sample): Instance of a sample to be captured
             progress_callback (Callable): GUI Callback to update progress bar 
             stop_capture (Event): Event to stop capture after the current image sequence 
         """
@@ -102,16 +98,16 @@ class Controller:
             self.focus.set_setpoint(round(self.n_images/2))
 
             #set directories
-            species = cookie.species
-            id1 = cookie.id1
-            id2 = cookie.id2
+            species = sample.species
+            id1 = sample.id1
+            id2 = sample.id2
 
-            self.set_directory(cookie.directory)
+            self.set_directory(sample.directory)
 
             start_time = time.time()
         
-            gantry_thread = Thread(target=self.capture_grid_photos, args=(cookie.coordinates, cookie.directory, cookie.targets_top, cookie.targets_bot, focus_queue, pid_queue, pid_lock, cookie.rows, cookie.cols, self.n_images, self.height_range, progress_callback, stop_capture))
-            focus_thread = Thread(target=self.focus.find_focus, args=(focus_queue, pid_queue, pid_lock, cookie.directory, cookie.nvar, cookie.focus_index, cookie.background, cookie.background_std))
+            gantry_thread = Thread(target=self.capture_grid_photos, args=(sample.coordinates, sample.directory, sample.targets_top, sample.targets_bot, focus_queue, pid_queue, pid_lock, sample.rows, sample.cols, self.n_images, self.height_range, progress_callback, stop_capture, sample.is_core))
+            focus_thread = Thread(target=self.focus.find_focus, args=(focus_queue, pid_queue, pid_lock, sample.directory, sample.nvar, sample.focus_index, sample.background, sample.background_std))
             gantry_thread.start()
             focus_thread.start()
             
@@ -122,34 +118,34 @@ class Controller:
             end_time = time.time()
             elapsed_time = end_time - start_time
 
-            self.create_metadata(cookie, elapsed_time)
+            self.create_metadata(sample, elapsed_time)
             
             return
             #stop_capture.set()
 
-    def capture_all_cookies(self, progress_callback: Callable, stop_capture: Event):
-        """Callable for the GUI to iterate through all cookies. For multiple cookie capture.
+    def capture_all_samples(self, progress_callback: Callable, stop_capture: Event):
+        """Callable for the GUI to iterate through all samples. For multiple sample capture.
 
         Args:
             progress_callback (Callable): GUI widget to update progress bar
             stop_capture (Event): Event to stop capture as soon as possible
         """
         while not stop_capture.is_set():
-            for i in range(len(self.cookies)):
-                cookie = self.cookies.pop(-1)
-                width_est_pixels = cookie.width / cookie.image_width_mm * self.camera.w_pixels 
-                height_est_pixels = cookie.height / cookie.image_height_mm * self.camera.h_pixels
+            for i in range(len(self.samples)):
+                sample = self.samples.pop(-1)
+                width_est_pixels = sample.width / sample.image_width_mm * self.camera.w_pixels 
+                height_est_pixels = sample.height / sample.image_height_mm * self.camera.h_pixels
                 max_filesize_est = width_est_pixels * height_est_pixels * 3 / 10e6 # megabytes
                 log.info("MAX FILE SIZE ESTIMATE {} MB".format(round(max_filesize_est, 2)))
-                progress_callback((True, True, "{}_{}_{}".format(cookie.species, cookie.id1, cookie.id2)))
-                # self.navigate_to_cookie_tl(cookie)
-                self.capture_cookie(cookie, progress_callback, stop_capture)
+                progress_callback((True, True, "{}_{}_{}".format(sample.species, sample.id1, sample.id2)))
+
+                self.capture_sample(sample, progress_callback, stop_capture)
                 
                 # Only stitch if the capture complete successfully
                 if not stop_capture.is_set():
                     print('stitching frames')
-                    self.stitch_frames(cookie.directory)
-                if len(self.cookies) == 0:
+                    self.stitch_frames(sample.directory)
+                if len(self.samples) == 0:
                     stop_capture.set()
 
             return
@@ -161,8 +157,6 @@ class Controller:
         Args:
             frame_dir (str): Directory of where the frames are. 
         """
-        # sizes = [0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
-        # sizes = self.config["controller"]["STITCH_SIZES"]
         for size in self.stitch_sizes:
             st = stitcher.Stitcher(frame_dir) 
             #st.stitch(resize=size)
@@ -180,7 +174,7 @@ class Controller:
                 st.delete_dats()
                 del st
     
-    def capture_grid_photos(self, coordinates: list, d: Path, targets_top:np.array, targets_bot: np.array, focus_queue: queue.Queue, pid_queue: queue.Queue, pid_lock, rows:int, cols:int, n_images: int, height_range: float, progress_callback: Callable, stop_capture: Event):
+    def capture_grid_photos(self, coordinates: list, d: Path, targets_top:np.array, targets_bot: np.array, focus_queue: queue.Queue, pid_queue: queue.Queue, pid_lock, rows:int, cols:int, n_images: int, height_range: float, progress_callback: Callable, stop_capture: Event, is_core: bool = True, is_vertical: bool = True):
         """Command to traverse the sample and capture an image at each location. 
 
         Args:
@@ -200,6 +194,8 @@ class Controller:
             height_range (float): The range between the maximum and minimum z distance when trying to find an in focus image
             progress_callback (Callable): GUI widget to update progress bar
             stop_capture (Event): Event to stop capturing when possible
+            is_core (bool): Is the sample a core? 
+            is_vertical (bool): Only matters if is_core == True. Is the core vertically aligned?
         """
         # for loop capture
         # Change feed rate back to being slow
@@ -207,6 +203,7 @@ class Controller:
         while True and not stop_capture.is_set():
             img_num = 0
 
+            # Targets are XYZ coordinates to jog to to capture an image.
             targets = np.vstack((targets_top, targets_bot))
             for target in targets:
                 start_stack = time.time()
@@ -215,10 +212,33 @@ class Controller:
 
                 x, y, z, row, col = target[0], target[1], target[2], int(target[3]), int(target[4])
 
-                if img_num == 0 or img_num == len(targets_top):
+                # Jog to the origin of the sample
+                if img_num == 0:
                     self._gantry.jog_absolute_xyz(x, y, z)
+
+                    # If the sample is a vertically aligned core, try to center the core in the FOV on the first 
+                    if is_core and is_vertical:
+                        log.info("Core centering procedure start.")
+                        self._gantry.block_for_jog()
+                        r = self.config["controller"]["CORE_CENTERING_RANGE"] #5
+                        n_images_centering = self.config["controller"]["N_IMAGES_CORE_CENTERING"]
+                        filenames = self.capture_images_multiple_x(d, n_images_centering, self._gantry.feed_rate_z, r, self.acceleration_buffer)
+                        self.recenter_core_naive(filenames, r, self._gantry.feed_rate_z)
+
+                # Jog x and y and allow PID to handle the Z
+                elif img_num == len(targets_top):
+                    
+                    if is_core and is_vertical:
+                        self._gantry.jog_absolute_y(y)
+                        self._gantry.jog_absolute_z(z)
+                    else:
+                        self._gantry.jog_absolute_xyz(x,y,z)
+
                 else:
-                    self._gantry.jog_absolute_xy(x, y)
+                    if is_core and is_vertical:
+                        self._gantry.jog_absolute_y(y)
+                    else:
+                        self._gantry.jog_absolute_xy(x, y)
                     pid_lock.acquire()
                     update_z = pid_queue.get()
                     pid_lock.release()
@@ -229,95 +249,21 @@ class Controller:
 
                 self._gantry.block_for_jog()
                 coordinates.append(self._gantry.get_xyz())
-                img_filenames = self.capture_images_multiple_distances(d, n_images, self._gantry.feed_rate_z, height_range, self.acceleration_buffer, row, col)
+                img_filenames = self.capture_images_multiple_z(d, n_images, self._gantry.feed_rate_z, height_range, self.acceleration_buffer, row, col)
                 focus_queue.put(img_filenames)
                 img_num += 1
 
                 elapsed_time = time.time() - start_stack
                 progress_callback((elapsed_time, img_num, rows*cols))
             
-
             pid_queue.task_done() # pretty sure we don't need this 
             focus_queue.put([-1])
             break
         
-            
-            # for row in range(rows):
-            #     if stop_capture.is_set():
-            #         break
-            #     # for last column, we only want to take photo, not move.
-            #     for col in range(cols - 1):
-            #         start_stack = time.time()
-            #         # Odd rows go left
-            #         if stop_capture.is_set():
-            #             break
-                    
-            #         current_col = None
-            #         if row % 2 == 1:
-            #             current_col = cols - col - 1
-            #             coordinates.append(self._gantry.get_xyz())
-            #             imgs = self.capture_images_multiple_distances(d, n_images, self._gantry.feed_rate_z, height_range, self.acceleration_buffer, row, current_col, z_start)
-            #             pid_lock.acquire()
-            #             self.jog_relative_x(-x_dist)
-            #             pid_lock.release()
-            #         # Even rows go right
-            #         else:
-            #             current_col = col
-            #             coordinates.append(self._gantry.get_xyz())
-            #             imgs = self.capture_images_multiple_distances(d, n_images, self._gantry.feed_rate_z, height_range, self.acceleration_buffer, row, current_col, z_start)
-            #             pid_lock.acquire()
-            #             self.jog_relative_x(x_dist)
 
-            #             pid_lock.release()
-
-            #         focus_queue.put(imgs)
-
-            #         update_z = pid_queue.get()
-            #         log.info(f"z move for update {update_z}")
-            #         z_start+=update_z
-            #         pid_queue.task_done()
-
-            #         # Allow for PID calculations to continue while x is still jogging. Imagine a very large x jog which takes a  while.
-            #         self._gantry.block_for_jog()
-            #         img_num=img_num+1
-            #         elapsed_time = time.time() - start_stack
-            #         progress_callback((elapsed_time, img_num, rows*cols))
-
-            #     start_stack = time.time()
-            #     # Take final photo in row before jogging down
-            #     if stop_capture.is_set():
-            #         break
-                
-            #     if row % 2 == 1:
-            #         # imgs = self.capture_images_multiple_distances(0.1, z_steps, row, 0)
-            #         current_col = 0
-            #         coordinates.append(self._gantry.get_xyz())
-            #         imgs = self.capture_images_multiple_distances(d, n_images, self._gantry.feed_rate_z, height_range, self.acceleration_buffer, row, current_col, z_start)
-
-            #     else:
-            #         # imgs = self.capture_images_multiple_distances(0.05, z_steps, row, cols - 1)
-            #         current_col = cols - 1
-            #         coordinates.append(self._gantry.get_xyz())
-
-            #         imgs = self.capture_images_multiple_distances(d, n_images, self._gantry.feed_rate_z, height_range, self.acceleration_buffer, row, current_col, z_start)
-            #     focus_queue.put(imgs)
-
-            #     pid_lock.acquire()    
-            #     self.jog_relative_y(-y_dist)
-            #     pid_lock.release()
-
-            #     update_z = pid_queue.get()
-            #     log.info(f"z move for update {update_z}")
-            #     z_start += update_z
-            #     pid_queue.task_done()
-
-            #     self._gantry.block_for_jog()
-            #     img_num=img_num+1
-            #     elapsed_time = time.time() - start_stack
-            #     progress_callback((elapsed_time, img_num, rows*cols))    
-
-    def capture_images_multiple_distances(self, d: str, image_count: int, feed_rate: int, r: float, acceleration_buffer:float, row:int, col:int):
+    def capture_images_multiple_z(self, d: str, image_count: int, feed_rate: int, r: float, acceleration_buffer:float, row:int, col:int):
         """A method to move the camera through a Z range to allow for multiple images to be taken. This implementation is designed to reduce motion blur by taking advantage of a slow feed rate and avoiding a deceleration then sleep cycle to get an in focus image.
+            This is a key component for naive image focusing. 
 
         Args:
             d (str): Directory of where to save frames
@@ -325,12 +271,11 @@ class Controller:
             feed_rate (int): What is the feed rate of the Z-axis in mm/min
             r (float): The distance in mm between the first and last image.
             acceleration_buffer (float): Extra distance beyond the range to allow for the z-axis to reach constant velocity
-            row (int): Row location of where on the cookie grid the images are in 
-            col (int): Col location of where on the cookie grid the images are in 
+            row (int): Row location of where on the sample grid the images are in 
+            col (int): Col location of where on the sample grid the images are in 
 
         """
         # adding absolute jogging to start point because there is slight stochasticity between relative jogs. Resulting in drift
-        _, _, z_start = self._gantry.get_xyz()
 
         image_filenames = []
 
@@ -366,42 +311,106 @@ class Controller:
 
         return image_filenames
     
-    def create_metadata(self, cookie: cookie.Cookie, elapsed_time: float):
+    def capture_images_multiple_x(self, d:str, image_count: int, feed_rate: int, r: float, acceleration_buffer:float):
+        """Aligning cores in the center of the field of view of the camera. Used to counteract the non zero error when jogging with the machine. Designed to run once per core. 
+            This is how naive core centering would work but this could be improved with an informed approach. 
+        Args:
+            d (str): Directory of where to save frames
+            image_count (int): How many images do you want to take throughout the range
+            feed_rate (int): What is the feed rate of the Z-axis in mm/min
+            r (float): The distance in mm between the first and last image.
+            acceleration_buffer (float): Extra distance beyond the range to allow for the x-axis to reach constant velocity
+        """
+        # Assume that the machine has already jogged to the origin of the core (X0, Y0, Z0)
+        # adding absolute jogging to start point because there is slight stochasticity between relative jogs. Resulting in drift
+        image_filenames = []
+
+        time_between_photos_s = r / feed_rate * 60 / image_count # mm / (mm / min) * (s / min) is the dim analysis for units of seconds
+        time_zero_acceleration_s = acceleration_buffer / feed_rate * 60
+
+        # Jog to the top of the range + acceleration buffer
+        x_min = -(r / 2) - acceleration_buffer
+        self.jog_relative_x(x_min, feed=feed_rate)
+        self._gantry.block_for_jog()
+
+        time.sleep(0.5)  # sleep to prevent excessive vibration
+
+        # Jog to the x_max of the range. Begin taking photos after exiting the acceleration buffer zone
+        x_max = r + (acceleration_buffer * 2)
+        self.jog_relative_x(x_max, feed=feed_rate)
+        # Sleep until outside of the acceleration
+        time.sleep(time_zero_acceleration_s)
+        
+        # First photo at the x_min of the range 
+        for i in range(image_count):
+            file_location = f"{d}/frame_alignment_{i}.tiff"
+            image_filenames.append(file_location)
+            self.camera.save_frame(file_location)
+            time.sleep(time_between_photos_s)
+        
+        # This might take a while so do not send the next jog until we finish the previous
+        self._gantry.block_for_jog()
+        # Return to original location
+        self.jog_relative_x(-1 * (r / 2 + acceleration_buffer), feed=feed_rate)
+        log.info("Jog to original location.")
+        self._gantry.block_for_jog()        
+
+        return image_filenames
+
+    def recenter_core_naive(self,  filenames: list, r: float, feed:int = None):
+        """After finding the best focused file from capture_images_multiple_x, center the core naively.
+
+        Args:
+            filenames (list): Filenames of all of the images captured at multiple x locations.
+            r (float): The distance in mm between the first and last image.
+            feed (int): Feed rate in mm/min.
+            acceleration_buffer (float): Extra distance beyond the range to allow for the x-axis to reach constant velocity
+        """
+        focused_filename, _, _ = self.focus.best_focused_image(filenames, delete = True)
+        i = filenames.index(focused_filename)
+        i_middle = len(filenames) // 2 # guaranteed to be middle because n_images must be odd
+        damper = 0.75
+        d = ((i - i_middle) / i_middle) * (r / 2) * damper
+        self.jog_relative_x(d, feed=feed) # max travel should be half of the range in either direction. Als
+        log.info("Jog {} mm to recenter vertical core. i: {}, i_middle: {}".format(d, i, i_middle))
+
+    def create_metadata(self, sample: sample.Sample, elapsed_time: float):
         """Create metadata for the sample.
 
         Args:
-            cookie (cookie.Cookie): Instance of the sample that was imaged
+            sample (sample.Sample): Instance of the sample that was imaged
             elapsed_time (float): Time to capture 
         """
         pixels = self.camera.h_pixels * self.camera.w_pixels
-        dpi = self.camera.w_pixels/cookie.image_width_mm * 25.4  
+        dpi = self.camera.w_pixels/sample.image_width_mm * 25.4  
         metadata = {
-            "species": cookie.species,
-            "rows": cookie.rows,
-            "cols": cookie.cols,
-            "id1": cookie.id1,
-            "id2": cookie.id2,
+            "species": sample.species,
+            "rows": sample.rows,
+            "cols": sample.cols,
+            "id1": sample.id1,
+            "id2": sample.id2,
             "resolution_h": self.camera.h_pixels,
             "resolution_w": self.camera.w_pixels,
             "elapsed_time": elapsed_time,
             "DPI": int(dpi), # choosing ceil would also be an option but either way they introduce close to random error across all samples
-            "photo_count": cookie.rows * cookie.cols,
+            "photo_count": sample.rows * sample.cols,
             "image_height_mm": self.image_height_mm,
             "image_width_mm": self.image_width_mm,
             "image_crop_h": self.camera.crop_h,
             "image_crop_w": self.camera.crop_w,
-            "percent_overlap": cookie.percent_overlap,
-            "cookie_height_mm": cookie.height,
-            "cookie_width_mm":  cookie.width,
+            "percent_overlap": sample.percent_overlap,
+            "is_core": sample.is_core,
+            "sample_height_mm": sample.height,
+            "sample_width_mm":  sample.width,
             "camera_pixels": pixels,
-            "notes": cookie.notes,
-            "center": cookie.get_center_location(),
-            "top_left": cookie.get_top_left_location(),
-            "coordinates": cookie.coordinates,
-            "background": cookie.background,
-            "background_std": cookie.background_std,
-            "focus_index": cookie.focus_index,
-            "normalized_variance": cookie.nvar  
+            "notes": sample.notes,
+            "center": sample.get_center_location(),
+            "top_left": sample.get_top_left_location(),
+            "coordinates": sample.coordinates,
+            "background": sample.background,
+            "background_std": sample.background_std,
+            "focus_index": sample.focus_index,
+            "normalized_variance": sample.nvar  
         }
 
         with open ("{}/metadata.json".format(self.directory), "w", encoding="utf-8") as f:
@@ -409,69 +418,77 @@ class Controller:
 
     #### JOG METHODS ####
 
-    def jog_relative_x(self, dist: float):
+    def jog_relative_x(self, dist: float, feed:int = None):
         """Abstraction of gantry to jog in the x direction relative to its current position.
 
         Args:
             dist (float): Distance in mm to jog. Negative and positive result in L/R 
+            feed (int): Feed rate in mm/min.
         """
-        self._gantry.jog_relative_x(dist)
+        self._gantry.jog_relative_x(dist, feed)
 
-    def jog_relative_y(self, dist: float):
+    def jog_relative_y(self, dist: float, feed:int = None):
         """Abstraction of gantry to jog in the Y direction relative to its current position.
 
         Args:
             dist (float): Distance in mm to jog. Negative and positive result in Up/Down
+            feed (int): Feed rate in mm/min.
         """
-        self._gantry.jog_relative_y(dist)
+        self._gantry.jog_relative_y(dist, feed)
 
-    def jog_relative_z(self, dist: float):
+    def jog_relative_z(self, dist: float, feed:int = None):
         """Abstraction of gantry to jog in the Z direction relative to its current position.
 
         Args:
             dist (float): Distance in mm to jog. Negative and positive result in Up/Down
+            feed (int): Feed rate in mm/min.
         """
-        self._gantry.jog_relative_z(dist)
+        self._gantry.jog_relative_z(dist, feed)
     
-    def jog_absolute_x(self, pos: float):
+    def jog_absolute_x(self, pos: float, feed:int = None):
         """Abstraction of gantry to jog in the X direction to an absolute coordinate
 
         Args:
             pos (float): Location to jog to in coordinate system
+            feed (int): Feed rate in mm/min.
         """
-        self._gantry.jog_absolute_x(pos)
+        self._gantry.jog_absolute_x(pos, feed)
 
-    def jog_absolute_y(self, pos: float):
+    def jog_absolute_y(self, pos: float, feed:int = None):
         """Abstraction of gantry to jog in the Y direction to an absolute coordinate
 
         Args:
             pos (float): Location to jog to in coordinate system
+            feed (int): Feed rate in mm/min.
         """
-        self._gantry.jog_absolute_y(pos)
+        self._gantry.jog_absolute_y(pos, feed)
 
-    def jog_absolute_z(self, pos: float):
+    def jog_absolute_z(self, pos: float, feed:int = None):
         """Abstraction of gantry to jog in the Z direction to an absolute coordinate
 
         Args:
             pos (float): Location to jog to in coordinate system
+            feed (int): Feed rate in mm/min.
         """
-        self._gantry.jog_absolute_z(pos)
+        self._gantry.jog_absolute_z(pos, feed)
 
-    def jog_absolute_xy(self, x: float, y: float):
+    def jog_absolute_xy(self, x: float, y: float, feed:int = None):
         """Abstraction of gantry to jog in the X and Y direction to an absolute coordinate. Executes both at the same time
 
         Args:
             pos (float): Location to jog to in coordinate system
+            feed (int): Feed rate in mm/min.
         """
-        self._gantry.jog_absolute_xy(x, y)
+        self._gantry.jog_absolute_xy(x, y, feed)
 
-    def jog_absolute_xyz(self, x: float, y: float, z: float):
+    def jog_absolute_xyz(self, x: float, y: float, z: float, feed:int = None):
         """Abstraction of gantry to jog in the X,Y,Z direction to an absolute coordinate. Executes all simultaneously
 
         Args:
             pos (float): Location to jog to in coordinate system
+            feed (int): Feed rate in mm/min.
         """
-        self._gantry.jog_absolute_xyz(x, y, z)
+        self._gantry.jog_absolute_xyz(x, y, z, feed)
 
     def set_feed_rate(self, mode: int):
         """Setting feed rate between fast and slow
@@ -488,34 +505,34 @@ class Controller:
             self._gantry.feed_rate_xy = self.fast_feed_rate_xy
             self._gantry.feed_rate_z = self.fast_feed_rate_z
 
-    def navigate_to_cookie_tl(self, cookie: cookie.Cookie):
-        """Navigate to the to the top left of a cookie
+    def navigate_to_sample_tl(self, sample: sample.Sample):
+        """Navigate to the to the top left of a sample
 
         Args:
-            cookie (cookie.Cookie): Instance of sample
+            sample (sample.Sample): Instance of sample
         """
-        x, y, z = cookie.get_top_left_location()
+        x, y, z = sample.get_top_left_location()
         self.jog_absolute_xyz(x, y, z)
 
-        log.info("Navigating to {}, X{}Y{}Z{}".format(cookie.species, x, y, z))
-        # Wait until we get to the cookie location
+        log.info("Navigating to {}, X{}Y{}Z{}".format(sample.species, x, y, z))
+        # Wait until we get to the sample location
         self._gantry.block_for_jog()
 
-    def traverse_cookie_boundary(self, cookie_width: float, cookie_height: float):
+    def traverse_sample_boundary(self, sample_width: float, sample_height: float):
         """Traverse the borders of the stitched field of view for sample setup purposes.
 
         Args:
-            cookie_width (float): Width of the sample
-            cookie_height (float): Height of the sample
+            sample_width (float): Width of the sample
+            sample_height (float): Height of the sample
         """
         
         try: 
             x, y, z = self._gantry.get_xyz()
 
-            l_x = x - (cookie_width / 2)
-            r_x = x + (cookie_width / 2)
-            b_y = y - (cookie_height/ 2)
-            t_y = y + (cookie_height / 2)
+            l_x = x - (sample_width / 2)
+            r_x = x + (sample_width / 2)
+            b_y = y - (sample_height/ 2)
+            t_y = y + (sample_height / 2)
 
             tl = (l_x, t_y)
             tr = (r_x, t_y)
@@ -539,7 +556,7 @@ class Controller:
             self.jog_absolute_xyz(x, y, z)
             self._gantry.block_for_jog()
         except:
-            log.info("cookie not defined")
+            log.info("sample not defined")
 
 
     #### CAMERA METHODS ####
@@ -559,9 +576,9 @@ class Controller:
         log.info("Saving {}".format(name))
         return name
     
-    #### COOKIE METHODS ####
+    #### SAMPLE METHODS ####
 
-    def add_cookie_sample(self, width: float, height: float, overlap: int, species: str, id1: str, id2: str, notes: str):
+    def add_sample(self, width: float, height: float, overlap: int, species: str, id1: str, id2: str, notes: str, is_core: bool):
         """Callback for GUI to add a sample
 
         Args:
@@ -572,6 +589,7 @@ class Controller:
             id1 (str): ID1 for sample
             id2 (str): ID2 for sample
             notes (str): Notes for sample
+            is_core (bool): Is the sample a core? 
         """
         time.sleep(1) # guarantee the position monitor is updated
         center_x, center_y, center_z = self._gantry.get_xyz()
@@ -587,24 +605,24 @@ class Controller:
             id2 = "na"
 
         #path_name = self.cb_capture_image()
-        ck = cookie.Cookie(width, height, species, id1, id2, notes, self.image_width_mm, self.image_height_mm, overlap, center_x, center_y, center_z)
-        self.cookies.append(ck)
+        ck = sample.Sample(width, height, species, id1, id2, notes, self.image_width_mm, self.image_height_mm, is_core, percent_overlap=overlap, x=center_x, y=center_y, z=center_z)
+        self.samples.append(ck)
 
-    def get_cookies(self):
-        """List cookies
+    def get_samples(self):
+        """List samples
 
         Returns:
-            list[cookie.Cookies]: List of the cookies for GUI usage
+            list[sample.Sample]: List of the samples for GUI usage
         """
-        return self.cookies
+        return self.samples
     
-    def set_cookies(self, cookies: list[cookie.Cookie]):
-        """Set the cookies attribute
+    def set_samples(self, samples: list[sample.Sample]):
+        """Set the samples attribute
 
         Args:
-            cookies (list[cookie.Cookie]): A list of cookie.Cookies
+            samples (list[sample.Sample]): A list of sample.Sample
         """
-        self.cookies=cookies
+        self.samples=samples
 
    #### GANTRY METHODS ####
 

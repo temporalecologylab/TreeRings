@@ -5,26 +5,28 @@ import math
 from pathlib import Path
 from datetime import datetime
 
-class Cookie:
-    def __init__(self, cookie_width_mm: int, cookie_height_mm: int, species:str, id1:str, id2:str, notes:str, image_width_mm:float, image_height_mm:float, percent_overlap:int = 50, x:float = None, y:float = None, z:float = None):
+class Sample:
+    def __init__(self, sample_width_mm: int, sample_height_mm: int, species:str, id1:str, id2:str, notes:str, image_width_mm:float, image_height_mm:float, is_core:bool,  percent_overlap:int = 50, is_vertical:bool = True, x:float = None, y:float = None, z:float = None):
         """Class which contains the necessary information for each sample that needs to be digitized. Data comes from user inputs from GUI. Data is saved in metadata.json files alongside stitched images
 
         Args:
-            cookie_width_mm (int): Width of minimum bounding rectangle around edges of the sample
-            cookie_height_mm (int): Height of minimum bounding rectangle around the edges of the sample
+            sample_width_mm (int): Width of minimum bounding rectangle around edges of the sample
+            sample_height_mm (int): Height of minimum bounding rectangle around the edges of the sample
             species (str): Species descriptor
             id1 (str): Additional species ID1
             id2 (str): Additional specied ID 2
             notes (str): Additional notes for ambiguity in sample
             image_width_mm (float): Width in mm of the field of view of a single image. Helpful to print a 1mm x 1mm grid to measure
             image_height_mm (float): Height in mm of the field of view of a single image. Helpful to print a 1mm x 1mm grid to measure
+            is_core (bool): Is the sample a core? 
             percent_overlap (int, optional): Desired overlap between two images. Defaults to 50.
+            is_vertical (bool, optional): If is_core, is the length of the core aligned vertically? Defaults to True.
             x (float, optional): X position of the center of the sample in the gantry coordinate system. Defaults to None.
             y (float, optional): Y position of the center of the sample in the gantry coordinate system. Defaults to None.
             z (float, optional): Z position of the center of the sample in the gantry coordinate system. Defaults to None.
         """
-        self.width = cookie_width_mm
-        self.height = cookie_height_mm
+        self.width = sample_width_mm
+        self.height = sample_height_mm
         self.percent_overlap = percent_overlap
         self._center = (round(x, 4),round(y, 4),round(z, 4))
         tl_x = x - (self.width/2)
@@ -50,9 +52,11 @@ class Cookie:
         self.coordinates = []
         self.focus_index = []
         self.nvar = []
+        self.is_core = is_core
+        self.is_vertical = is_vertical
 
     def calculate_grid_params(self):
-        """Calculates the amount of rows and columns necessary to traverse the cookie.
+        """Calculates the amount of rows and columns necessary to traverse the sample.
 
         Returns:
             int: Count of rows, always odd
@@ -184,9 +188,9 @@ class Cookie:
     
 
 def main():
-    cookie = Cookie(150, 0, "test", "test", "test", "test", 5, 3, 30, 0, 0, 0)
-    print(cookie.targets_top)
-    print(cookie.targets_bot)
+    sample = Sample(150, 0, "test", "test", "test", "test", 5, 3, 30, 0, 0, 0)
+    print(sample.targets_top)
+    print(sample.targets_bot)
 
 if __name__ == "__main__":
     main()
