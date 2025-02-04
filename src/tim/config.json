@@ -11,7 +11,7 @@
         "controller":
         {
             "N_IMAGES_MULTIPLE_DISTANCES": 11,
-            "HEIGHT_RANGE_MM": 1,
+            "HEIGHT_RANGE_MM": 1.0,
             "ACCELERATION_BUFFER_MM": 0.2,
             "STITCH_SIZES": [0.3],
             "SLOW_FEED_RATE_XY": 300,
@@ -19,7 +19,7 @@
             "FAST_FEED_RATE_XY": 1250,
             "FAST_FEED_RATE_Z": 150,
             "MAX_FILE_SIZE_GB": 10,
-            "CORE_CENTERING_RANGE": 5,
+            "CORE_CENTERING_RANGE": 5.0,
             "N_IMAGES_CORE_CENTERING": 9
         },
         "focus":
