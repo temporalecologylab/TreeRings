@@ -14,3 +14,5 @@ code/focus_stacking_testing
 *.blg
 *.out
 *.DS_Store
+
+__pycache__
