@@ -18,7 +18,7 @@ import numpy as np
 
 
 class Controller:
-    def __init__(self):
+    def __init__(self, gantry: gantry.Gantry, camera: camera.Camera, focus: focus.Focus):
         """Abstraction of the controller which moves the gantry, gets information from the GUI, operates the camera, and determines when to stitch.
         """
         #Settings for capturing images from multiple distances
@@ -36,9 +36,9 @@ class Controller:
     
         #Objects
         self.samples = []
-        self._gantry = gantry.Gantry()
-        self.camera = camera.Camera()
-        self.focus = focus.Focus(delete_flag=True, setpoint=math.floor(self.n_images / 2))
+        self._gantry = gantry
+        self.camera = camera
+        self.focus = focus
 
         #attributes
         self.image_height_mm = self.config["gui"]["DEFAULT_IMAGE_HEIGHT_MM"]

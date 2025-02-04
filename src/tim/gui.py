@@ -5,22 +5,29 @@ from gi.repository import Gtk, Gst, GObject, GLib
 from threading import Thread, Event
 import logging as log
 import controller
+import focus
+import gantry
+import camera
 from datetime import datetime
 import time
 import utils
+import math
 
 log.basicConfig(format='%(process)d-%(levelname)s-%(message)s', level=log.INFO)
 
 class App(Gtk.Window):
-    def __init__(self):
+    def __init__(self, config, focus_instance, gantry_instance, camera_instance, controller_instance):
         super().__init__(title="Capture")
-        self.config = utils.load_config()
+        self.config = config
 
         self.set_default_size(self.config["gui"]["DEFAULT_WINDOW_SIZE"][0], self.config["gui"]["DEFAULT_WINDOW_SIZE"][1])
         self.set_size_request(self.config["gui"]["DEFAULT_WINDOW_SIZE"][0], self.config["gui"]["DEFAULT_WINDOW_SIZE"][1])
         self.connect("destroy", self.quit_program)
-        
-        self.controller = controller.Controller()
+
+        self.focus = focus_instance
+        self.gantry = gantry_instance
+        self.camera = camera_instance
+        self.controller = controller_instance
 
         grid = Gtk.Grid()
         grid.set_row_homogeneous(False)
@@ -526,6 +533,12 @@ class App(Gtk.Window):
         
 if __name__ == "__main__":
     #Gst.init(None)
-    app = App()
+    config = utils.load_config()
+    focus_inst = focus.Focus(delete_flag=True, setpoint=math.floor(config["controller"]["N_IMAGES_MULTIPLE_DISTANCES"] / 2))
+    gan_inst = gantry.Gantry()
+    cam_inst = camera.Camera() 
+    con_inst = controller.Controller(gan_inst, cam_inst, focus_inst)
+
+    app = App(config, focus_inst, gan_inst, cam_inst, con_inst)
     app.show_all()
     Gtk.main()
