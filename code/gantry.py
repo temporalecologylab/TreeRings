@@ -80,11 +80,20 @@ class Gantry:
     def parse_state(self, input_string):
         # Use a regular expression to find the X, Y, and Z values
         #print("STATE {}".format(self.state))
-        if "Idle" in input_string:
+        #log.info("GRBL: {}".format(input_string))
+        if "ALARM" in input_string:
+            log.info("GRBL ALARM SOUNDED: {}".format(input_string))
+        elif "Idle" in input_string:
             return "Idle"
-        
         elif "Jog" in input_string:
             return "Jog"
+        elif "Alarm" in input_string:
+            return "Alarm"
+        elif "Home" in input_string:
+            return "Home"
+        else:
+            log.error("Parsed State Error")
+            return "Temp"
     
     def block_for_jog(self):
         # Block while jog waits to complete. Make sure that the monitor can update its state before trying to test state
@@ -251,24 +260,26 @@ class Gantry:
 
     def serial_connect_port(self) -> None:
         log.info("Connecting to GRBL via serial")
-        self.s = serial.Serial(self._serial_port, 115200) # WILL NEED TO CHANGE THIS PER DEVICE / OS
-        self.s.write(b"\r\n\r\n")
-        time.sleep(2)# Wait for grbl to initialize 
-        # Wake up grbl
-        grbl_out = self.s.readline() # Wait for grbl response with carriage return
-        grbl_out_str = grbl_out.decode("utf-8")
+        if self.s is None:
+            self.s = serial.Serial(self._serial_port, 115200) # WILL NEED TO CHANGE THIS PER DEVICE / OS
+            self.s.write(b"\r\n\r\n")
+            time.sleep(2)# Wait for grbl to initialize 
+            # Wake up grbl
+            grbl_out = self.s.readline() # Wait for grbl response with carriage return
+            grbl_out_str = grbl_out.decode("utf-8")
 
-        if grbl_out_str.strip() == "ok":
-            self._connected = True
-        else:
-            self._connected = False
+            if grbl_out_str.strip() == "ok":
+                self._connected = True
+            else:
+                self._connected = False
 
-        self.log_serial_out(grbl_out)
-        self.s.flushInput()  # Flush startup t
-        log.info("Input flushed")
-        log.info("Starting Position Monitor")
-        self.thread.start() 
-        self.set_acceleration(50)        
+            self.log_serial_out(grbl_out)
+            self.s.flushInput()  # Flush startup t
+            log.info("Input flushed")
+            log.info("Starting Position Monitor")
+       
+            self.thread.start() 
+            self.set_acceleration(50)        
 
 
     def serial_disconnect_port(self):
