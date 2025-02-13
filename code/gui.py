@@ -8,6 +8,10 @@ import controller
 from datetime import datetime
 import time
 import utils
+import gantry
+import camera
+import focus
+import math
 
 log.basicConfig(format='%(process)d-%(levelname)s-%(message)s', level=log.INFO)
 
@@ -18,9 +22,10 @@ class App(Gtk.Window):
 
         self.set_default_size(self.config["gui"]["DEFAULT_WINDOW_SIZE"][0], self.config["gui"]["DEFAULT_WINDOW_SIZE"][1])
         self.set_size_request(self.config["gui"]["DEFAULT_WINDOW_SIZE"][0], self.config["gui"]["DEFAULT_WINDOW_SIZE"][1])
+        n_images = self.config["controller"]["N_IMAGES_MULTIPLE_DISTANCES"]
         self.connect("destroy", self.quit_program)
         
-        self.controller = controller.Controller()
+        self.controller = controller.Controller(gantry.Gantry(), camera.Camera(), focus.Focus(delete_flag=True, setpoint = math.floor(n_images / 2)))
 
         grid = Gtk.Grid()
         grid.set_row_homogeneous(False)
@@ -396,9 +401,9 @@ class App(Gtk.Window):
             overlap = 50
         else:
             overlap = float(overlap)
-            species = species.replace(" ", "_")
-            id1 = id1.replace(" ", "_")
-            id2 = id2.replace(" ", "_")
+            species = species.replace(" ", "_").replace("/","_").replace(".","_")
+            id1 = id1.replace(" ", "_").replace("/","_").replace(".","_")
+            id2 = id2.replace(" ", "_").replace("/","_").replace(".","_")
         self.controller.add_sample(width, height, overlap, species, id1, id2, notes, is_core)
         log.info("Adding Sample \nW: {}\nH: {}\nO: {}\nS:  {}\nID1:  {}\nID2:  {}\nNotes:  {}\n".format(width, height, overlap, species, id1, id2, notes))
     

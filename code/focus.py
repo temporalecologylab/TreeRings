@@ -6,13 +6,14 @@ import os
 from pathlib import Path
 from PID import AsynchronousPID 
 import utils
+import sample
 
 log.basicConfig(format='%(process)d-%(levelname)s-%(message)s', level=log.INFO)
 
 class Focus:
 
     def __init__(self, delete_flag, setpoint):
-        self.config = utils.load_config()
+        self.config =  utils.load_config()
 
         self.DELETE_FLAG = delete_flag
         self.scale_factor = 0.05
@@ -24,11 +25,12 @@ class Focus:
         self.PID = AsynchronousPID(Kp=self.kp, Ki=self.ki, Kd=self.kd, setpoint=setpoint) 
         self.TESTINGLOG = []
 
-    def find_focus(self, focus_queue, pid_queue, pid_lock, directory, nvars: list, index:list, background:list, background_std:list):
+    def find_focus(self, sample: sample.Sample, focus_queue, pid_queue, pid_lock):
         while True:
             image_files = focus_queue.get()
             pid_lock.acquire()
-            log.info("Images For focus finding: {}".format(image_files))
+
+            #log.info("Images For focus finding: {}".format(image_files))
             if image_files == [-1]:
                 focus_queue.task_done()
                 break
@@ -43,12 +45,12 @@ class Focus:
                 self.delete_unfocused(image_files)
             else: 
                 Path("{}/focused_images".format(self.directory)).mkdir(exist_ok=True)
-                shutil.copy(focused_image_name, "{}/focused_images/{}".format(directory,filename))
+                shutil.copy(focused_image_name, "{}/focused_images/{}".format(sample.directory,filename))
             
-            background_std.append(std)
-            background.append(self.is_background(std))
-            index.append(stack_number)
-            nvars.append(nv)
+            sample.background_std.append(std)
+            sample.background.append(self.is_background(std))
+            sample.focus_index.append(stack_number)
+            sample.nvar.append(nv)
 
             if not self.is_background(std):
                 control_variable = self.PID.update(int(stack_number))
@@ -86,7 +88,7 @@ class Focus:
             
         std = np.std(vars)
 
-        log.info(image_filenames)
+        # log.info(image_filenames)
 
         if delete:
             self.delete_unfocused(image_filenames)

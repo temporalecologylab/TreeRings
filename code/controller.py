@@ -18,14 +18,16 @@ import numpy as np
 
 
 class Controller:
-    def __init__(self):
+    def __init__(self, g: gantry.Gantry, c: camera.Camera, f: focus.Focus):
         """Abstraction of the controller which moves the gantry, gets information from the GUI, operates the camera, and determines when to stitch.
+
+            g (gantry.Gantry): Gantry instance to interface with the GRBL controller.
+            c (camera.Camera): Camera instance to interface with the GStreamer pipeline and camera.
+            f (focus.Focus): Focus instance to capture in focus images.
         """
         #Settings for capturing images from multiple distances
-        # self.n_images = 11 #make sure you're not going faster than the frame rate of the GStreamer feed... 
         self.config = utils.load_config()
         self.n_images = self.config["controller"]["N_IMAGES_MULTIPLE_DISTANCES"] #make sure you're not going faster than the frame rate of the GStreamer feed... 
-        # self.height_range = 1
         self.height_range = self.config["controller"]["HEIGHT_RANGE_MM"]
         self.acceleration_buffer = self.config["controller"]["ACCELERATION_BUFFER_MM"]
         self.stitch_sizes = self.config["controller"]["STITCH_SIZES"]
@@ -36,9 +38,9 @@ class Controller:
     
         #Objects
         self.samples = []
-        self._gantry = gantry.Gantry()
-        self.camera = camera.Camera()
-        self.focus = focus.Focus(delete_flag=True, setpoint=math.floor(self.n_images / 2))
+        self._gantry = g
+        self.camera = c
+        self.focus = f
 
         #attributes
         self.image_height_mm = self.config["gui"]["DEFAULT_IMAGE_HEIGHT_MM"]
@@ -98,16 +100,12 @@ class Controller:
             self.focus.set_setpoint(round(self.n_images/2))
 
             #set directories
-            species = sample.species
-            id1 = sample.id1
-            id2 = sample.id2
-
             self.set_directory(sample.directory)
 
             start_time = time.time()
         
-            gantry_thread = Thread(target=self.capture_grid_photos, args=(sample.coordinates, sample.directory, sample.targets_top, sample.targets_bot, focus_queue, pid_queue, pid_lock, sample.rows, sample.cols, self.n_images, self.height_range, progress_callback, stop_capture, sample.is_core))
-            focus_thread = Thread(target=self.focus.find_focus, args=(focus_queue, pid_queue, pid_lock, sample.directory, sample.nvar, sample.focus_index, sample.background, sample.background_std))
+            gantry_thread = Thread(target=self.capture_grid_photos, args=(sample, focus_queue, pid_queue, pid_lock, progress_callback, stop_capture))
+            focus_thread = Thread(target=self.focus.find_focus, args=(sample, focus_queue, pid_queue, pid_lock))
             gantry_thread.start()
             focus_thread.start()
             
@@ -174,28 +172,16 @@ class Controller:
                 st.delete_dats()
                 del st
     
-    def capture_grid_photos(self, coordinates: list, d: Path, targets_top:np.array, targets_bot: np.array, focus_queue: queue.Queue, pid_queue: queue.Queue, pid_lock, rows:int, cols:int, n_images: int, height_range: float, progress_callback: Callable, stop_capture: Event, is_core: bool = True, is_vertical: bool = True):
+    def capture_grid_photos(self, sample: sample.Sample, focus_queue: queue.Queue, pid_queue: queue.Queue, pid_lock, progress_callback: Callable, stop_capture: Event):
         """Command to traverse the sample and capture an image at each location. 
 
         Args:
-            coordinates (list): Container for holding the coordinates of where each image was taken. Useful for debugging.
-            d (Path): Directory to save.
-            target_top (np.array): Targets for images, each column represents (X, Y, Z, row, col), execute in this order
-            target_bot (np.array): Targets for images, each column represents (X, Y, Z, row, col), execute in this order
+            sample(sample.Sample): Sample object which contains all the relevant sample information.
             focus_queue (queue.Queue): Queue to have images added to for the focus thread to parse which is the most in focus.
             pid_queue (queue.Queue): Queue to determine if the z height needs to be adjusted to stay in focus.
             pid_lock (_type_): Lock to prevent race conditions
-            rows (int): Row count in the grid of images
-            cols (int): Column count in the grid of images
-            y_dist (float): Distance to jog in y direction per step
-            x_dist (float): Distance to jog in x direction per step
-            z_start (float): Absolute z location to start capturing
-            n_images (int): Count of images to take at different distances when focusing 
-            height_range (float): The range between the maximum and minimum z distance when trying to find an in focus image
             progress_callback (Callable): GUI widget to update progress bar
             stop_capture (Event): Event to stop capturing when possible
-            is_core (bool): Is the sample a core? 
-            is_vertical (bool): Only matters if is_core == True. Is the core vertically aligned?
         """
         # for loop capture
         # Change feed rate back to being slow
@@ -204,7 +190,7 @@ class Controller:
             img_num = 0
 
             # Targets are XYZ coordinates to jog to to capture an image.
-            targets = np.vstack((targets_top, targets_bot))
+            targets = np.vstack((sample.targets_top, sample.targets_bot))
             for target in targets:
                 start_stack = time.time()
                 if stop_capture.is_set():
@@ -217,7 +203,7 @@ class Controller:
                     self._gantry.jog_absolute_xyz(x, y, z)
 
                     # If the sample is a vertically aligned core, try to center the core in the FOV on the first 
-                    if is_core and is_vertical:
+                    if sample.is_core and sample.is_vertical:
                         log.info("Core centering procedure start.")
                         self._gantry.block_for_jog()
                         r = self.config["controller"]["CORE_CENTERING_RANGE"] #5
@@ -226,16 +212,16 @@ class Controller:
                         self.recenter_core_naive(filenames, r, self._gantry.feed_rate_z)
 
                 # Jog x and y and allow PID to handle the Z
-                elif img_num == len(targets_top):
+                elif img_num == len(sample.targets_top):
                     
-                    if is_core and is_vertical:
+                    if sample.is_core and sample.is_vertical:
                         self._gantry.jog_absolute_y(y)
                         self._gantry.jog_absolute_z(z)
                     else:
                         self._gantry.jog_absolute_xyz(x,y,z)
 
                 else:
-                    if is_core and is_vertical:
+                    if sample.is_core and sample.is_vertical:
                         self._gantry.jog_absolute_y(y)
                     else:
                         self._gantry.jog_absolute_xy(x, y)
@@ -248,13 +234,13 @@ class Controller:
                         self._gantry.jog_relative_z(update_z)
 
                 self._gantry.block_for_jog()
-                coordinates.append(self._gantry.get_xyz())
-                img_filenames = self.capture_images_multiple_z(d, n_images, self._gantry.feed_rate_z, height_range, self.acceleration_buffer, row, col)
+                sample.coordinates.append(self._gantry.get_xyz())
+                img_filenames = self.capture_images_multiple_z(sample.directory, self.n_images, self._gantry.feed_rate_z, self.height_range, self.acceleration_buffer, row, col)
                 focus_queue.put(img_filenames)
                 img_num += 1
 
                 elapsed_time = time.time() - start_stack
-                progress_callback((elapsed_time, img_num, rows*cols))
+                progress_callback((elapsed_time, img_num, sample.rows*sample.cols))
             
             pid_queue.task_done() # pretty sure we don't need this 
             focus_queue.put([-1])

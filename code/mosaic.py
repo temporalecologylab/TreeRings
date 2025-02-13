@@ -13,7 +13,7 @@ import numpy as np
 
 from tile import Tile, OpenCVTile, MemmapOpenCVTile, MemmapTile
 
-from memory_profiler import profile
+#from memory_profiler import profile
 
 logger = logging.getLogger(__name__)
 

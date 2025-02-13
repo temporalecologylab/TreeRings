@@ -8,9 +8,10 @@ import utils
 log.basicConfig(format='%(process)d-%(levelname)s-%(message)s', level=log.INFO)
 
 class Gantry:
+    """Abstraction of most of the GRBL protocols.
+    """
     def __init__(self, serial_port = "/dev/ttyUSB0", quiet=True):
         self.config = utils.load_config()
-
 
         self.quiet = quiet
         self._serial_port = serial_port # windows should be a "COM[X]" port which will vary per device
@@ -29,99 +30,186 @@ class Gantry:
         self._z = None
 
         self.position_lock = Lock()
+        self.send_command_lock = Lock() # adding lock for send command so that we can correctly associate GRBL responses to the corresponding command
         self.state = None
         
         self.thread = Thread(target=self.position_monitor)
 
     def position_monitor(self):
+        """Target function for thread to query GRBL state at approximately 5Hz.
+        """
         cmd = "?"
         # Set WPos status reports
         self._send_command("$10=2")
         while not self.stop_threads:
-            res_str = self._send_command(cmd)
+            grbl_out_list = self._send_command(cmd)
 
-            if res_str is None:
-                continue
-            elif res_str[-2:] == "ok":
-                continue
-            elif "WPos" in res_str:
-                self.position_lock.acquire()
-                try:
-                    _x, _y, _z = self.parse_coordinates(res_str)
-                    self._x = _x
-                    self._y = _y
-                    self._z = _z
-                except:
-                    log.info("Error reading parsing coordinates")
+            for grbl_out in grbl_out_list:
+                if "ok" in grbl_out:
                     continue
-                self.position_lock.release()
-                self.state = self.parse_state(res_str)
-                if not self.quiet:
-                    log.info("X {} \nY {}\nZ{}\n".format(_x, _y, _z))
-
+                elif "WPos" in grbl_out:
+                    self.position_lock.acquire()
+                    try:
+                        _x, _y, _z = self.parse_coordinates(grbl_out)
+                        self._x = _x
+                        self._y = _y
+                        self._z = _z
+                    except:
+                        log.error("Response with unparsable coordinates: {}".format(grbl_out))
+                    
+                    self.position_lock.release()
+                    self.state = self.parse_state(grbl_out)
+                    if not self.quiet:
+                        log.info("X {} \nY {}\nZ{}\n".format(_x, _y, _z))
+                else:
+                    if not self.quiet:
+                        log.error("No WPos found in status report return. \nGRBL Out: {}\n".format(grbl_out))
             time.sleep(0.2)
 
-    def get_xyz(self):
+    def get_xyz(self)->tuple[float,float,float]:
+        """Thread safe get function to retrieve the gantry position.
+
+        Returns:
+            tuple[float,float,float]: The X, Y, and Z position of the gantry from the most recent status report. 
+        """
         self.position_lock.acquire()
         x, y, z = self._x, self._y, self._z
         self.position_lock.release()
 
         return x, y, z
     
-    def parse_coordinates(self, input_string):
+    def parse_coordinates(self, grbl_status:str)->tuple[float,float,float]:
+        """Extract the coordinates from the status report delivered by GRBL.
+
+        Args:
+            grbl_out (str): Response from GRBL after '?' command.
+
+        Raises:
+            ValueError: Raised when a coordinate cannot be parsed from the GRBL response.   
+
+        Returns:
+            tuple[float,float,float]: The X, Y, and Z position of the gantry from the most recent status report. 
+        """
         # Use a regular expression to find the X, Y, and Z values
-        match = re.search(r'WPos:(-?\d+\.\d+),(-?\d+\.\d+),(-?\d+\.\d+)', input_string)
+        match = re.search(r'WPos:([-+]?\d*\.?\d+),([-+]?\d*\.?\d+),([-+]?\d*\.?\d+)', grbl_status) # searches for integers and floats separated by commas after "WPos:"
         if match:
             x, y, z = map(float, match.groups())
             return x, y, z
         else:
             raise ValueError("The input string does not contain valid coordinates")
 
-    def parse_state(self, input_string):
-        # Use a regular expression to find the X, Y, and Z values
-        #print("STATE {}".format(self.state))
-        #log.info("GRBL: {}".format(input_string))
-        if "ALARM" in input_string:
-            log.info("GRBL ALARM SOUNDED: {}".format(input_string))
-        elif "Idle" in input_string:
+    def parse_state(self, grbl_status:str)->str:
+        """Parse the state from the GRBL status report.
+
+        Args:
+            grbl_out (str): Response from GRBL after '?' command.
+
+        Returns:
+            str: The current GRBL machine state.
+        """
+        if "ALARM" in grbl_status:
+            log.info("GRBL ALARM SOUNDED: {}".format(grbl_status))
+        elif "Idle" in grbl_status:
             return "Idle"
-        elif "Jog" in input_string:
+        elif "Jog" in grbl_status:
             return "Jog"
-        elif "Alarm" in input_string:
+        elif "Alarm" in grbl_status:
             return "Alarm"
-        elif "Home" in input_string:
+        elif "Home" in grbl_status:
             return "Home"
+        elif "Run" in grbl_status:
+            return "Run"
+        elif "Hold" in grbl_status:
+            return "Hold"
+        elif "Door" in grbl_status:
+            return "Door"
+        elif "Check" in grbl_status:
+            return "Check"
+        elif "Sleep" in grbl_status:
+            return "Sleep"
         else:
-            log.error("Parsed State Error")
+            log.error("Parsed State Error: {}".format(grbl_status))
             return "Temp"
     
     def block_for_jog(self):
+        """Blocking function to help with tasks that need to be synchronized.
+        """
         # Block while jog waits to complete. Make sure that the monitor can update its state before trying to test state
         time.sleep(0.5)
         while self.state == "Jog":
             time.sleep(0.5)
-        return None
     
-    def _send_command(self, cmd) -> str:
-        def read_response(ser):
-            response = ""
+    def _send_command(self, cmd:str) -> list:
+        """Function to send a G-code command to GRBL via serial. Should be treated as a private function to prevent erroneous commands.
 
-            try: 
-                while ser.in_waiting > 0:
-                    response += ser.readline().decode().strip() + "\n"
-                return response
-            except:
-                log.info("Error reading serial")
-                return None
-        
+        Args:
+            cmd (str): The G-Code command to send.
+
+        Returns:
+            str: All GRBL responses to command concatenated into one string and separated by \n.
+        """
         if not self.quiet:
             log.info("Sending {}".format(cmd))
 
-        self.s.flush()
-        self.s.write(str.encode("{}\n".format(cmd))) # Send g-code block to grbl
-        return read_response(self.s)
+        # Using lock to verify that the GRBL response is the associated to the current command being sent. 
+        # Don't send another command until you hear back. Also allows for safe alarm handling when that becomes a thing.
+        grbl_out_list = []
+        self.send_command_lock.acquire()
+            # self.s.flush() # pretty sure this is not needed and may provide odd behaviour
+        self.s.write(str.encode("{}\n".format(cmd.strip()))) # Send g-code block to grbl. Strip any accidental EOL
 
-    def jog_absolute_xyz(self, x, y, z, feed = None) -> None:
+        while self.s.in_waiting > 0:
+            grbl_out = self.s.readline().strip().decode("utf-8")
+            self.grbl_handshake(grbl_out)
+            grbl_out_list.append(grbl_out)
+
+        self.send_command_lock.release()
+        return grbl_out_list
+
+    def grbl_handshake(self, grbl_out:str):
+        """Interpreting GRBL responses to G-code commands in readable text. See https://github.com/gnea/grbl/wiki/Grbl-v1.1-Interface
+
+        Args:
+            grbl_out_list (str): The responses concatenated into one string from GRBL after it receives a command.
+        """
+
+        if "<" in grbl_out: # Contains push message with response from '?' command
+            if not self.quiet:
+                log.info("GRBL Status: {}".format(grbl_out)) # 
+        elif "[" in grbl_out:
+            log.info("GRBL Message: {}".format(grbl_out))
+        elif "ok" in grbl_out:
+            if not self.quiet:
+                log.info("Command sent and OK")
+        elif "error" in grbl_out:
+            log.error("G-code error. See interface wiki for more details on the specific code. {} \n\n".format(grbl_out))
+        elif "ALARM:10" in grbl_out:
+            log.error("Homing fail. On dual axis machines, could not find the second limit switch for self-squaring. {} \n\n".format(grbl_out))
+        elif "ALARM:1" in grbl_out: # TODO: add halting for the alarms 
+            log.error("Hard limit triggered. Machine position is likely lost due to sudden and immediate halt. Re-homing is highly recommended. {} \n\n".format(grbl_out))
+        elif "ALARM:2" in grbl_out:
+            log.error("G-code motion target exceeds machine travel. Machine position safely retained. Alarm may be unlocked. {} \n\n".format(grbl_out))
+        elif "ALARM:3" in grbl_out:
+            log.error("Reset while in motion. Grbl cannot guarantee position. Lost steps are likely. Re-homing is highly recommended. {} \n\n".format(grbl_out))
+        elif "ALARM:6" in grbl_out:
+            log.error("Homing fail. Reset during active homing cycle. {} \n\n".format(grbl_out))
+        elif "ALARM:8" in grbl_out:
+            log.error("Homing fail. Cycle failed to clear limit switch when pulling off. Try increasing pull-off setting or check wiring. {} \n\n".format(grbl_out))
+        elif "ALARM:9" in grbl_out:
+            log.error("Homing fail. Could not find limit switch within search distance. Defined as 1.5 * max_travel on search and 5 * pulloff on locate phases. {} \n\n".format(grbl_out))
+       
+        else:
+            log.error("GRBL Response : {}".format(grbl_out))
+
+    def jog_absolute_xyz(self, x: float, y: float, z: float, feed: int = None) -> None:
+        """Jog abstraction for jogging in the X, then Y, then Z axes.
+
+        Args:
+            x (float): X location to jog to in mm.
+            y (float): Y location to jog to in mm.
+            z (float): Z location to jog to in mm.    
+            feed (int, optional): Feed rate to move at in mm/sec. Defaults to None.
+        """
         if feed is not None:
             feed_rate = feed
         else:
@@ -134,13 +222,20 @@ class Gantry:
         cmd = "$J=G90 G21 Z{} F{}".format(z, feed_rate)
         self._send_command(cmd)
         
-    def jog_absolute_xy(self, x, y, feed = None) -> None:
+    def jog_absolute_xy(self, x:float, y:float, feed:int = None) -> None:
+        """Jog abstraction for jogging in the X and Y axes simultaneously.
+
+        Args:
+            x (float): X location to jog to in mm.
+            y (float): Y location to jog to in mm.
+            feed (int, optional): Feed rate to move at in mm/sec. Defaults to None.
+        """
         if feed is not None:
             feed_rate = feed
         else:
             feed_rate = self.feed_rate_xy
         cmd = "$J=G90 G21 X{} Y{} F{}".format(x, y, feed_rate)
-        self._send_command(cmd)
+        _ = self._send_command(cmd)
 
     def jog_absolute_x(self, pos, feed = None) -> None:
         if feed is not None:
@@ -148,7 +243,7 @@ class Gantry:
         else:
             feed_rate = self.feed_rate_xy
         cmd = "$J=G90 G21 X{} F{}".format(pos, feed_rate)
-        self._send_command(cmd)
+        _ = self._send_command(cmd)
 
     def jog_absolute_y(self, pos, feed = None) -> None:
         if feed is not None:
@@ -156,7 +251,7 @@ class Gantry:
         else:
             feed_rate = self.feed_rate_xy
         cmd = "$J=G90 G21 Y{} F{}".format(pos, feed_rate)
-        self._send_command(cmd)
+        _ = self._send_command(cmd)
 
     def jog_absolute_z(self, pos, feed = None) -> None:
         if feed is not None:
@@ -164,7 +259,7 @@ class Gantry:
         else:
             feed_rate = self.feed_rate_z
         cmd = "$J=G90 G21 Z{} F{}".format(pos, feed_rate)
-        self._send_command(cmd)
+        _ = self._send_command(cmd)
 
     def jog_relative_x(self, dist, feed = None) -> None:
         '''
@@ -177,7 +272,7 @@ class Gantry:
         else:
             feed_rate = self.feed_rate_xy
         cmd = "$J=G91 G21 X{} F{}".format(dist, feed_rate)
-        self._send_command(cmd)
+        _ = self._send_command(cmd)
 
     def jog_relative_y(self, dist, feed = None) -> None:
         '''
@@ -190,7 +285,7 @@ class Gantry:
         else:
             feed_rate = self.feed_rate_xy
         cmd = "$J=G91 G21 Y{} F{}".format(dist, feed_rate)
-        self._send_command(cmd)
+        _ = self._send_command(cmd)
 
     def jog_relative_z(self, dist, feed = None) -> None:
         '''
@@ -203,7 +298,7 @@ class Gantry:
         else:
             feed_rate = self.feed_rate_z
         cmd = "$J=G91 G21 Z{} F{}".format(dist, feed_rate)
-        self._send_command(cmd)
+        _ = self._send_command(cmd)
 
     def jog_cancel(self) -> None:
         """Immediately cancels the current jog state by a feed hold and
@@ -212,41 +307,26 @@ class Gantry:
         invoked and in-process.
         """
         cmd = "\x85"
-        self._send_command(cmd)
+        _ = self._send_command(cmd)
     
     def pause(self) -> None:
         cmd = "M0"
-        self._send_command(cmd)
+        _ = self._send_command(cmd)
 
     def resume(self) -> None:
         cmd = "~"
-        self._send_command(cmd)
+        _ = self._send_command(cmd)
 
     def homing_sequence(self) -> None:
+        """Home the machine.
+        """
         cmd = "$H"
-        self._send_command(cmd)
-        self.query_state()
+        _ = self._send_command(cmd)
 
     def set_origin(self) -> None:
         cmd = "G10 P0 L20 X0 Y0 Z0"
-        self._send_command(cmd)
+        _ = self._send_command(cmd)
 
-    def query_state(self) -> None:
-        """Query the state of the machine. Updates the attribute if the machine is connected
-        """
-        cmd = "?"
-        res_str = self._send_command(cmd)
-        if res_str[-2:] == "ok":
-            self._connected = True
-        else:
-            self._connected = False
-
-    def is_connected(self):
-        if self._connected:
-            return True
-        else:
-            return False
-        
     def log_serial_out(self, s_out):
         if not self.quiet:
             log.info(' : ' + str(s_out.strip()))
@@ -254,27 +334,29 @@ class Gantry:
     def set_acceleration(self, acc=50):
         # mm / sec^2
         # set xyz feed acceleration
-        self._send_command("$120={}".format(acc))
-        self._send_command("$121={}".format(acc))
-        self._send_command("$122={}".format(acc))
+        _ = self._send_command("$120={}".format(acc))
+        _ = self._send_command("$121={}".format(acc))
+        _ = self._send_command("$122={}".format(acc))
 
     def serial_connect_port(self) -> None:
+        """Connect via serial to GRBL as done in the given example. https://github.com/gnea/grbl/blob/master/doc/script/simple_stream.py 
+        """
         log.info("Connecting to GRBL via serial")
         if self.s is None:
             self.s = serial.Serial(self._serial_port, 115200) # WILL NEED TO CHANGE THIS PER DEVICE / OS
-            self.s.write(b"\r\n\r\n")
             time.sleep(2)# Wait for grbl to initialize 
+
             # Wake up grbl
+            log.info("Writing to wake grbl")
+            self.s.write(b"\r\n\r\n")
+            log.info("Flush input")
+            self.s.flushInput()  # Flush startup t
             grbl_out = self.s.readline() # Wait for grbl response with carriage return
             grbl_out_str = grbl_out.decode("utf-8")
 
-            if grbl_out_str.strip() == "ok":
-                self._connected = True
-            else:
-                self._connected = False
+            log.info(grbl_out_str)
 
             self.log_serial_out(grbl_out)
-            self.s.flushInput()  # Flush startup t
             log.info("Input flushed")
             log.info("Starting Position Monitor")
        
@@ -292,3 +374,23 @@ class Gantry:
                 self.s.close()
             self.stop_threads = True
     
+if __name__ == "__main__":
+    s = serial.Serial('/dev/ttyUSB0',115200)
+    f = ["?", "?", "?", "?", "?", "?", "?", "?", "?", "?", "?", "?", "?", "?", "G91 Xk F200", "G91 Y-10 F50", "G91 Y-0.00000001 F50"]
+
+    g = Gantry()
+    # Wake up grbl
+    g.serial_connect_port()
+
+    # Stream g-code to grbl
+    for line in f:
+        g._send_command(line)
+            
+        time.sleep(0.2)
+
+    # Wait here until grbl is finished to close serial port and file.
+    input("  Press <Enter> to exit and disable grbl.") 
+
+    # Close file and serial port
+
+    s.close()    
