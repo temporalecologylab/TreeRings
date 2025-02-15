@@ -11,6 +11,7 @@ import glob
 import gc
 import imutils
 import logging as log
+import sample
 # from memory_profiler import profile
 import sys 
 import time
@@ -27,12 +28,13 @@ class MaxFileSizeException(Exception):
         super().__init__(message)
 
 class Stitcher:
-    def __init__(self, frame_dir):
+    def __init__(self, sample: sample.Sample):
         config = utils.load_config()
+        self.sample = sample
         self._memmaps = []
         self._tiles = []
         self._mosaic = None
-        self._frame_dir = frame_dir
+        self._frame_dir = sample.directory
         self._metadata = None
         self._max_file_size = config["stitcher"]["MAX_FILE_SIZE_GB"] * 1000 # GBs
 
@@ -131,28 +133,6 @@ class Stitcher:
             self._metadata = j
             f.close()
 
-    def write_metadata(self, new_dir, shape, frame_shape, stitch_time):
-        new_metadata = {}
-        new_metadata["species"]=self._metadata["species"]
-        new_metadata["id1"]=self._metadata["id1"]
-        new_metadata["id2"]=self._metadata["id2"]
-        new_metadata["notes"]=self._metadata["notes"]
-        new_metadata["camera_pixels"]=self._metadata["camera_pixels"]
-        new_metadata["percent_overlap"]=self._metadata["percent_overlap"]
-        new_metadata["DPI"] = int((frame_shape[0] / self._metadata["image_height_mm"]) * 25.4) # fixing bug... cannot assume the overall mosaic height and sample height can be related perfectly
-        new_metadata["sample_height_mm"] = self._metadata["sample_height_mm"]
-        new_metadata["sample_width_mm"] = self._metadata["sample_width_mm"]
-        new_metadata["pixels_h"] = shape[0]
-        new_metadata["pixels_w"] = shape[1]
-        new_metadata["depth"] = shape[2]
-        new_metadata["stitch_time"] = stitch_time
-        new_metadata["frame_pixels_h"] = frame_shape[0]
-        new_metadata["frame_pixels_w"] = frame_shape[1]
-         
-
-        with open(os.path.join(new_dir, 'metadata.json'), 'w', encoding='utf-8') as f:
-            json.dump(new_metadata, f, ensure_ascii=False, indent=4)
-
     def memmap_to_tiff(self, memmap, path_tif):
         if memmap is not None:
             tifffile.imwrite(
@@ -179,7 +159,7 @@ class Stitcher:
     # @profile
     def stitch(self, resize=None):
         start_time = time.time()
-
+        self.sample.set_start_time_stitching(start_time)
         if resize is not None and resize < 1.0 and resize > 0:
             path = os.path.join(self._frame_dir, "{}per".format(int(resize * 100)))
             mosaic_dat_path = os.path.join(path, "mosaic_{}per.dat".format(int(resize *100)))
@@ -206,8 +186,12 @@ class Stitcher:
         shape = self._mosaic.save(mosaic_dat_path)
 
         end_time = time.time()
-        stitch_time = end_time - start_time
-        self.write_metadata(path, shape, memmap_shape, stitch_time)
+        self.sample.set_end_time_stitching(end_time)
+        self.sample.set_stitch_height_pixels(shape[0])
+        self.sample.set_stitch_width_pixels(shape[1])
+        self.sample.set_stitch_depth(shape[2])
+
+        self.sample.to_json(path)
 
         # no need in writing a normal tiff if it's going to be greater than the maximum tiff filesize
         if (shape[0] * shape[1] * shape[2]) / 1e6  < 3500:

@@ -19,6 +19,7 @@ class Camera:
         CROP_H = self.config["camera"]["CROP_H"]
         W_PIXELS = self.config["camera"]["W_PIXELS_NO_CROP"] - 2 * CROP_W
         H_PIXELS = self.config["camera"]["H_PIXELS_NO_CROP"] - 2 * CROP_H
+        MAX_DPI = self.config["camera"]["MAX_DPI"]
 
         Gst.init(None)
         # Create the pipeline with both display and save frame functionality

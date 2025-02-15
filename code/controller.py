@@ -35,6 +35,7 @@ class Controller:
         self.slow_feed_rate_z = self.config["controller"]["SLOW_FEED_RATE_Z"]
         self.fast_feed_rate_xy = self.config["controller"]["FAST_FEED_RATE_XY"]
         self.fast_feed_rate_z = self.config["controller"]["FAST_FEED_RATE_Z"]
+        self.max_dpi = self.config["camera"]["MAX_DPI"]
     
         #Objects
         self.samples = []
@@ -103,7 +104,8 @@ class Controller:
             self.set_directory(sample.directory)
 
             start_time = time.time()
-        
+
+            sample.set_start_time_imaging(start_time)
             gantry_thread = Thread(target=self.capture_grid_photos, args=(sample, focus_queue, pid_queue, pid_lock, progress_callback, stop_capture))
             focus_thread = Thread(target=self.focus.find_focus, args=(sample, focus_queue, pid_queue, pid_lock))
             gantry_thread.start()
@@ -114,12 +116,9 @@ class Controller:
             focus_thread.join()
 
             end_time = time.time()
-            elapsed_time = end_time - start_time
-
-            self.create_metadata(sample, elapsed_time)
-            
-            return
-            #stop_capture.set()
+            sample.set_end_time_imaging(end_time)
+            sample.to_json()
+            break
 
     def capture_all_samples(self, progress_callback: Callable, stop_capture: Event):
         """Callable for the GUI to iterate through all samples. For multiple sample capture.
@@ -142,23 +141,25 @@ class Controller:
                 # Only stitch if the capture complete successfully
                 if not stop_capture.is_set():
                     print('stitching frames')
-                    self.stitch_frames(sample.directory)
+                    self.stitch_frames(sample)
                 if len(self.samples) == 0:
                     stop_capture.set()
 
             return
 
-    def stitch_frames(self, frame_dir: str):
+    def stitch_frames(self, sample: sample.Sample):
         """Stitch together frames into a mosaic. Not perfect yet as retrofitting Stitch2d is slightly cumbersome. If running into stitching issues, such as 'Killed' 
         or OOM, please try stitching using a more power computer with 16 GB of rame or something. This is a decently high priority to fix.
 
         Args:
-            frame_dir (str): Directory of where the frames are. 
+            sample (str): sample.Sample which is being stitched.. 
         """
+
         for size in self.stitch_sizes:
-            st = stitcher.Stitcher(frame_dir) 
+            st = stitcher.Stitcher(sample) 
             #st.stitch(resize=size)
             try:
+                sample.set_dpi(size, self.max_dpi)
                 st.stitch(resize = size)
             except RuntimeError:
                 print("Cannot align with this resize value.")
@@ -360,48 +361,6 @@ class Controller:
         self.jog_relative_x(d, feed=feed) # max travel should be half of the range in either direction. Als
         log.info("Jog {} mm to recenter vertical core. i: {}, i_middle: {}".format(d, i, i_middle))
 
-    def create_metadata(self, sample: sample.Sample, elapsed_time: float):
-        """Create metadata for the sample.
-
-        Args:
-            sample (sample.Sample): Instance of the sample that was imaged
-            elapsed_time (float): Time to capture 
-        """
-        pixels = self.camera.h_pixels * self.camera.w_pixels
-        dpi = self.camera.w_pixels/sample.image_width_mm * 25.4  
-        metadata = {
-            "species": sample.species,
-            "rows": sample.rows,
-            "cols": sample.cols,
-            "id1": sample.id1,
-            "id2": sample.id2,
-            "resolution_h": self.camera.h_pixels,
-            "resolution_w": self.camera.w_pixels,
-            "elapsed_time": elapsed_time,
-            "DPI": int(dpi), # choosing ceil would also be an option but either way they introduce close to random error across all samples
-            "photo_count": sample.rows * sample.cols,
-            "image_height_mm": self.image_height_mm,
-            "image_width_mm": self.image_width_mm,
-            "image_crop_h": self.camera.crop_h,
-            "image_crop_w": self.camera.crop_w,
-            "percent_overlap": sample.percent_overlap,
-            "is_core": sample.is_core,
-            "sample_height_mm": sample.height,
-            "sample_width_mm":  sample.width,
-            "camera_pixels": pixels,
-            "notes": sample.notes,
-            "center": sample.get_center_location(),
-            "top_left": sample.get_top_left_location(),
-            "coordinates": sample.coordinates,
-            "background": sample.background,
-            "background_std": sample.background_std,
-            "focus_index": sample.focus_index,
-            "normalized_variance": sample.nvar  
-        }
-
-        with open ("{}/metadata.json".format(self.directory), "w", encoding="utf-8") as f:
-            json.dump(metadata, f, ensure_ascii=False, indent=4)
-
     #### JOG METHODS ####
 
     def jog_relative_x(self, dist: float, feed:int = None):
@@ -591,7 +550,7 @@ class Controller:
             id2 = "na"
 
         #path_name = self.cb_capture_image()
-        ck = sample.Sample(width, height, species, id1, id2, notes, self.image_width_mm, self.image_height_mm, is_core, percent_overlap=overlap, x=center_x, y=center_y, z=center_z)
+        ck = sample.Sample(width, height, species, id1, id2, notes, self.image_width_mm, self.image_height_mm, self.camera.w_pixels, self.camera.h_pixels, is_core, percent_overlap=overlap, x=center_x, y=center_y, z=center_z)
         self.samples.append(ck)
 
     def get_samples(self):

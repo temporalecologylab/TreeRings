@@ -2,11 +2,12 @@ import cv2
 import time
 import numpy as np
 import math
+import utils
 from pathlib import Path
 from datetime import datetime
 
 class Sample:
-    def __init__(self, sample_width_mm: int, sample_height_mm: int, species:str, id1:str, id2:str, notes:str, image_width_mm:float, image_height_mm:float, is_core:bool,  percent_overlap:int = 50, is_vertical:bool = True, x:float = None, y:float = None, z:float = None):
+    def __init__(self, sample_width_mm: int, sample_height_mm: int, species:str, id1:str, id2:str, notes:str, image_width_mm:float, image_height_mm:float, image_width_pixels:float, image_height_pixels:float, is_core:bool, percent_overlap:int = 50, is_vertical:bool = True, x:float = None, y:float = None, z:float = None):
         """Class which contains the necessary information for each sample that needs to be digitized. Data comes from user inputs from GUI. Data is saved in metadata.json files alongside stitched images
 
         Args:
@@ -18,6 +19,8 @@ class Sample:
             notes (str): Additional notes for ambiguity in sample
             image_width_mm (float): Width in mm of the field of view of a single image. Helpful to print a 1mm x 1mm grid to measure
             image_height_mm (float): Height in mm of the field of view of a single image. Helpful to print a 1mm x 1mm grid to measure
+            image_width_pixels (float): Width in pixels of the field of view of a single image.
+            image_height_pixels (float): Height in mm of the field of view of a single image.
             is_core (bool): Is the sample a core? 
             percent_overlap (int, optional): Desired overlap between two images. Defaults to 50.
             is_vertical (bool, optional): If is_core, is the length of the core aligned vertically? Defaults to True.
@@ -27,6 +30,10 @@ class Sample:
         """
         self.width = sample_width_mm
         self.height = sample_height_mm
+        self.image_height_pixels = image_height_pixels
+        self.image_width_pixels = image_width_pixels
+        self.image_height_mm = image_height_mm
+        self.image_width_mm = image_width_mm
         self.percent_overlap = percent_overlap
         self._center = (round(x, 4),round(y, 4),round(z, 4))
         tl_x = x - (self.width/2)
@@ -54,6 +61,95 @@ class Sample:
         self.nvar = []
         self.is_core = is_core
         self.is_vertical = is_vertical
+        
+        # Adding rest of metadata after instantiation
+        self.start_time_imaging = None
+        self.end_time_imaging = None
+        self.start_time_stitching = None
+        self.end_time_stitching = None
+        self.targets_remaining = None
+        self.stitch_height_pixels = None
+        self.stitch_width_pixels = None
+        self.stitch_depth = None
+        self.dpi = None
+
+    def to_json(self, directory = None):
+        metadata = {
+            "species": self.species,
+            "rows": self.rows,
+            "cols": self.cols,
+            "id1": self.id1,
+            "id2": self.id2,
+            "resolution_h": self.image_height_pixels,
+            "resolution_w": self.image_width_pixels,
+            "photo_count": self.rows * self.cols,
+            "image_height_mm": self.image_height_mm,
+            "image_width_mm": self.image_width_mm,
+            "percent_overlap": self.percent_overlap,
+            "is_core": self.is_core,
+            "sample_height_mm": self.height,
+            "sample_width_mm":  self.width,
+            "notes": self.notes,
+            "center": self.get_center_location(),
+            "coordinates": self.coordinates,
+            "background": self.background,
+            "background_std": self.background_std,
+            "focus_index": self.focus_index,
+            "normalized_variance": self.nvar  
+        }
+
+        if self.dpi is not None:
+            metadata["dpi"] = int(self.dpi) # TODO: Add set dpi method
+
+        if self.start_time_imaging is not None and self.end_time_imaging is not None:
+            metadata["imaging_time"] = round(self.end_time_imaging - self.start_time_imaging, 2)
+
+        if self.start_time_stitching is not None and self.end_time_stitching is not None:
+            metadata["stitching_time"] = round(self.end_time_stitching - self.start_time_stitching, 2)
+
+        if self.targets_remaining is not None:
+            metadata["targets_remaining"] = self.targets_remaining
+
+        if self.stitch_height_pixels is not None:
+            metadata["stitch_height_pixels"] = self.stitch_height_pixels
+        
+        if self.stitch_width_pixels is not None:
+            metadata["stitch_width_pixels"] = self.stitch_width_pixels
+        
+        if self.stitch_depth is not None:
+            metadata["stitch_depth"] = self.stitch_depth
+
+        if directory is None:
+            utils.write_metadata(metadata, self.directory)
+        else:
+            utils.write_metadata(metadata, directory)
+            
+    def set_dpi(self, resize, max_dpi):
+        self.dpi = int(resize * max_dpi)
+
+    def set_start_time_imaging(self, time):
+        self.start_time_imaging = time
+
+    def set_end_time_imaging(self, time):
+        self.end_time_imaging = time
+
+    def set_start_time_stitching(self, time):
+        self.start_time_stitching = time
+
+    def set_end_time_stitching(self, time):
+        self.end_time_stitching = time
+
+    def set_stitch_height_pixels(self, pixels):
+        self.stitch_height_pixels = pixels
+
+    def set_stitch_width_pixels(self, pixels):
+        self.stitch_width_pixels = pixels
+
+    def set_stitch_depth(self, depth):
+        self.stitch_depth = depth
+
+    def from_json(self):
+        pass
 
     def calculate_grid_params(self):
         """Calculates the amount of rows and columns necessary to traverse the sample.

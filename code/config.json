@@ -6,7 +6,8 @@
             "CROP_H": 0,
             "CROP_W": 0,
             "W_PIXELS_NO_CROP": 3840,
-            "H_PIXELS_NO_CROP": 2160
+            "H_PIXELS_NO_CROP": 2160,
+            "MAX_DPI": 21500
         },
         "controller":
         {
