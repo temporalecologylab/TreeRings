@@ -31,7 +31,8 @@ class Gantry:
 
         self.position_lock = Lock()
         self.send_command_lock = Lock() # adding lock for send command so that we can correctly associate GRBL responses to the corresponding command
-        self.state = None
+        self.state_lock = Lock()
+        self._state = None
         
         self.thread = Thread(target=self.position_monitor)
 
@@ -43,7 +44,7 @@ class Gantry:
         self._send_command("$10=2")
         while not self.stop_threads:
             grbl_out_list = self._send_command(cmd)
-
+        
             for grbl_out in grbl_out_list:
                 if "ok" in grbl_out:
                     continue
@@ -58,7 +59,11 @@ class Gantry:
                         log.error("Response with unparsable coordinates: {}".format(grbl_out))
                     
                     self.position_lock.release()
-                    self.state = self.parse_state(grbl_out)
+
+                    self.state_lock.acquire()
+                    self._state = self.parse_state(grbl_out)
+                    self.state_lock.release()
+
                     if not self.quiet:
                         log.info("X {} \nY {}\nZ{}\n".format(_x, _y, _z))
                 else:
@@ -107,37 +112,65 @@ class Gantry:
         Returns:
             str: The current GRBL machine state.
         """
-        if "ALARM" in grbl_status:
-            log.info("GRBL ALARM SOUNDED: {}".format(grbl_status))
-        elif "Idle" in grbl_status:
-            return "Idle"
-        elif "Jog" in grbl_status:
-            return "Jog"
-        elif "Alarm" in grbl_status:
-            return "Alarm"
-        elif "Home" in grbl_status:
-            return "Home"
-        elif "Run" in grbl_status:
-            return "Run"
-        elif "Hold" in grbl_status:
-            return "Hold"
-        elif "Door" in grbl_status:
-            return "Door"
-        elif "Check" in grbl_status:
-            return "Check"
-        elif "Sleep" in grbl_status:
-            return "Sleep"
+        acquired = self.state_lock.acquire(timeout = 3)
+        if acquired:
+            if "ALARM" in grbl_status:
+                log.info("GRBL ALARM SOUNDED: {}".format(grbl_status))
+                self._state = "Alarm"
+                self.state_lock.release()
+            elif "Idle" in grbl_status:
+                self._state = "Idle"
+                self.state_lock.release()
+            elif "Jog" in grbl_status:
+                self._state = "Jog"
+                self.state_lock.release()
+            elif "Alarm" in grbl_status:
+                self._state = "Alarm"
+                self.state_lock.release()
+            elif "Home" in grbl_status:
+                self._state = "Home"
+                self.state_lock.release()
+            elif "Run" in grbl_status:
+                self._state = "Run"
+                self.state_lock.release()
+            elif "Hold" in grbl_status:
+                self._state = "Hold"
+                self.state_lock.release()
+            elif "Door" in grbl_status:
+                self._state = "Door"
+                self.state_lock.release()
+            elif "Check" in grbl_status:
+                self._state = "Check"
+                self.state_lock.release()
+            elif "Sleep" in grbl_status:
+                self._state = "Sleep"
+                self.state_lock.release()
+            else:
+                log.error("Parsed State Error: {}".format(grbl_status))
+                self._state = "Temp"
         else:
-            log.error("Parsed State Error: {}".format(grbl_status))
+            log.error("Could not acquire state lock before timeout (parse).")
             return "Temp"
-    
+        
     def block_for_jog(self):
         """Blocking function to help with tasks that need to be synchronized.
         """
         # Block while jog waits to complete. Make sure that the monitor can update its state before trying to test state
         time.sleep(0.5)
-        while self.state == "Jog":
+        while self.get_state() == "Jog":
             time.sleep(0.5)
+    
+    def get_state(self):
+        """Get machine state with thread safety.
+        """
+        acquired = self.state_lock.acquire(timeout=3)
+        if acquired:
+            state = self._state
+            self.state_lock.release()
+        else:
+            log.error("Could not acquire state lock before timeout.")
+            state = "Jog"
+        return state
     
     def _send_command(self, cmd:str) -> list:
         """Function to send a G-code command to GRBL via serial. Should be treated as a private function to prevent erroneous commands.
@@ -164,6 +197,7 @@ class Gantry:
             grbl_out_list.append(grbl_out)
 
         self.send_command_lock.release()
+        log.info("Release send command lock. {}".format(time.time()))
         return grbl_out_list
 
     def grbl_handshake(self, grbl_out:str):
