@@ -209,9 +209,8 @@ class Controller:
                         self._gantry.block_for_jog()
                         r = self.config["controller"]["CORE_CENTERING_RANGE"] #5
                         n_images_centering = self.config["controller"]["N_IMAGES_CORE_CENTERING"]
-                        filenames = self.capture_images_multiple_x(d, n_images_centering, self._gantry.feed_rate_z, r, self.acceleration_buffer)
+                        filenames = self.capture_images_multiple_x(sample.directory, n_images_centering, self._gantry.feed_rate_z, r, self.acceleration_buffer)
                         self.recenter_core_naive(filenames, r, self._gantry.feed_rate_z)
-
                 # Jog x and y and allow PID to handle the Z
                 elif img_num == len(sample.targets_top):
                     
@@ -220,15 +219,14 @@ class Controller:
                         self._gantry.jog_absolute_z(z)
                     else:
                         self._gantry.jog_absolute_xyz(x,y,z)
-
                 else:
                     if sample.is_core and sample.is_vertical:
                         self._gantry.jog_absolute_y(y)
                     else:
                         self._gantry.jog_absolute_xy(x, y)
-                    pid_lock.acquire()
+                    # pid_lock.acquire()
                     update_z = pid_queue.get()
-                    pid_lock.release()
+                    # pid_lock.release()
                     z += update_z
                     log.info(f"PID update Z by {update_z} mm")
                     if update_z != 0:
