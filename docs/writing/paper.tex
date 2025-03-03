@@ -8,7 +8,7 @@
 \usepackage{geometry}           
 \usepackage[numbers]{natbib}            
 \usepackage{hyperref}          
-\usepackage{subcaption}         
+\usepackage{subcaption}     
 % Page layout
 \geometry{margin=1in}          
 
@@ -117,13 +117,30 @@ to be saved along with the detected center coordinate of the sample. This proced
 The height, width, identifiers, sample type, and centering of the sample is sufficient information to digitize.
 
 \subsubsection{Exhaustive Sample Traverse}  
-% It would be super nice to have a concept image of this process! A - I've struggled a bit with how to convey this concisely, let me know what you think about the new figure
+
 \begin{figure}
   \centering
-  \includegraphics[height=0.4\linewidth]{../content/cookie_traverse.png}
-  \caption{Scanning a sample begins with the machine navigating to the center of the sample which was automatically recorded at sample add time. From there, a grid of target locations is calculated for the machine to capture an image at. The system systematically navigates to each location and captures an image until all target locations have been visited. Core samples are digitized in the same way but only capture images in one dimension.}
-  \label{fig:cookie_traverse}
-\end{figure}
+  \begin{subfigure}{.3\textwidth}
+      \centering
+      \includegraphics[width=.95\linewidth]{../content/cookie_figure_grid.png}  
+      \caption{}
+      \label{SUBFIGURE LABEL 1}
+  \end{subfigure}
+  \begin{subfigure}{.3\textwidth}
+      \centering
+      \includegraphics[width=.95\linewidth]{../content/cookie_figure_traverse_start.png}  
+      \caption{}
+      \label{SUBFIGURE LABEL 2}
+  \end{subfigure}
+  \begin{subfigure}{.3\textwidth}
+      \centering
+      \includegraphics[width=.95\linewidth]{../content/cookie_figure_second_row.png}  
+      \caption{}
+      \label{SUBFIGURE LABEL 3}
+  \end{subfigure}
+  \caption{This figure describes the imaging process of a cookie sample after it has been added by a user. In this example, the height and width enclosed the entire surface area of the cookie. (a) A grid of target coordinates is generated to systematically capture partially overlapping images. (b) The first image is taken a the center coordinate of the sample. The rectangular field of view from the camera moves to adjacent target coordinates until it reaches the left boundary---capturing an image for each target coordinate. (c) After completing the row, the machine moves to a new row and continues capturing adjacent images. }
+  \label{FIGURE LABEL}
+  \end{figure}
 
 In the GUI the operator indicates the height and width of the field of view in an individual image from the camera. 
 This varies on the focal length of the lens, but we have kept the field of view to be 3mm x 5mm. 
