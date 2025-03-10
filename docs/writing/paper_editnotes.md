@@ -1,4 +1,15 @@
-Notes from 24 February 2025 review by Lizzie
+### Notes from 9 March 2025 by Lizzie
+
+Some to do items ... 
+- See edits in the tex file. 
+- We should discuss authors again! So we can add authors and get this out to friendly review. 
+- I have added besjournals.bst to the folder; I think if you replace plainnat with that it should give you MEE style. 
+- If you ever have time, you could start on the cover letter. Check out examples here: https://github.com/temporalecologylab/labgitshadow/tree/master/resources/coverletters/regular but also CHECK what the journal will ask for.
+- Speaking of that, check how they want numbers shown and check you're consistent throughout on how we show them (no commas I think, white space before units)
+- In sci lit you generally shoudl not start sentences with 'and', use 'to get' and avoid it's (it is)
+- Usually journals just want 'Figure 3' (or Figure 3a or such) or even just 'Fig. 3a' so remove the 'see' throughout
+
+### Notes from 24 February 2025 review by Lizzie
 
 Looking good! This is part of what took me longer to get this review back to you .... 
 
