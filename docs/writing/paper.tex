@@ -210,7 +210,7 @@ A PID control algorithm with a process variable of $i_{max}$ and control variabl
 Instead of forcing a remarkably level sample alignment of $(d_1 - d_2) < 0.5mm$ (See Figure \ref{fig:realistic_levelling}), the system can handle $(Z_{k} - Z_{k+1} < 0.5mm)$ which is readily achievable. %After the capturing overlapping images across the entire surface area, the images are ready to be stitched.
 
 To reduce motion blur in the images, the range of $\boldsymbol{Z_{\text{samples}}}$ is traversed at constant velocity and images are captured without stopping. 
-Decoupling the auxiliary camera control from the G-code commands to control the machine has shown to improve speed and decrease vibrational effects from acceleration and deceleration \citep{propst_time_2025}.
+Decoupling the auxiliary camera control from the G-code commands to control the machine has shown to decrease digitization time and decrease vibrational effects from acceleration and deceleration \citep{propst_time_2025}.
 This is a variation of the standard approach used in 3D printing and Computer Numerical Control (CNC) machine control. 
   
 \subsubsection{Accounting for Translation Error Between Core Samples}
@@ -292,8 +292,11 @@ Our design minimizes the barriers to build a TIM in smaller labs without comprom
 Moving forward, TIM could benefit from being integrated into a cloud data storage system with automatic uploads---removing the need to manually transfer completed scans with physical drives.
 Additionally, developing a framework to run vessel counting or ring identification models while scanning could greatly decrease the time invested in manually identifying tree anatomy. % I guess Sandy never sent in results we could use? A- Sadly not.
 
-Our implementation of focusing images could be improved with the aid of additional sensors. Much of the imaging time of samples is the result of taking a vertical stack of images to obtain one in focus image. In advanced microscopy applications, it is common to see supplemental sensors used to measure the distance between the subject and lens.
+Our implementation of focusing images could be improved with the aid of additional sensors. Much of the imaging time of samples is the result of taking a vertical stack of images to obtain one in focus image. 
+In advanced microscopy applications, it is common to see supplemental sensors used to measure the distance between the subject and lens.
 Adding sensor support and a control loop to focus images could significantly reduce sampling time on the scale of an order of magnitude. 
+Using rotary encoders on each of the motors controlling the X and Y movement would be a welcomed addition---this would greatly increase the 
+accuracy of the the location of the camera on the work plane.  
 
 \bibliographystyle{plainnat}
 \bibliography{references}
