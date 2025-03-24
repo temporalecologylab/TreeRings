@@ -6,6 +6,7 @@ import tifffile
 import math
 import utils
 import cv2
+import json
 
 ONE_DIR = True
 confirmed_pit = False
@@ -136,7 +137,7 @@ def click_pit(tiff_path: str):
     cid = fig.canvas.mpl_connect('button_press_event', on_click)
     plt.show(block=True)
     
-def write_guidelines(image_path:str , metadata_path:str, center:list[int], endpoint0:list[int], endpoint1:list[int], endpoint2:list[int], one_directory:bool = False):
+def write_guidelines(image_path:str , metadata_path:str, center:list[int], endpoint0:list[int], endpoint1:list[int], endpoint2:list[int], parent_dir, one_directory:bool = False):
     """Use the guidelines generated from the user clicks to draw on the original image and save the result. Default is to save the new image in the source directory of the image but
     this can also be saved to one general directory using the one_directory = True.
 
@@ -151,7 +152,11 @@ def write_guidelines(image_path:str , metadata_path:str, center:list[int], endpo
     """
 
     # Load data 
-    metadata = utils.load_metadata(metadata_path)
+    # metadata = utils.load_metadata(metadata_path)
+    f = open(metadata_path)
+    metadata = json.load(f)
+    f.close()
+
     image = tifffile.imread(image_path)
 
     # Set line parameters
@@ -170,19 +175,21 @@ def write_guidelines(image_path:str , metadata_path:str, center:list[int], endpo
         i = 1
 
         # Create the directory
-        if not os.path.exists("./cookies_with_guides"):
-            os.makedirs("./cookies_with_guides")
+        if not os.path.exists("{}/cookies_with_guides".format(parent_dir)):
+            os.makedirs("{}/cookies_with_guides".format(parent_dir))
 
         # It's possible for multiple samples of the same plot to exist... must append values to their names if they already exist to not overwrite
-        image_path_final = os.path.join("./cookies_with_guides", "{}_{}_{}_guides.tif".format(metadata["species"], metadata['id1'], metadata["id2"]))
-        metadata_path_final =  os.path.join("./cookies_with_guides", "{}_{}_{}_metadata.json".format(metadata["species"], metadata['id1'], metadata["id2"]))
+        image_path_final = os.path.join("{}/cookies_with_guides".format(parent_dir), "{}_{}_{}_guides.tif".format(metadata["species"], metadata['id1'], metadata["id2"]))
+        metadata_path_final =  os.path.join("{}/cookies_with_guides".format(parent_dir), "{}_{}_{}_metadata.json".format(metadata["species"], metadata['id1'], metadata["id2"]))
         while os.path.exists(image_path_final):
             image_path_final = os.path.join(os.path.dirname(image_path_final), "{}_{}_{}_guides_{}.tif".format(metadata["species"], metadata['id1'], metadata["id2"], i))
             metadata_path_final =  os.path.join(os.path.dirname(image_path_final), "{}_{}_{}_metadata_{}.json".format(metadata["species"], metadata['id1'], metadata["id2"], i))
             i+=1
 
         # write metadata if saving to the new folder
-        utils.write_metadata(metadata, metadata_path_final)
+        # utils.write_metadata(metadata, metadata_path_final)
+        with open(metadata_path_final, 'w', encoding='utf-8') as f:
+            json.dump(metadata, f, ensure_ascii=False, indent=4)
     # Save in source directory. No need to write metadata again if in source directory
     else:
         image_path_final = os.path.join(os.path.dirname(image_path), "{}_{}_{}_guides.tif".format(metadata["species"], metadata['id1'], metadata["id2"]))
@@ -222,15 +229,16 @@ def main():
     # Walk the parent directory and find all tif files. Make sure to get the metadata as well
     for root, _, files in os.walk(parent_dir):
         for filename in files:
-            if '.tif' in filename:
+            if '.tif' in filename and '._' not in filename:
                 tiff_files.append(os.path.join(root, filename))
                 metadata_files.append(os.path.join(root, 'metadata.json'))
 
     # Iterate through all of the tiff files found
     for tiff_file, metadata_file in zip(tiff_files, metadata_files):
         click_pit(tiff_file)
+
         if len(points) == 4:
-            write_guidelines(tiff_file, metadata_file, points[0], points[1], points[2], points[3], ONE_DIR)
+            write_guidelines(tiff_file, metadata_file, points[0], points[1], points[2], points[3], parent_dir, ONE_DIR)
         reset()
 
     print("Pit confirmation complete. Proceeding to the next steps...")
