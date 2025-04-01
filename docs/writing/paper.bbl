@@ -1,126 +1,151 @@
-\begin{thebibliography}{11}
+\begin{thebibliography}{25}
 \providecommand{\natexlab}[1]{#1}
-\providecommand{\url}[1]{\texttt{#1}}
-\expandafter\ifx\csname urlstyle\endcsname\relax
-  \providecommand{\doi}[1]{doi: #1}\else
-  \providecommand{\doi}{doi: \begingroup \urlstyle{rm}\Url}\fi
 
-\bibitem[Fritts(1971)]{fritts_dendroclimatology_1971}
-Harold~C. Fritts.
-\newblock Dendroclimatology and dendroecology.
-\newblock \emph{Quaternary Research}, 1\penalty0 (4):\penalty0 419--449,
-  December 1971.
-\newblock ISSN 0033-5894.
-\newblock \doi{10.1016/0033-5894(71)90057-3}.
-\newblock URL
-  \url{https://www.sciencedirect.com/science/article/pii/0033589471900573}.
+\bibitem[{Buechling \emph{et~al.}(2017)Buechling, Martin \&
+  Canham}]{buechling_climate_2017}
+Buechling, A., Martin, P.H. \& Canham, C.D. (2017) Climate and competition
+  effects on tree growth in {Rocky} {Mountain} forests. \emph{Journal of
+  Ecology} \textbf{105}, 1636--1647, \_eprint:
+  https://onlinelibrary.wiley.com/doi/pdf/10.1111/1365-2745.12782.
 
-\bibitem[García-Hidalgo et~al.(2022)García-Hidalgo, García-Pedrero, Colón,
-  Sangüesa-Barreda, García-Cervigón, López-Molina, Hernández-Alonso,
-  Rozas, Olano, and Alonso-Gómez]{garcia-hidalgo_capturing_2022}
-Miguel García-Hidalgo, Ángel García-Pedrero, Daniel Colón, Gabriel
-  Sangüesa-Barreda, Ana~I. García-Cervigón, Juan López-Molina, Héctor
-  Hernández-Alonso, Vicente Rozas, José~Miguel Olano, and Víctor
-  Alonso-Gómez.
-\newblock {CaptuRING}: {A} do-it-yourself tool for wood sample digitization.
-\newblock \emph{Methods in Ecology and Evolution}, 13\penalty0 (6):\penalty0
-  1185--1191, 2022.
-\newblock ISSN 2041-210X.
-\newblock \doi{10.1111/2041-210X.13847}.
-\newblock URL
-  \url{https://onlinelibrary.wiley.com/doi/abs/10.1111/2041-210X.13847}.
-\newblock \_eprint:
+\bibitem[{Canham \emph{et~al.}(2004)Canham, LePage \&
+  Coates}]{canham_neighborhood_2004}
+Canham, C.D., LePage, P.T. \& Coates, K.D. (2004) A neighborhood analysis of
+  canopy tree competition: effects of shading versus crowding. \emph{Canadian
+  Journal of Forest Research} \textbf{34}, 778--787, publisher: NRC Research
+  Press.
+
+\bibitem[{Fritts(1971)}]{fritts_dendroclimatology_1971}
+Fritts, H.C. (1971) Dendroclimatology and dendroecology. \emph{Quaternary
+  Research} \textbf{1}, 419--449.
+
+\bibitem[{García-Hidalgo \emph{et~al.}(2022)García-Hidalgo, García-Pedrero,
+  Colón, Sangüesa-Barreda, García-Cervigón, López-Molina,
+  Hernández-Alonso, Rozas, Olano \&
+  Alonso-Gómez}]{garcia-hidalgo_capturing_2022}
+García-Hidalgo, M., García-Pedrero, A., Colón, D., Sangüesa-Barreda, G.,
+  García-Cervigón, A.I., López-Molina, J., Hernández-Alonso, H., Rozas, V.,
+  Olano, J.M. \& Alonso-Gómez, V. (2022) {CaptuRING}: {A} do-it-yourself tool
+  for wood sample digitization. \emph{Methods in Ecology and Evolution}
+  \textbf{13}, 1185--1191, \_eprint:
   https://onlinelibrary.wiley.com/doi/pdf/10.1111/2041-210X.13847.
 
-\bibitem[Griffin et~al.(2021)Griffin, Porter, Trumper, Carlson, Crawford,
-  Schwalen, and McFadden]{griffin_gigapixel_2021}
-Daniel Griffin, Samantha~T. Porter, Matthew~L. Trumper, Kate~E. Carlson,
-  Daniel~J. Crawford, Daniel Schwalen, and Colin~H. McFadden.
-\newblock Gigapixel {Macro} {Photography} of {Tree} {Rings}.
-\newblock \emph{Tree-Ring Research}, 77\penalty0 (2):\penalty0 86--94, July
-  2021.
-\newblock ISSN 1536-1098, 2162-4585.
-\newblock \doi{10.3959/TRR2021-3}.
-\newblock URL
-  \url{https://bioone.org/journals/tree-ring-research/volume-77/issue-2/TRR2021-3/Gigapixel-Macro-Photography-of-Tree-Rings/10.3959/TRR2021-3.full}.
-\newblock Publisher: Tree-Ring Society.
+\bibitem[{Girardin \emph{et~al.}(2021)Girardin, Guo, Metsaranta, Gervais,
+  Campbell, Arsenault, Isaac-Renton, Harvey, Bhatti \&
+  Hogg}]{girardin_national_2021}
+Girardin, M.P., Guo, X.J., Metsaranta, J., Gervais, D., Campbell, E.,
+  Arsenault, A., Isaac-Renton, M., Harvey, J.E., Bhatti, J. \& Hogg, E.H.
+  (2021) A national tree-ring data repository for {Canadian} forests
+  ({CFS}-{TRenD}): structure, synthesis, and applications. \emph{Environmental
+  Reviews} \textbf{29}, 225--241, publisher: NRC Research Press.
 
-\bibitem[Guay et~al.(1992)Guay, Gagnon, and Morin]{guay_new_1992}
-Régent Guay, Réjean Gagnon, and Hubert Morin.
-\newblock A new automatic and interactive tree ring measurement system based on
-  a line scan camera.
-\newblock \emph{The Forestry Chronicle}, 68\penalty0 (1):\penalty0 138--141,
-  February 1992.
-\newblock ISSN 0015-7546, 1499-9315.
-\newblock \doi{10.5558/tfc68138-1}.
-\newblock URL \url{http://pubs.cif-ifc.org/doi/10.5558/tfc68138-1}.
+\bibitem[{Griffin \emph{et~al.}(2021)Griffin, Porter, Trumper, Carlson,
+  Crawford, Schwalen \& McFadden}]{griffin_gigapixel_2021}
+Griffin, D., Porter, S.T., Trumper, M.L., Carlson, K.E., Crawford, D.J.,
+  Schwalen, D. \& McFadden, C.H. (2021) Gigapixel {Macro} {Photography} of
+  {Tree} {Rings}. \emph{Tree-Ring Research} \textbf{77}, 86--94, publisher:
+  Tree-Ring Society.
 
-\bibitem[Guibal and Guiot(2021)]{guibal_dendrochronology_2021}
-Frédéric Guibal and Joël Guiot.
-\newblock Dendrochronology.
-\newblock In Gilles Ramstein, Amaëlle Landais, Nathaelle Bouttes, Pierre
-  Sepulchre, and Aline Govin, editors, \emph{Paleoclimatology}, pages 117--122.
-  Springer International Publishing, Cham, 2021.
-\newblock ISBN 978-3-030-24982-3.
-\newblock \doi{10.1007/978-3-030-24982-3_8}.
-\newblock URL \url{https://doi.org/10.1007/978-3-030-24982-3_8}.
+\bibitem[{Grissino-Mayer \& Fritts(1997)}]{grissino-mayer_international_1997}
+Grissino-Mayer, H.D. \& Fritts, H.C. (1997) The {International} {Tree}-{Ring}
+  {Data} {Bank}: an enhanced global database serving the global scientific
+  community. \emph{The Holocene} \textbf{7}, 235--238, publisher: SAGE
+  Publications Ltd.
 
-\bibitem[Levanič(2007)]{levanic_atrics_2007}
-Tom Levanič.
-\newblock Atrics – {A} {New} {System} for {Image} {Acquisition} in
-  {Dendrochronology}.
-\newblock \emph{Tree-Ring Research}, 63\penalty0 (2):\penalty0 117--122,
-  December 2007.
-\newblock ISSN 1536-1098, 2162-4585.
-\newblock \doi{10.3959/1536-1098-63.2.117}.
-\newblock URL
-  \url{https://bioone.org/journals/tree-ring-research/volume-63/issue-2/1536-1098-63.2.117/Atrics--A-New-System-for-Image-Acquisition-in-Dendrochronology/10.3959/1536-1098-63.2.117.full}.
-\newblock Publisher: Tree-Ring Society.
+\bibitem[{Guay \emph{et~al.}(1992)Guay, Gagnon \& Morin}]{guay_new_1992}
+Guay, R., Gagnon, R. \& Morin, H. (1992) A new automatic and interactive tree
+  ring measurement system based on a line scan camera. \emph{The Forestry
+  Chronicle} \textbf{68}, 138--141.
 
-\bibitem[Mir et~al.(2014)Mir, Xu, and Van~Beek]{sampat_extensive_2014}
-Hashim Mir, Peter Xu, and Peter Van~Beek.
-\newblock An extensive empirical evaluation of focus measures for digital
-  photography.
-\newblock page 90230I, San Francisco, California, USA, March 2014.
-\newblock \doi{10.1117/12.2042350}.
-\newblock URL
-  \url{http://proceedings.spiedigitallibrary.org/proceeding.aspx?doi=10.1117/12.2042350}.
+\bibitem[{Guibal \& Guiot(2021)}]{guibal_dendrochronology_2021}
+Guibal, F. \& Guiot, J. (2021) Dendrochronology. \emph{Paleoclimatology} (eds.
+  G.~Ramstein, A.~Landais, N.~Bouttes, P.~Sepulchre \& A.~Govin), pp. 117--122,
+  Springer International Publishing, Cham.
 
-\bibitem[O'Dwyer(2000)]{odwyer_summary_2000}
-Aidan O'Dwyer.
-\newblock A {Summary} of {PI} and {PID} {Controller} {Tuning} {Rules} for
-  {Processes} with {Time} {Delay}. {Part} 1: {PI} {Controller} {Tuning}
-  {Rules}.
-\newblock \emph{IFAC Proceedings Volumes}, 33\penalty0 (4):\penalty0 159--164,
-  April 2000.
-\newblock ISSN 1474-6670.
-\newblock \doi{10.1016/S1474-6670(17)38237-X}.
-\newblock URL
-  \url{https://www.sciencedirect.com/science/article/pii/S147466701738237X}.
+\bibitem[{Levanič(2007)}]{levanic_atrics_2007}
+Levanič, T. (2007) Atrics – {A} {New} {System} for {Image} {Acquisition} in
+  {Dendrochronology}. \emph{Tree-Ring Research} \textbf{63}, 117--122,
+  publisher: Tree-Ring Society.
 
-\bibitem[Robinson and Evans()]{robinson_microcomputer_nodate}
-William~J Robinson and Robert Evans.
-\newblock A {MICROCOMPUTER} -{BASED} {TREE} -{RING} {MEASURING} {SYSTEM}.
+\bibitem[{Lowe(2004)}]{lowe_distinctive_2004}
+Lowe, D.G. (2004) Distinctive {Image} {Features} from {Scale}-{Invariant}
+  {Keypoints}. \emph{International Journal of Computer Vision} \textbf{60},
+  91--110.
 
-\bibitem[Sheppard(2010)]{sheppard_dendroclimatology_2010}
-Paul~R. Sheppard.
-\newblock Dendroclimatology: extracting climate from trees.
-\newblock \emph{WIREs Climate Change}, 1\penalty0 (3):\penalty0 343--352, 2010.
-\newblock ISSN 1757-7799.
-\newblock \doi{10.1002/wcc.42}.
-\newblock URL \url{https://onlinelibrary.wiley.com/doi/abs/10.1002/wcc.42}.
-\newblock \_eprint: https://onlinelibrary.wiley.com/doi/pdf/10.1002/wcc.42.
+\bibitem[{Mann \emph{et~al.}(1999)Mann, Bradley \& Hughes}]{mann_northern_1999}
+Mann, M.E., Bradley, R.S. \& Hughes, M.K. (1999) Northern hemisphere
+  temperatures during the past millennium: {Inferences}, uncertainties, and
+  limitations. \emph{Geophysical Research Letters} \textbf{26}, 759--762,
+  \_eprint: https://onlinelibrary.wiley.com/doi/pdf/10.1029/1999GL900070.
 
-\bibitem[Williams et~al.(2010)Williams, Michaelsen, Leavitt, and
-  Still]{williams_using_2010}
-A.~Park Williams, Joel Michaelsen, Steven~W. Leavitt, and Christopher~J. Still.
-\newblock Using {Tree} {Rings} to {Predict} the {Response} of {Tree} {Growth}
-  to {Climate} {Change} in the {Continental} {United} {States} during the
-  {Twenty}-{First} {Century}.
-\newblock December 2010.
-\newblock \doi{10.1175/2010EI362.1}.
-\newblock URL
-  \url{https://journals.ametsoc.org/view/journals/eint/14/19/2010ei362.1.xml}.
-\newblock Section: Earth Interactions.
+\bibitem[{McMillin(1982)}]{mcmillin_application_1982}
+McMillin, C.W. (1982) Application of {Automatic} {Image} {Analysis} to
+  {WoodScience}. \emph{Wood Science} \textbf{14}, 97--105.
+
+\bibitem[{Mir \emph{et~al.}(2014)Mir, Xu \& Van~Beek}]{sampat_extensive_2014}
+Mir, H., Xu, P. \& Van~Beek, P. (2014) An extensive empirical evaluation of
+  focus measures for digital photography. p. 90230I, San Francisco, California,
+  USA.
+
+\bibitem[{Mohammadi \emph{et~al.}(2024)Mohammadi, Shabani \&
+  Zarei}]{mohammadi_fast_2024}
+Mohammadi, F.S., Shabani, H. \& Zarei, M. (2024) Fast and robust feature-based
+  stitching algorithm for microscopic images. \emph{Scientific Reports}
+  \textbf{14}, 13304, publisher: Nature Publishing Group.
+
+\bibitem[{Muhlich \emph{et~al.}(2022)Muhlich, Chen, Yapp, Russell, Santagata \&
+  Sorger}]{muhlich_stitching_2022}
+Muhlich, J.L., Chen, Y.A., Yapp, C., Russell, D., Santagata, S. \& Sorger, P.K.
+  (2022) Stitching and registering highly multiplexed whole-slide images of
+  tissues and tumors using {ASHLAR}. \emph{Bioinformatics (Oxford, England)}
+  \textbf{38}, 4613--4621.
+
+\bibitem[{O'Dwyer(2000)}]{odwyer_summary_2000}
+O'Dwyer, A. (2000) A {Summary} of {PI} and {PID} {Controller} {Tuning} {Rules}
+  for {Processes} with {Time} {Delay}. {Part} 1: {PI} {Controller} {Tuning}
+  {Rules}. \emph{IFAC Proceedings Volumes} \textbf{33}, 159--164.
+
+\bibitem[{Poláček \emph{et~al.}(2023)Poláček, Arizpe, Hüther, Weidlich,
+  Steindl \& Swarts}]{polacek_automation_2023}
+Poláček, M., Arizpe, A., Hüther, P., Weidlich, L., Steindl, S. \& Swarts, K.
+  (2023) Automation of tree-ring detection and measurements using deep
+  learning. \emph{Methods in Ecology and Evolution} \textbf{14}, 2233--2242,
+  \_eprint: https://onlinelibrary.wiley.com/doi/pdf/10.1111/2041-210X.14183.
+
+\bibitem[{Propst \& Mueller(2025)}]{propst_time_2025}
+Propst, S. \& Mueller, J. (2025) Time {Code} for multifunctional {3D} printhead
+  controls. \emph{Nature Communications} \textbf{16}, 1035, publisher: Nature
+  Publishing Group.
+
+\bibitem[{Resente \emph{et~al.}(2021)Resente, Gillert, Trouillier,
+  Anadon-Rosell, Peters, von Arx, von Lukas \& Wilmking}]{resente_mask_2021}
+Resente, G., Gillert, A., Trouillier, M., Anadon-Rosell, A., Peters, R.L., von
+  Arx, G., von Lukas, U. \& Wilmking, M. (2021) Mask, {Train}, {Repeat}!
+  {Artificial} {Intelligence} for {Quantitative} {Wood} {Anatomy}.
+  \emph{Frontiers in Plant Science} \textbf{12}, publisher: Frontiers.
+
+\bibitem[{Ro \& Kim(2021)}]{ro_image_2021}
+Ro, S.H. \& Kim, S.H. (2021) An image stitching algorithm for the mineralogical
+  analysis. \emph{Minerals Engineering} \textbf{169}, 106968.
+
+\bibitem[{Robinson \& Evans(1980)}]{robinson_microcomputer_1980}
+Robinson, W.J. \& Evans, R. (1980) A {MICROCOMPUTER} -{BASED} {TREE} -{RING}
+  {MEASURING} {SYSTEM}. \emph{Tree-Ring Bulletin} \textbf{40}.
+
+\bibitem[{Sheppard(2010)}]{sheppard_dendroclimatology_2010}
+Sheppard, P.R. (2010) Dendroclimatology: extracting climate from trees.
+  \emph{WIREs Climate Change} \textbf{1}, 343--352, \_eprint:
+  https://onlinelibrary.wiley.com/doi/pdf/10.1002/wcc.42.
+
+\bibitem[{Speer(2010)}]{speer_fundamentals_2010}
+Speer, J.H. (2010) \emph{Fundamentals of {Tree} {Ring} {Research}}. University
+  of Arizona Press.
+
+\bibitem[{Williams \emph{et~al.}(2010)Williams, Michaelsen, Leavitt \&
+  Still}]{williams_using_2010}
+Williams, A.P., Michaelsen, J., Leavitt, S.W. \& Still, C.J. (2010) Using
+  {Tree} {Rings} to {Predict} the {Response} of {Tree} {Growth} to {Climate}
+  {Change} in the {Continental} {United} {States} during the {Twenty}-{First}
+  {Century} Section: Earth Interactions.
 
 \end{thebibliography}
