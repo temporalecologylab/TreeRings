@@ -113,7 +113,7 @@ For cookies, it is important to have the top and bottom surfaces nearly parallel
     \caption{Realistic sample leveling}
     \label{fig:realistic_levelling}
   \end{subfigure}
-  \caption{Side view of the camera and sample on top of a leveling table. The ideal sample leveling shows a uniform distance d at all $(X,Y)$ coordinates on the sample. This is impossible to achieve in reality, the true sample leveling has a non uniform distance at unique $(X_i, Y_i)$.}
+  \caption{Side view of the camera and sample on top of a leveling table. The ideal sample leveling shows a uniform distance, $d$, at all $XY$ coordinates on the sample. This is impossible to achieve in reality, the true sample leveling has a non uniform distance at unique $XY$.}
   \label{fig:sample_levelling}
 \end{figure}
 Small differences in plane angle can be corrected using the 3D printed leveling table we designed (Figure \ref{fig:ideal_levelling}). 
@@ -125,9 +125,12 @@ Cores also need to be aligned to be parallel to the $Y$ axis to be digitized, us
 
 The subsystems of TIM can be best understood by following the process from sample setup through obtaining a stitched image. 
 To achieve this with a fixed focus camera, the samples must be nearly orthogonal to the camera lens. 
-Once the sample is level, the operator interacts with the machine through the GUI to navigate the camera to the center of the sample, and focuses the preview image to be sharp by moving in the Z axis. The height and width dimensions are then entered in the GUI
-to be saved along with the detected center coordinate of the sample. This procedure can be repeated to create a queue of samples to digitize as a batch.
-The height, width, identifiers, sample type, and centering of the sample is sufficient information to digitize.
+Once the sample is level, the operator must follow a procedure to inform TIM of where the sample is, and the it's size. 
+To do this, the operator interacts with the machine using buttons on the GUI---navigating and focusing the camera on the center of the sample. 
+The sample height and width in the X and Y dimensions are then entered in the GUI to be saved. Finally, the user must click the 'Add Sample' button which provides more fields to add sample identifiers and save the center coordinate.
+This procedure can be repeated to create a queue of samples to digitize as a batch. One additional parameter that needs to be defined is the height and width of the field of view of one image from the camera. 
+We adjusted the focal length of the camera using the zoom ring to have a constant field of view of approximately 3 mm x 5 mm when in focus.  
+The sample height and width, sample identifiers, sample type, sample center coordinate, and the height and width of an image provides sufficient information to digitize a sample.
 
 \subsubsection{Exhaustive Sample Traverse}  
 
@@ -151,14 +154,11 @@ The height, width, identifiers, sample type, and centering of the sample is suff
       \caption{}
       \label{SUBFIGURE LABEL 3}
   \end{subfigure} %emw9Mar: Avoid 'this figure shows ...' or anything similar. Also, check my edits here closely!
-  \caption{An example imaging process of a cookie sample. Here, the height and width are enclosed the entire surface area of the cookie and TIM begins by generating a grid of target coordinates to systematically capture partially overlapping images (a). TIM takes its first image at the center coordinate of the sample, then the rectangular field of view from the camera moves to adjacent target coordinates until it reaches the left boundary---capturing an image for each target coordinate (b). After completing the row, TIM moves to a new row and continues capturing adjacent images (c). }
+  \caption{An example imaging process of a cookie sample. Here, the height and width are enclosed the entire surface area of the cookie and TIM begins by generating a grid of target coordinates to systematically capture a grid of continuous and partially overlapping images (a). TIM takes its first image at the center coordinate of the sample, then the rectangular field of view from the camera moves to adjacent target coordinates until it reaches the left boundary---capturing an image for each target coordinate (b). After completing the row, TIM moves to a new row and continues capturing adjacent images (c). }
   \label{FIGURE LABEL}
   \end{figure}
 
-In the GUI, the operator indicates the height and width of the field of view in an individual image from the camera. 
-This varies on the focal length of the lens, but we have kept the field of view to be 3 mm x 5 mm. 
-Once prompted the system begins to exhaustively traverse the surface area of the sample, using the sample height and width entered by the operator.  
-The goal of this traversal is to obtain in-focus images that have a region of overlap with all its neighbors---the basis of image stitching (Figure \ref{FIGURE LABEL}). 
+The goal of this traversal is to obtain in-focus images that have a region of overlap with each of its neighbors---the basis of image stitching (Figure \ref{FIGURE LABEL}). 
 Digitizing cores can be done without needing to traverse in both the X and Y axis. 
 The optimal scanning path for a core is to align the length of cores to the Y axis and only take one column of images.
 Spanning the surface area of a cookie requires movement in both the X and Y axis.
@@ -168,46 +168,43 @@ Spanning the surface area of a cookie requires movement in both the X and Y axis
 Centering the design of TIM around a fixed focus camera and lens meant we needed to focus the images with a software procedure.
 The only controllable parameter to focus a fixed focus lens is by changing the distance of the lens relative to the sample. 
 With TIM's microscope lens, the depth of field of the image is sensitive enough that sub-millimeter heights can move an image out of focus.
-Solving this in a time-efficient manner involves two stages. 
+Solving this in a time-efficient manner involves two stages. We provide a complete glossary of notation used to describe the methods, see Table \ref{tab:math_notation}.
 The first stage takes advantage of the requirement to navigate and focus the camera to the center of the sample.
 This allows the initial $Z_0$ value, captured when adding a sample, to be an informed guess as to what value would have an in-focus image across the entire surface. 
-From the first $(X_0, Y_0)$ coordinate captured, multiple images are taken at different $Z$ values in $\boldsymbol{Z_{\text{samples}}}$. %emw9Mar: I think we need to be a little more careful in defining the math as we introduce each new term. One way to start on this would be to make a supplemental table with ALL the math we introduce and a brief description of it. If you can work that up then we could meet and fix this quickly I suspect. 
-We found that it is important to have a distance of no more than 0.1 mm between each image in the stack to maximize the likelihood of an in-focus image.
-With a sufficiently wide height range of 1 mm, TIM needs to take  11 images at different heights for comparison. The number of images taken is an editable parameter in the configuration file and can be increased, along with the height range, if in-focus images are not being obtained.
+From the first coordinate captured $(X_0, Y_0, Z_0)$, multiple images are taken at different heights (saved as a vector $\boldsymbol{Z_{\text{samples}}}$). %emw9Mar: I think we need to be a little more careful in defining the math as we introduce each new term. One way to start on this would be to make a supplemental table with ALL the math we introduce and a brief description of it. If you can work that up then we could meet and fix this quickly I suspect. 
+The difference in height between each image are equally spaced, and are described by the relative distance to $Z_0$ in the vector $\boldsymbol{\delta}$. 
+We found that it is important to have a distance of no more than 0.1 mm between each image in the stack to maximize the likelihood of an in-focus image at height $Z_{focused}$.
+With a sufficiently wide height range of 1 mm, TIM needs to take 11 images at different heights for comparison. The number of images taken is an editable parameter in the configuration file and can be increased, along with the height range, if in-focus images are not being obtained.
 
-% Something bad is happening with the i below. <-- is this comment still relevant? I don't see i
+Our focusing procedure begins at 0.5 mm above $Z_0$ and finishes with the last image at 0.5 mm below $Z_0$.
+The 11 images then have their normalized variance calculated in a separate thread to measure the image sharpness \citep{sampat_extensive_2014}.
+The image with the maximum score is saved and can be considered the most in-focus image, while the rest are deleted.
+
+The second stage of our time-efficient focusing procedure is uses a feedback loop to update the initial $Z_0$ at each image location $(X_k, Y_k, Z_k)$. 
+Without a feedback loop, the sample alignment must have a difference in height no greater than 0.5 mm ($d_1 - d_2 < 0.5 mm $ in Figure \ref{fig:realistic_levelling}). 
+Rather than increasing this height range, a greater alignment error can be managed by adjusting the starting image height until $Z_{focused}$ is at the center index of $\boldsymbol{Z_{samples}}$. 
+The likelihood of an adjacent target
+$(X_{k+1}, Y_{k+1})$ containing an in-focus image is highest in this scenario. 
+A negative feedback PID control algorithm is used to adjust the initial height of each image, with $\alpha_k$, as the camera navigates the sample \citep{odwyer_summary_2000}. 
+This alleviates the need of having remarkably level sample alignment ($d_1 - d_2 < 0.5mm$ in Figure \ref{fig:realistic_levelling}).
+
+\[\boldsymbol{\delta} = 
+\begin{bmatrix}
+  0.5 \\
+  0.4 \\
+  \vdots \\
+  -0.4 \\
+  -0.5 \\
+  \end{bmatrix}\]
 \[
 Z_{focused} \in
 \boldsymbol{Z_{\text{samples}}} = 
-Z_0 + 
-\begin{bmatrix}
--0.5 \\
--0.4 \\
-\vdots \\
-0.4 \\
-0.5 \\
-\end{bmatrix}
-\] % unsure if this makes sense
-
-Our focusing procedure begins at 0.5 mm above $Z_0$ and finishes with the last image at 0.5 mm below $Z_0$.
-The 11 images then have their normalized variance, $NV$, calculated in a separate thread to measure the image sharpness \citep{sampat_extensive_2014}.
-The image with the maximum score is saved and can be considered the most in-focus image, while the rest are deleted.
-
-\[
-  i_{\max} = \arg\max_{i} NV(image(\boldsymbol{{Z_\text{samples}})})
-  \]
-
-The second stage of our time-efficient focusing procedure is using a feedback loop to update the initial $Z_0$ at each image location. 
-Without a feedback loop, the sample alignment must have a difference in height no greater than 0.5 mm, $d_1 - d_2 < 0.5 mm $ (Figure \ref{fig:realistic_levelling}). 
-Rather than adjusting this range, a greater alignment error can be managed by controlling the center of the range, $Z_{0,k}$, for $(X_k,Y_k)$. 
-The likelihood of an adjacent %emw9Mar:  we need a noun here instead of just $(X_{k+1}, Y_{k+1})$ ... maybe we need a term for this?
-$(X_{k+1}, Y_{k+1})$ containing an in-focus image is highest when the current $i_{{\max,k}}$ is at the middle index of $\boldsymbol{Z_{samples}}$. 
-A PID control algorithm with a process variable of $i_{max}$ and control variable of $Z_{0,k}$ allows a negative feedback loop to improve focusing across the entire sample \citep{odwyer_summary_2000}. 
-Instead of forcing a remarkably level sample alignment of $(d_1 - d_2) < 0.5mm$ (Figure \ref{fig:realistic_levelling}), the system can handle $(Z_{k} - Z_{k+1} < 0.5mm)$ which is readily achievable. %After the capturing overlapping images across the entire surface area, the images are ready to be stitched.
+Z_0 + \boldsymbol{\delta} + \alpha_k
+\] 
 
 To reduce motion blur in the images, the range of $\boldsymbol{Z_{\text{samples}}}$ is traversed at constant velocity and images are captured without stopping. 
 Decoupling the auxiliary camera control from the G-code commands to control the machine has shown to decrease digitization time and decrease vibrational effects from acceleration and deceleration \citep{propst_time_2025}.
-This is a variation of the standard approach used in 3D printing and Computer Numerical Control (CNC) machine control. 
+This is a variation of the standard approach used in 3D printing and Computer Numerical Control (CNC) machining. 
   
 \subsubsection{Accounting for Translation Error Between Core Samples}
 
@@ -217,12 +214,12 @@ These inaccuracies can cause drift in the images with relation to the core and r
 We thus implemented a centering procedure that realigns the center of the core to the center of the image frame when the machine moves 
 to a new sample. 
 
-First, the camera is moved to the $(X_0, Y_0, Z_0)$ of the new core. 
+First, the camera is moved to the $(X_0, Y_0, Z_0)$ (Table \ref{tab:math_notation}) of the new core. 
 From there, the camera is moved across a window, at constant velocity. %emw9Mar:  w is introduced nicely below. Need to try to follow this format when possible. 
 The width of the window, $w$, in millimeters is defined in the machine configuration file and is editable. %emw9Mar:  we need a noun below ...
 $(X_0 - 1/2*{w}, Y_0, Z_0)$ to $(X_0 + 1/2*{w}, Y_0, Z_0)$. 
 Images are captured at equal distance intervals analogously to the image focusing procedure. 
-Once again, the image with the highest normalized variance score is considered the best image and its location is used as the realigned $X_0^\prime$.
+Once again, the image with the highest normalized variance score is considered the best image and its location is used as the realigned $X_0$.
 This procedure drastically improves digitization quality of batches of cores.
 
 \subsubsection{Stitching}
@@ -290,7 +287,7 @@ Such open repositories would also increase the value of developing new framework
 With these more fully developed TIM could be extended to be run such frameworks while scanning, possibly taking additional scans only when needed to reach sufficient algorithm accuracy. %emw9Mar -- check my riffing here. 
 
 % Sandy got back to me! :)
-We tested a scanned cookie from TIM with the R-CNN presented by \citeauthor{polacek_automation_2023} on two servers. The first being the high-performance UBC ARC Sockeye which completed the task in 15 minutes. As many do not have access to such powerful computing, we also tested
+We tested a scanned cookie of size (HEIGHT)X(WIDTH) (WAITING FOR SANDY) pixels from TIM with the R-CNN presented by \citeauthor{polacek_automation_2023} on two servers. The first being the high-performance UBC ARC Sockeye which completed the task in 15 minutes. As many do not have access to such powerful computing, we also tested
 the same image on an RTX A6000 GPU server---taking 3.5 hours to complete the task for approximately \$3.50 USD. 
 While the results of automated tree rings are promising, further testing is necessary to test the feasibility of running this model on an edge computer or developing integrations for TIM with a remote server.  
 
@@ -305,28 +302,9 @@ We significantly increased the maximum sample length and maximum resolution comp
 In addition, the machine design was intended to be readily replicated by labs with minimal engineering experience and equipment. 
 
 \subsection{Supplemental Information}
+\renewcommand{\thetable}{S\arabic{table}}
 
-\begin{tabular}{ |p{3cm}||p{12cm}|  }
-  \hline
-  \multicolumn{2}{|c|}{Math Notation} \\
-  \hline
-  Terms & Definition\\
-  \hline
-  $X_0, Y_0, Z_0$   &The initial cartesian coordinates of the camera when the sample is saved by the user. \\
-  $(X_k, Y_k, Z_k)$ & A unique set of $X$, $Y$, and $Z$ coordinates for the center point of an individual image $k$. \\
-  $(X_{k+1}, Y_{k+1})$ & The $X$ and $Y$ coordinates of an image that neighbors image $k$ at $(X_k, Y_k)$. \\
-  $Z_{0,i}$ & The starting $Z$ value to move to when moving to the adjacent image. This value is also the center value of $\boldsymbol{Z_{\text{samples}}}$ \\
-  $NV()$ & Normalized variance 'function.' \\
-  $Z_{focused}$ & The $Z$ value of the most in focus image in $\boldsymbol{Z_{\text{samples}}}$\\
-  $\boldsymbol{Z_{\text{samples}}}$ & A vector containing the $Z$ coordinate for multiple images at the same $X_k, Y_k$. \\
-  $i_{\max,k}$ & The index of the image with the largest normalized variance at the same $(X_k, Y_k)$. \\
-  $w$ & The width of the window to traverse when trying to center a core. \\
-  $image()$ & The image at a corresponding $Z$ value from $\boldsymbol{Z_{\text{samples}}}$ \\
-  $d_1$ & The relative distance from the camera to one edge of a levelled sample. \\
-  $d_2$ & The relative distance from the camera to the opposite edge of a levelled sample. \\
-
-  \hline
- \end{tabular}
+\include{notation_glossary_table}
 
 \bibliography{references}
 
