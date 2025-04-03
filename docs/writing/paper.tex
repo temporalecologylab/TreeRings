@@ -129,7 +129,7 @@ Once the sample is level, the operator must follow a procedure to inform TIM of 
 To do this, the operator interacts with the machine using buttons on the GUI---navigating and focusing the camera on the center of the sample. 
 The sample height and width in the X and Y dimensions are then entered in the GUI to be saved. Finally, the user must click the 'Add Sample' button which provides more fields to add sample identifiers and save the center coordinate.
 This procedure can be repeated to create a queue of samples to digitize as a batch. One additional parameter that needs to be defined is the height and width of the field of view of one image from the camera. 
-We adjusted the focal length of the camera using the zoom ring to have a constant field of view of approximately 3 mm x 5 mm when in focus.  
+We adjusted the focal length of the camera using the zoom ring to have a constant field of view of approximately 3 mm x 5 mm when in-focus.  
 The sample height and width, sample identifiers, sample type, sample center coordinate, and the height and width of an image provides sufficient information to digitize a sample.
 
 \subsubsection{Exhaustive Sample Traverse}  
@@ -159,35 +159,43 @@ The sample height and width, sample identifiers, sample type, sample center coor
   \end{figure}
 
 The goal of this traversal is to obtain in-focus images that have a region of overlap with each of its neighbors---the basis of image stitching (Figure \ref{FIGURE LABEL}). 
-Digitizing cores can be done without needing to traverse in both the X and Y axis. 
-The optimal scanning path for a core is to align the length of cores to the Y axis and only take one column of images.
-Spanning the surface area of a cookie requires movement in both the X and Y axis.
+The coordinates of each image-to-be-captured are derived from the sample's center coordinate, the height and width of the sample, the height and width of an image frame, and the user provided percentage overlap between images.  
+Our design can capture cores by defining the sample width to be zero and the height of the core to be used. So long as the cores are aligned to be parallel to the Y axis, this minimizes imaging time as only one column of images is captured.
+Digitizing cookies requires a rectangular grid of images to be taken in both the X and Y axes. 
+The user provides enough information to find the X and Y coordinates of each image, but the Z coordinate must be found with an algorithmic focusing procedure. 
 
 \subsubsection{Image Focusing}
 
-Centering the design of TIM around a fixed focus camera and lens meant we needed to focus the images with a software procedure.
-The only controllable parameter to focus a fixed focus lens is by changing the distance of the lens relative to the sample. 
-With TIM's microscope lens, the depth of field of the image is sensitive enough that sub-millimeter heights can move an image out of focus.
-Solving this in a time-efficient manner involves two stages. We provide a complete glossary of notation used to describe the methods, see Table \ref{tab:math_notation}.
-The first stage takes advantage of the requirement to navigate and focus the camera to the center of the sample.
-This allows the initial $Z_0$ value, captured when adding a sample, to be an informed guess as to what value would have an in-focus image across the entire surface. 
-From the first coordinate captured $(X_0, Y_0, Z_0)$, multiple images are taken at different heights (saved as a vector $\boldsymbol{Z_{\text{samples}}}$). %emw9Mar: I think we need to be a little more careful in defining the math as we introduce each new term. One way to start on this would be to make a supplemental table with ALL the math we introduce and a brief description of it. If you can work that up then we could meet and fix this quickly I suspect. 
-The difference in height between each image are equally spaced, and are described by the relative distance to $Z_0$ in the vector $\boldsymbol{\delta}$. 
-We found that it is important to have a distance of no more than 0.1 mm between each image in the stack to maximize the likelihood of an in-focus image at height $Z_{focused}$.
-With a sufficiently wide height range of 1 mm, TIM needs to take 11 images at different heights for comparison. The number of images taken is an editable parameter in the configuration file and can be increased, along with the height range, if in-focus images are not being obtained.
+With TIM's microscope lens, the depth of field of the image is sensitive enough that sub-millimeter heights can move an image out-of-focus.
+This means that the height collected when adding a sample, $Z_0$, does not produce in-focus images throughout the entire surface area of the sample.
+To capture in in-focus image at height $Z_{focused,k}$, for each unique image coordinate $(X_k, Y_k)$, we implemented a time conscious software procedure. 
+Our procedure involves two stages and starts at the known center coordinate of the sample (we provide a complete glossary of notation used to describe the methods, see Table \ref{tab:math_notation}).
+The first stage takes advantage of the requirement that the sample is in focus when adding it to be scanned.
+Starting at the center coordinate allows the initial $Z_0$ value, captured when adding a sample, to find $Z_{focused,0}$. 
+After finding an in-focus image, TIM navigates to the next neighboring image coordinate to find it's in-focus image, using the previous neighbor's in-focus height as an initial approximation.
 
-Our focusing procedure begins at 0.5 mm above $Z_0$ and finishes with the last image at 0.5 mm below $Z_0$.
+Finding an in-focus image is completed by comparing the image sharpness of a set of images at varying heights but the same $(X_k, Y_k)$ (saved as a vector $\boldsymbol{Z_k}$). 
+The difference in height between each image are equally spaced, and are described by the relative distance to the starting height, $Z_k$, in the vector $\boldsymbol{\delta}$. 
+We found that it is important to have a distance of no more than 0.1 mm between each image in the stack of images to maximize the likelihood of an in-focus image at height $Z_{focused,k}$.
+A height range of 1 mm provides a sufficient distribution of image sharpness. TIM needs to take 11 images at different heights to navigate this height range with the given step size between each image. The number of images taken is an editable parameter in the configuration file and can be increased, along with the height range, if in-focus images are not being obtained.
+
+Our focusing procedure begins at 0.5 mm above $Z_k$ and finishes with the last image at 0.5 mm below $Z_k$.
 The 11 images then have their normalized variance calculated in a separate thread to measure the image sharpness \citep{sampat_extensive_2014}.
-The image with the maximum score is saved and can be considered the most in-focus image, while the rest are deleted.
+The image with the maximum score is saved and can be considered the most in-focus image, while the rest are deleted. 
+Now $Z_{focused,k}$ has been found for $(X_k, Y_k)$ and the camera can now be moved to the next image coordinates $(X_{k+1}, Y_{k+1})$ and repeat the process to find a new in-focus height.
 
-The second stage of our time-efficient focusing procedure is uses a feedback loop to update the initial $Z_0$ at each image location $(X_k, Y_k, Z_k)$. 
+The second stage of our time-efficient focusing procedure uses a feedback loop to update the initial $Z_k$ at each image location $(X_k, Y_k, Z_k)$. 
 Without a feedback loop, the sample alignment must have a difference in height no greater than 0.5 mm ($d_1 - d_2 < 0.5 mm $ in Figure \ref{fig:realistic_levelling}). 
-Rather than increasing this height range, a greater alignment error can be managed by adjusting the starting image height until $Z_{focused}$ is at the center index of $\boldsymbol{Z_{samples}}$. 
-The likelihood of an adjacent target
-$(X_{k+1}, Y_{k+1})$ containing an in-focus image is highest in this scenario. 
-A negative feedback PID control algorithm is used to adjust the initial height of each image, with $\alpha_k$, as the camera navigates the sample \citep{odwyer_summary_2000}. 
+Rather than increasing this height range, a greater alignment error can be managed by adjusting the starting image height until $Z_{focused,k}$ is at the center index of $\boldsymbol{Z_{samples,k}}$. 
+The likelihood of an adjacent image, at the coordinate $(X_{k+1}, Y_{k+1})$, containing an in-focus image is highest in this scenario. 
+A negative feedback PID control algorithm is used to adjust the initial height of each image, with $\alpha_k$, whenever the camera moves in the X or Y dimensions \citep{odwyer_summary_2000}. 
 This alleviates the need of having remarkably level sample alignment ($d_1 - d_2 < 0.5mm$ in Figure \ref{fig:realistic_levelling}).
-
+\[
+Z_k = \begin{cases}
+  Z_0 & \text{if } k = 0,\\
+  Z_{k-1} + \alpha_k \\
+  \end{cases}
+\]
 \[\boldsymbol{\delta} = 
 \begin{bmatrix}
   0.5 \\
@@ -197,12 +205,12 @@ This alleviates the need of having remarkably level sample alignment ($d_1 - d_2
   -0.5 \\
   \end{bmatrix}\]
 \[
-Z_{focused} \in
-\boldsymbol{Z_{\text{samples}}} = 
-Z_0 + \boldsymbol{\delta} + \alpha_k
+Z_{focused,k} \in
+\boldsymbol{Z_k} = 
+Z_k + \boldsymbol{\delta}
 \] 
 
-To reduce motion blur in the images, the range of $\boldsymbol{Z_{\text{samples}}}$ is traversed at constant velocity and images are captured without stopping. 
+To reduce motion blur in the images, the range of $\boldsymbol{Z_k}$ is traversed at constant velocity and images are captured without stopping. 
 Decoupling the auxiliary camera control from the G-code commands to control the machine has shown to decrease digitization time and decrease vibrational effects from acceleration and deceleration \citep{propst_time_2025}.
 This is a variation of the standard approach used in 3D printing and Computer Numerical Control (CNC) machining. 
   
