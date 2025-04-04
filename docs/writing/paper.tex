@@ -295,9 +295,12 @@ Such open repositories would also increase the value of developing new framework
 With these more fully developed TIM could be extended to be run such frameworks while scanning, possibly taking additional scans only when needed to reach sufficient algorithm accuracy. %emw9Mar -- check my riffing here. 
 
 % Sandy got back to me! :)
-We tested a scanned cookie of size (HEIGHT)X(WIDTH) (WAITING FOR SANDY) pixels from TIM with the R-CNN presented by \citeauthor{polacek_automation_2023} on two servers. The first being the high-performance UBC ARC Sockeye which completed the task in 15 minutes. As many do not have access to such powerful computing, we also tested
-the same image on an RTX A6000 GPU server---taking 3.5 hours to complete the task for approximately \$3.50 USD. 
-While the results of automated tree rings are promising, further testing is necessary to test the feasibility of running this model on an edge computer or developing integrations for TIM with a remote server.  
+In it's current state, TIM only provides scanned images and requires users to import them into other tools to measure tree-ring widths or count vessels.
+A great addition to TIM would be to use computer vision models to automatically detect tree-ring widths or other metrics while capturing images.  
+We tested a scanned cookie of size (HEIGHT)X(WIDTH) (WAITING FOR SANDY) pixels from TIM with the R-CNN presented by \citeauthor{polacek_automation_2023} on two servers. The first being the high-performance UBC ARC Sockeye which completed the task in 15 minutes. 
+As many do not have access to such powerful computing, we also tested the same image on an RTX A6000 GPU server---taking 3.5 hours to complete the task for approximately \$3.50 USD. 
+Although the Jetson is not as powerful as these servers, running these models in parallel to the image capturing algorithms could be a great extension to further reduce manual data annotation of tree-rings.
+Further development would be required to run the deep learning models on the Jetson itself or with a web server to offload the heavier computation. 
 
 Finally, an exciting frontier for machines such as TIM is integrating additional sensors. While much of the current imaging time of samples comes from taking a vertical stack of images to obtain one in-focus image, advanced microscopy applications have overcome similar challenges through supplemental sensors that measure the distance between the subject and lens.
 Adding such sensor support and a control loop to focus images could significantly reduce sampling time on the scale of an order of magnitude. 
