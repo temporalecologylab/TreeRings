@@ -197,7 +197,7 @@ class Gantry:
             grbl_out_list.append(grbl_out)
 
         self.send_command_lock.release()
-        log.info("Release send command lock. {}".format(time.time()))
+        # log.info("Release send command lock. {}".format(time.time()))
         return grbl_out_list
 
     def grbl_handshake(self, grbl_out:str):
