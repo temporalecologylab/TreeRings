@@ -27,7 +27,7 @@ class Camera:
         self.pipeline = Gst.parse_launch(
             "nvarguscamerasrc wbmode=1 ee-mode=2 ee-strength=0.5 exposurecompensation=0.5 exposuretimerange='680000000 600000000'  aelock=true ! video/x-raw(memory:NVMM),width={},height={},framerate=30/1 ! videorate ! video/x-raw(memory:NVMM),width=3840,height=2160,framerate=15/1 !".format(W_PIXELS + (2*CROP_W), H_PIXELS + (2*CROP_H)) + #683709000 # AM I SURE THIS IS WHERE THE IMAGE SIZE SHOULD CHANGE?
             "nvvideoconvert src-crop='{}:{}:{}:{}' flip-method=2 ! video/x-raw,width={},height={},framerate=15/1 ! videobalance contrast=1.25 ! queue max-size-buffers=1 leaky=2 ! tee name=t ".format( CROP_W, CROP_H, W_PIXELS, H_PIXELS, W_PIXELS, H_PIXELS) +
-            "t. ! queue max-size-buffers=1 leaky=2 ! autovideosink "
+            "t. ! queue max-size-buffers=1 leaky=2 ! nvvidconv ! nvegltransform ! nveglglessink  "
             "t. ! queue max-size-buffers=1 leaky=2 ! avenc_tiff ! tee name=t_bin ! fakesink"
         )
 
