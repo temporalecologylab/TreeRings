@@ -161,21 +161,54 @@ All the added weight from the computer, camera, lens, and the linear actuator it
 ## Step 8. Jetson Orin Nano Setup
 
 Roughly:
+
 1. Install SSD
 2. Follow [NVIDIA's setup guide for the Jetson Orin Nano Dev Kit](https://developer.nvidia.com/embedded/learn/get-started-jetson-orin-nano-devkit)
+    - NOTE: Make sure to select to install DeepStream in the Additional SDK Section of the JetPack Installer. Note that this image is not up to date with versions although the SDK looks very similar.
+    - ![DeepStream Select](image.png)
     - Once finished, the Jetson Orin Nano is effectively the same as using a normal Ubuntu Linux distribution
 3. Get the control Python software on the device: <!--At some point it would be nice to not need wifi so we could just load a docker container instead.... NICE TO HAVE -->
     - connect to your internet
-    - git clone the TreeRings repo to your device
-    - copy the TreeRings/code folder to your desktop
-    - install the requirements.txt file
-    - everything should be ready to go - refer to the [operation manual](./docs/writing/operation_manual.pdf)  
+    - Git clone the TreeRings repo to your device
+    - [Install Docker](https://jetsonhacks.com/2025/02/24/docker-setup-on-jetpack-6-jetson-orin/) if it is not already installed.
+4. Open your terminal and navigate to the directory you want to save the repo in. Then, enter the following commands.
+
+  ``` bash
+    git clone git@github.com:temporalecologylab/TreeRings.git
+    cd ./TreeRings/code
+  ```
+
+5. Build the Dockerfile.
+
+  ``` bash
+    chmod +x ./build.sh ./launch.sh ./entrypoint.sh
+    ./build.sh
+  ```
+
+6. Launch the Docker container.
+  
+  ``` bash
+    ./launch.sh
+  ```
+
+- everything should be ready to go - refer to the [operation manual](./docs/writing/operation_manual.pdf)  
 <!-- 4. If NOT connecting to internet:
     - git clone the TreeRings repo to a different device that does have internet access
     - copy the TreeRings/code folder onto a flash drive or other mode of memory transfer
     - connect the flash drive to the Jetson
     - copy the TreeRings/code folder from the flash drive to the Jetson's desktop  -->
-NOTE: It is on the TODO list to convert this annoying software install to be a Docker image instead. We appreciate your grace and patience in the time being.
+
+
+## Using Universal G-Code Sender (UGS)
+
+- UGS is the best way to set up the GRBL firmware using a computer other than the Jetson.
+- We have included the settings of our GRBL setup in ugs_firmware.settings file. 
+- To upload this, install [UGS](https://winder.github.io/ugs_website/) according to your 
+- Run the program
+- Connect your computer to the motor controller via USB
+- Open Machine > Setup Wizard and connect to the machine
+- Follow the prompts to manually do the main system setup or load our settings file. Make sure to save at the end of the prompt.
+- NOTE: we have been having problems with the settings file loading, please write us if you can load it effectively. It is hard to debug with a motor controller that is already setup.
 
 ## Issues
 
