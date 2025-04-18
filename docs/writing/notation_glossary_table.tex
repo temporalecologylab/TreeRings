@@ -1,10 +1,9 @@
-\begin{table}[h]
+\begin{table}[htbp]
     \centering
-    \caption{Mathematical notation used in this paper.} %emw14Apr2025: Explain what the bolding means
     \label{tab:math_notation}
     \begin{tabular}{ |p{3.5cm}||p{11.5cm}|  }
       \hline
-      \multicolumn{2}{|c|}{Math Notation} \\ %emw14Apr2025 -- remove this line -- you just need the caption and then the table should start immediately
+      % \multicolumn{2}{|c|}{Math Notation} \\ %emw14Apr2025 -- remove this line -- you just need the caption and then the table should start immediately
       \hline
       Terms & Definition\\ 
       \hline
@@ -17,10 +16,11 @@
       $Z_{focused,k}$ & The $Z$ value of the most in-focus image in $\boldsymbol{Z_k}$. \\
       $Z_{focused,0}$ & The $Z$ value of the center coordinate, and first image of the sample. \\
       $\boldsymbol{Z_k}$ & A vector containing the $Z$ coordinates for multiple images at the same $(X_k, Y_k)$. \\
-      $\boldsymbol{Z_0}$ & A vector containing the $Z$ coordinates for multiple images at $(X_0, Y_0)$. \\
       $w$ & The width of the window to traverse when trying to center a core. \\
       $d_1$ & The relative distance from the camera to one edge of a leveled sample (Figure \ref{fig:sample_levelling}).\\
       $d_2$ & The relative distance from the camera to the opposite edge of a leveled sample (Figure \ref{fig:sample_levelling}). \\
       \hline
     \end{tabular}
+    \caption{Mathematical notation used in this paper.} %emw14Apr2025: Explain what the bolding means
     \end{table}
+    
