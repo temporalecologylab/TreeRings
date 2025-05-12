@@ -1,0 +1,26 @@
+\begin{table}[htbp]
+    \centering
+    \label{tab:math_notation}
+    \begin{tabular}{ |p{3.5cm}||p{11.5cm}|  }
+      \hline
+      % \multicolumn{2}{|c|}{Math Notation} \\ %emw14Apr2025 -- remove this line -- you just need the caption and then the table should start immediately
+      \hline
+      Terms & Definition\\ 
+      \hline
+      $X_0, Y_0, Z_0$   &The initial cartesian coordinates of the camera when the sample is saved by the user. \\
+      $Z_k$ & The center height of $\boldsymbol{Z_k}$ which was the best approximation of $Z_{focused,k}$ from the previous image.\\ 
+      $(X_k, Y_k, Z_{focused,k})$ & A unique set of $X$, $Y$, and $Z$ coordinates for a unique image of the sample, $k$. \\
+      $(X_{k+1}, Y_{k+1})$ & The $X$ and $Y$ coordinates of an image that neighbors image $k$ at $(X_k, Y_k)$. \\
+      $\boldsymbol{\delta}$ & Equally spaced heights, relative to $Z_k$, to capture images at and use to find a sharp image. \\
+      $\alpha_k$ & The response variable of the PID control algorithm which adjusts the initial height of an image to gradually align $Z_{focused,k}$ to be at the center index of $\boldsymbol{Z_k}$.\\
+      $Z_{focused,k}$ & The $Z$ value of the most in-focus image in $\boldsymbol{Z_k}$. \\
+      $Z_{focused,0}$ & The $Z$ value of the center coordinate, and first image of the sample. \\
+      $\boldsymbol{Z_k}$ & A vector containing the $Z$ coordinates for multiple images at the same $(X_k, Y_k)$. \\
+      $w$ & The width of the window to traverse when trying to center a core. \\
+      $d_1$ & The relative distance from the camera to one edge of a leveled sample (Figure \ref{fig:sample_levelling}).\\
+      $d_2$ & The relative distance from the camera to the opposite edge of a leveled sample (Figure \ref{fig:sample_levelling}). \\
+      \hline
+    \end{tabular}
+    \caption{Mathematical notation used in this paper.} %emw14Apr2025: Explain what the bolding means
+    \end{table}
+    
