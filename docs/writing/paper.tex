@@ -30,13 +30,12 @@
 $^{2}$Department of Computer Science and Engineering, University of California San Diego, La Jolla, CA, USA\\ 
 
 %emw24Feb: I added some text to abstract and intro that I am not 100% sure you would need for some journals, but I think you will need for MEE. 
-%emw24Feb: I was trying to add this tag '%emw24Feb:' to my comments, but got lazy and just added them below without the tag generally. Please delete my comments in the tex once you have dealt with them!
 %emw9Mar:
 
 \begin{abstract}  
 Studies of tree rings from climatology to ecology have benefitted recently from new methods to image wood rapidly and efficiently, helping to scale up the number and quality of image samples. Current approaches are, however, limited in scanning dimensionality and can be cost-prohibitive. % Getting rid of open-source as CaptuRING is cheap but GigaPixel is expensive and not open source
 To address these limitations, we designed the Tree Imaging Machine (TIM)---a do-it-yourself scanning tool to digitize tree cookies and cores. TIM takes partially overlapping microscopic images of samples and stitches the individual images together to form 
-a mosaic, which can be zoomed in to visualize features on the scale of 0.01 mm. With scans of up to 21 140 DPI, TIM produces one of the highest resolution images among similar tools for less than \$3 000 USD. %vvdm24Apr: briefly compare with the price of other machines? e.g. "up to 95% less expensive than other machines" (70,000 USD)
+a mosaic, which can be zoomed in to visualize features on the scale of 0.01 mm. With scans of up to 21 140 DPI, TIM produces one of the highest resolution images among similar tools for less than \$3 000 USD.
 We designed TIM to have a large working plane to allow digitizing cores over 50 cm and complete cookies. Operators can prepare sample batches of multiple cores and cookies, letting the machine work until the queue is finished.
 
 All of the 3D printed parts are available for download on the \href{https://doi.org/10.60705/3DPX/21561.3}{NIH 3D printing repository} and the software is  % is this best practice for including links? 
@@ -45,10 +44,10 @@ open source, with instructions to recreate this tool available on \href{https://
 
 \section{Introduction} %emw9Mar:  edits throughout to tighten things up... please check I did not add typos or nonsensical stuff. 
 Incremental growth rings from trees have provided valuable insights into the abiotic and biotic environment across multiple fields---from climatology to forestry and ecology. Dated tree rings from dendrochronology have been critical to
-reconstructing past climates of regional and local environments, providing the most accurate, precise, and reliable dating among alternatives \citep{mann_northern_1999}, and thus informing  our understanding of climate change today \citep{fritts_dendroclimatology_1971,williams_using_2010,guibal_dendrochronology_2021,sheppard_dendroclimatology_2010}. Tree rings are also increasingly used in ecology to understand how plant competition affects tree growth in addition to climate \citep{buechling_climate_2017} and have implications in forestry to managing stand dynamics \citep{canham_neighborhood_2004}. These fields have leveraged two basic types of tree sampling techniques to capture the variation of tree rings: cores, which are cylindrical samples collected using an incremental borer, and `cookies,' which are entire cross sections \citep[and thus allow measuring as many radii from the sample as desired,][]{speer_fundamentals_2010}. As understanding tree growth and managing forest becomes more critical to mitigating climate change, scaling up the collection and processing of tree ring samples has become increasingly important. %vvdm24Apr: maybe cite Williams et al. 2020 DOI: 10.1126/science.aaz9600?
+reconstructing past climates of regional and local environments, providing the most accurate, precise, and reliable dating among alternatives \citep{mann_northern_1999}, and thus informing  our understanding of climate change today \citep{fritts_dendroclimatology_1971,williams_using_2010,guibal_dendrochronology_2021,sheppard_dendroclimatology_2010,williams_large_2020}. Tree rings are also increasingly used in ecology to understand how plant competition affects tree growth in addition to climate \citep{buechling_climate_2017} and have implications in forestry to managing stand dynamics \citep{canham_neighborhood_2004}. These fields have leveraged two basic types of tree sampling techniques to capture the variation of tree rings: cores, which are cylindrical samples collected using an incremental borer, and `cookies,' which are entire cross sections \citep[and thus allow measuring as many radii from the sample as desired,][]{speer_fundamentals_2010}. As understanding tree growth and managing forest becomes more critical to mitigating climate change, scaling up the collection and processing of tree ring samples has become increasingly important.
 
-The first computer-based method to measure tree ring widths used a microcomputer, a stage micrometer, and a push button. With this technique, still used widely today, a trained technician shifts a core underneath a microscope objective and pushes a button connected to a microcomputer to record a ring's location \citep{robinson_microcomputer_1980}. % 's okay here
-This method has high precision but depends heavily on specific technicians and maintains no image record \citep{levanic_atrics_2007}. %vvdm24Apr: maybe add "preventing later measurement reproducibility and uncertainty quantification"
+The first computer-based method to measure tree ring widths used a microcomputer, a stage micrometer, and a push button. With this technique, still used widely today, a trained technician shifts a core underneath a microscope objective and pushes a button connected to a microcomputer to record a ring's location \citep{robinson_microcomputer_1980}.
+This method has high precision but depends heavily on specific technicians and maintains no image record, preventing later measurement reproducibility and uncertainty quantification \citep{levanic_atrics_2007}.
 
 Image analysis of tree rings was later implemented to reduce both errors in sampling and sampling bias across individual technicians, with major methods developed in the 1980s and 1990s to digitize tree ring samples using optical scanning \citep{mcmillin_application_1982,guay_new_1992}. Optical scanners are still readily available for purchase, using a top of the line scanner (e.g., Epson Perfection V850 Pro) produces a maximum resolutions of 6 400 dpi and scan area of up to 21.6 cm x 29.7 cm.
 More recent techniques have aimed to achieve higher resolutions and/or larger samples through a different digitization approach---using an image-capturing system. These systems rely on a microscope camera to take images, motors to move the sample or camera, a computer to manage the capturing, and a second, more powerful, computer to stitch images into a larger composite image.
@@ -70,7 +69,7 @@ We added support to digitize both cookies and cores, increased the maximum sampl
 Our design requires the use of 3D printed components and common hand tools such as hex keys and wrenches. No specialized equipment or power tools are required beyond this. 
 Excluding 3D printed parts, the total cost of the machine is approximately \$2 200 USD \citep[compared to the \$70 000 USD of the Gigapixel,][]{griffin_gigapixel_2021}.
 We chose to use a Raspberry Pi HQ camera with a microscope lens to save on purchasing a professional camera with a macro lens. Professional camera setups are comparable in price to the entire cost of TIM.
-These savings combined with not needing to purchase a professional stitching software license (such as PTGui (New House Internet Services BV, Rotterdam, NL), the suggested software to use with CaptuRING) makes TIM a more economical option than most products current available and its open-source, open-hardware design makes it easy to adapt and adjust. %vvdm24Apr: adapt and adjust seem a bit redundant, perhaps "to adapt to specific requirements and improve with new... (something)"? You could also cut the sentence at "its open-source ...", to clearly separate the idea of cost reduction and the idea of open-source!
+These savings combined with not needing to purchase a professional stitching software license (such as PTGui (New House Internet Services BV, Rotterdam, NL), the suggested software to use with CaptuRING) makes TIM a more economical option than most products current available. Additionally the design is open-source and open-hardware allowing for contributors to add new sensors or alter the control methods. 
 
 \section{Methods}
 
@@ -90,13 +89,12 @@ The machine kit includes extruded aluminum rails, carriages to slide along the r
 To fit on the build plates of the ACRO system, we made an adapter to connect the linear actuator to the X and Y axis, thus creating motion in the Z axis.
 The size of the work plane is ultimately up to the size of the ACRO kit that is purchased---allowing for more flexibility.
 Building on top of kits allowed for quick assembly with sound instructions and saved development time. 
-For the camera, we chose a 12MP Raspberry Pi HQ Camera equipped with a SEEED studio microscope lens and connected this to the gantry machine using custom adapters.
-For the computer, we implemented all of the software control, image stitching, and graphical user interface (GUI) to run on an NVIDIA Jetson Orin Nano (Jetson edge computer), which also connects to the camera via a MIPI cable.  %vvdm24Apr: maybe add some specification for the lens? like the level of zoom?
+For the camera, we chose a 12MP Raspberry Pi HQ Camera equipped with a SEEED studio microscope lens with 150X zoom. The camera was connected to the gantry machine using custom, 3D printed, adapters.
+For the computer, we implemented all of the software control, image stitching, and graphical user interface (GUI) to run on an NVIDIA Jetson Orin Nano (Jetson edge computer), which also connects to the camera via a MIPI cable. 
 Controlling the machine is done by launching a Python program and interacting with mouse button clicks on the GUI. 
 
 By choosing this combination, we were able to reduce the weight and cost of the camera significantly. This minimized the design challenges of stabilizing the movement of a heavier DSLR and allowed us to invest more in a powerful computer that can handle intensive image processing. 
 The Jetson is an edge computer which drives a monitor for a GUI, sends commands to the motor controller to move the machine, runs image processing calculations for control, and performs calculations to stitch individual images into one mosaic. 
-Despite the weight reductions, torsion on the gantry arm still resulted in a non-zero torsional deflection. We therefore designed a torsion correcting adapter to counteract this rotation and level the lens. %vvdm24Apr: the last two sentences are a bit hard for me to follow, though it might be because I'm far from being an hardware engineer
 
 \subsection{Preparing Cookies and Cores}
 TIM can scan both tree cookies and tree cores. Sample preparation for both are equally important but require different approaches.
@@ -132,7 +130,7 @@ The subsystems of TIM can be best understood by following the process from sampl
 To achieve this with a fixed focus camera, the samples must be nearly orthogonal to the camera lens. 
 Once the sample is level, the operator follows a procedure to inform TIM of where the sample is, and the its size using buttons on the GUI to navigate and focus the camera on the center of the sample. 
 The sample height and width in the $X$ and $Y$ dimensions are then entered in the GUI to be saved. Finally, the user must click the `Add Sample' button which provides more fields to add sample identifiers and save the center coordinate.
-This procedure can be repeated to create a queue of samples to digitize as a batch. One additional parameter that needs to be defined is the height and width of the field of view of one image from the camera. %vvdm24Apr: this is a great feature!
+This procedure can be repeated to create a queue of samples to digitize as a batch. One additional parameter that needs to be defined is the height and width of the field of view of one image from the camera. 
 We adjusted the focal length of the camera using the zoom ring to have a constant field of view of approximately 3 mm x 5 mm when in-focus.  
 The sample height and width, sample identifiers, sample type, sample center coordinate, and the height and width of an image provides sufficient information to digitize a sample.
 
@@ -245,7 +243,7 @@ Most samples are digitized with a percentage overlap between 33\% and 50\%.
 After testing numerous image stitching software APIs, we found the Python package Stitch2D most capable of stitching our images successfully. % need to reference this
 This package wraps OpenCV functions for finding distinctive image features using the SIFT feature detector and matches these features within the overlapping region of adjacent images \citep{lowe_distinctive_2004}. 
 The default implementation of the package produces high quality stitches but is memory inefficient. %is this wording correct?, I'm trying to kindly say it was memory inefficient
-We implemented a few key memory-conscious changes to the package and were able to run it on the Jetson edge computer without a problem. %vvdm24Apr: maybe mention what are these changes?
+We implemented a few key memory-conscious changes such as loading only one image into RAM at a time and writing the final image to a memory-mapped NumPy file before converting to a TIFF file. These changes allowed for the package to run on a Jetson edge computer without a problem.
 
 Some tree ring analyses may not need the maximum scanning resolution produced by TIM. At maximum resolution, TIM's scans quickly produce large file sizes and can be costly to store at scale. 
 To address this, a parameter in the machine configuration file allows the operator to choose a downsizing ratio to apply to images before they are stitched, decreasing the file size of the scans.
@@ -261,7 +259,8 @@ TIM is capable of producing extremely high resolution scans. We calculated the m
 DPI scales linearly with the downscale percentage defined in the machine parameters. 
 
 Digitizing samples takes significantly longer for cookies than it does for cores (Figure \ref{fig:digitization_time}). This is due to the surface area of cookies requiring more images as it has a square relationship to sample radius.
-For large cookies, the operator can choose to selectively scan a radius of the cookie instead of the whole surface. A single radius contains a portion of each ring. Scanning complete cookies at maximum DPI is unrealistic as file size limits are quickly encountered with small diameter cookies. %vvdm24Apr: maybe you should mention the file format (TIFF or NumPy array) and the filesize constraints before? in the Methods
+For large cookies, the operator can choose to selectively scan a radius of the cookie instead of the whole surface. A single radius contains a portion of each ring. Scanning complete cookies at maximum DPI is unrealistic as file size limits are quickly encountered with small diameter cookies. 
+
 To fit into the maximum 2.5 GB limits of a TIFF file, the maximum diameter of a cookie scanned at 30\% of maximum resolution is limited to approximately 130 mm. This maximum cookie diameter is significantly smaller than the maximum core sample length. At maximum resolution, the file size limit 
 constrains core samples to approximately 1 500 mm in length (though a larger ACRO frame than shown here would be needed to support this sample length). Samples larger than this limit can still be scanned, but TIM saves them as an uncompressed binary NumPy memory-mapped array file is produced. Currently, NumPy files are not supported by standard image viewers like ImageJ and would require custom tools to work with. %emw9Mar: Like custom Python scripts? I think we might be more explicit here if we mean that. 
 
@@ -285,7 +284,7 @@ Such open repositories would also increase the value of developing new framework
 With these more fully developed TIM could be extended to be run such frameworks while scanning, possibly taking additional scans only when needed to reach sufficient algorithm accuracy. %emw9Mar -- check my riffing here. 
 
 In its current state, TIM only provides scanned images and requires users to import them into other tools for additional visual analyses, such as measuring tree-ring widths or counting vessels.
-A useful addition to TIM would be to automatically detect tree-ring widths or other metrics while capturing images using computer vision models. We expect this may be possible as these methods improve in efficiency. Currently, we found that tree-ring detection by a recent machine learning algorithm  \citeauthor[R-CNN presented by][]{polacek_automation_2023} for a scanned core (23294 x 897 pixels) took 15 minutes on a high-performance cluster (UBC ARC Sockeye) and 3.5 hours on a smaller server (RTX A6000 GPU server, which currently costs approximately \$3.50 USD for this). %vvdm24Apr: what costs 3.50USD? Not sure I understood
+A useful addition to TIM would be to automatically detect tree-ring widths or other metrics while capturing images using computer vision models. We expect this may be possible as these methods improve in efficiency. Currently, we found that tree-ring detection by a recent machine learning algorithm  \citeauthor[R-CNN presented by][]{polacek_automation_2023} for a scanned core (23294 x 897 pixels) took 15 minutes on a high-performance cluster (UBC ARC Sockeye) and 3.5 hours on a smaller server (RTX A6000 GPU server). 
 Although the Jetson edge computer is not as powerful as these servers, running these models in parallel to the image capturing algorithms would further reduce manual data annotation of tree-rings, and thus could help scale-up data collection.
 
 An additional major frontier for machines such as TIM is integrating additional sensors. While much of the current imaging time of samples comes from taking a vertical stack of images to obtain one in-focus image, advanced microscopy applications have overcome similar challenges through supplemental sensors that measure the distance between the subject and lens.
@@ -297,9 +296,10 @@ accuracy of the the location of the camera on the work plane.
 By taking advantage of a common three degree of freedom cartesian machine design, powerful edge computing, and a microscope camera we were able to design a cost effective and high resolution digitization tool for wood samples. 
 Our design significantly increases the maximum sample length and maximum resolution compared to common alternatives in the field. 
 In addition, the machine design was intended to be readily replicated by labs with minimal engineering experience and equipment. 
+Such an open-source device could facilitate the widespread sampling of tree rings across diverse ecosystems and reduce barriers for researchers with tight budgets. 
 
 %emw14Apr2025: Add acknowledgments here: Deirdre, Hoai Huong Nguyen Phan, Fredi, CRD, Mao etc. 
-%vvdm24Apr: maybe add something like: "Such an open-source device could facilitate the widespread sampling of tree rings across diverse ecosystems, offering new insights on..."
+
 %vvdm24Apr: and also something like "It will also support tree-ring research in countries where budget constraints may limit access to more expensive equipment..."?
 
 %vvdm24Apr: More general comment: I think it would be helpful to further justify (from an ecological perspective) why high-resolution scans are necessary? Not only to better distinguish the rings, but also for example to differentiate early wood and late wood... or something else (I'm not an expert)? 
