@@ -36,11 +36,9 @@ Tree Imaging Machine: A Low Cost
 - a theoretical maximum core length would be over a meter //Find exact value
 - a maximum cookie cross section would be a few centimeters //find exact value
 
-The Tree Imaging Machine (TIM) is an open-source scanning robot designed to obtain high-resolution (>20,000 DPI) digital scans of wood samples. The TIM design is budget conscious without compromising on quality of scan or convenience of operation.
+Digitizing samples for dendrochronology is a crucial step before analysis. Purpose built tools to scan increment cores are available but there is a gap for tools to scan cross-sections (cookies). Existing open-source tools have shown examples to capture images of the sample surface but still rely on professional image stitching software to prepare a final stitched mosaic. The Tree Imaging Machine (TIM) is an open-source robotic tool for acquiring scans of both increment cores and cookies at high-resolution (>20,000 DPI).
 
-TIM is built on top of a common gantry machine design with movement in X, Y and Z axes. Using an attached microscope camera, TIM captures images of the surface area of prepared tree cores and cross-sections (cookies). Images are automatically fed into an image stitching procedure to produce a single scan per sample, without the intervention of an operator. Moreover, multiple samples can be queued to be scanned sequentially.
-
-A common issue with scanning tools is the maximum sample size that can be scanned. TIM has the ability to scan cores up to 80 cm in length.
+TIM is built on top of a common gantry machine design with movement in X, Y and Z axes. Using an attached microscope camera, TIM is able to capture images across the surface area of prepared samples. Images are automatically fed into an image stitching procedure to produce a single scan per sample, without the intervention of an operator. Moreover, multiple samples can be queued to be scanned sequentially. Cores up to 80 cm in length are able to be scanned in the standard TIM frame size but can be extended to over a meter by using a longer frame. The surface area of cookies can be scanned up to 13cm by 13cm (at 6300 DPI).
 
 ## Explain how your paper is suited to the journal's scope (50 words)
 
