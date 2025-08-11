@@ -4,9 +4,11 @@ Practical Tools
 
 ## Title
 
-Tree Imaging Machine: A Low Cost 
+TIM: Tree Imaging Machine for low-cost high-resolution digital images of tree cores and cookies
 
-## Running Head (50 words)
+## Running Head (50 characters)
+
+TIM: Tree Imaging Machine
 
 ## Abstract (350 words)
 
@@ -42,7 +44,7 @@ TIM is built on top of a common gantry machine design with movement in X, Y and 
 
 ## Explain how your paper is suited to the journal's scope (50 words)
 
-The Tree Imaging Machine (TIM) is a new open-source scanning tool for obtaining high-resolution scans of dendrochronological samples. TIM extends on the capabilities of the current tools in its class by scanning both increment cores and cross-sections, scanning batches of many samples sequentially, and performing image stitching without user intervention.
+The Tree Imaging Machine (TIM) is a new low-cost, open-source tool for scanning high-resolution images of tree rings, adaptable to other applications. By working on batches of many samples and performing image stitching automatically, TIM makes it possible to easily collect thousands of years of data in one day.
 
 
 ### Journal's Scope

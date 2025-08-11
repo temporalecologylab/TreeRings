@@ -33,13 +33,17 @@ $^{2}$Department of Computer Science and Engineering, University of California S
 %emw9Mar:
 
 \begin{abstract}  
-Studies of tree rings from climatology to ecology have benefitted recently from new methods to image wood rapidly and efficiently, helping to scale up the number and quality of image samples. Current approaches are, however, limited in scanning dimensionality and can be cost-prohibitive. % Getting rid of open-source as CaptuRING is cheap but GigaPixel is expensive and not open source
-To address these limitations, we designed the Tree Imaging Machine (TIM)---a do-it-yourself scanning tool to digitize tree cookies and cores. TIM takes partially overlapping microscopic images of samples and stitches the individual images together to form 
-a mosaic, which can be zoomed in to visualize features on the scale of 0.01 mm. With scans of up to 21 140 DPI, TIM produces one of the highest resolution images among similar tools for less than \$3 000 USD.
-We designed TIM to have a large working plane to allow digitizing cores over 50 cm and complete cookies. Operators can prepare sample batches of multiple cores and cookies, letting the machine work until the queue is finished.
+1.  Studies of tree rings from climatology to ecology have benefitted recently from new methods to image wood rapidly and efficiently, helping to scale up the number and quality of image samples. Current approaches, however, are limited in dimensionality, the amount of user-time involved per sample, and can be cost-prohibitive. % Getting rid of open-source as CaptuRING is cheap but GigaPixel is expensive and not open source
+2.  To address these limitations, we designed the Tree Imaging Machine (TIM)---a do-it-yourself scanning tool to digitize tree cookies and cores with open-source hardware, software and related instructions. % emwAug10 -- check my addition: correct? You could add the links here if you want 
+TIM takes partially overlapping microscopic images of samples and stitches the individual images together to form 
+a mosaic, which can be zoomed in to visualize features on the scale of 0.01 mm. 
+3. With scans of up to 21 140 DPI, TIM produces one of the highest resolution images among similar tools for less than \$3 000 USD. Operators can prepare sample batches of multiple samples, letting the machine work until the queue is finished. Given this batch approach and automatic stitching, TIM provides a major speed advance for high-resolution image capture of tree rings. 
+% We designed TIM to have a large working plane to allow digitizing cores over 50 cm and complete cookies. % emwAug10 -- I would cut the above as suggested for MEE and put back in for more tree ring focused journals. I moved around something below and edited above because of that ...  
+4. TIM provides an important advance in scanning resolution, tree cookie sampling, maximum core sample size, batch digitization, and cost in a single package. This promotes the digitization of larger samples and can collect data at finer resolutions in an open-source design which can be built on and improved as new technologies become available. Designed as completely open-source, we hope TIM will facilitate the widespread sampling of tree rings across diverse ecosystems and reduce barriers for researchers with tight budgets. 
+% Archive GitHub with Zenodo? I'm nervous as the code base is updated relatively frequently... will this be a problem? Or do I only ever make one 'release' https://docs.github.com/en/repositories/archiving-a-github-repository/referencing-and-citing-content  % emwAug10 -- I think you can leave it on GitHub and see what whichever journal you end up in wants
+% emwAug10 -- this is a great sentence below, I would get it into cover letter or abstract! I tagged on one version above for now ... 
+% Such an open-source device could facilitate the widespread sampling of tree rings across diverse ecosystems and reduce barriers for researchers with tight budgets. 
 
-All of the 3D printed parts are available for download on the \href{https://doi.org/10.60705/3DPX/21561.3}{NIH 3D printing repository} and the software is  % is this best practice for including links? 
-open source, with instructions to recreate this tool available on \href{https://github.com/temporalecologylab/TreeRings}{GitHub}. TIM provides an important advance in scanning resolution, tree cookie sampling, maximum core sample size, batch digitization, and cost in a single package. This promotes the digitization of larger samples and can collect data at finer resolutions in an open-source design which can be built on and improved as new technologies become available. % Archive GitHub with Zenodo? I'm nervous as the code base is updated relatively frequently... will this be a problem? Or do I only ever make one 'release' https://docs.github.com/en/repositories/archiving-a-github-repository/referencing-and-citing-content 
 \end{abstract}
 
 \section{Introduction} %emw9Mar:  edits throughout to tighten things up... please check I did not add typos or nonsensical stuff. 
@@ -78,7 +82,8 @@ These savings combined with not needing to purchase a professional stitching sof
 \begin{figure}
   \centering
   \includegraphics[height=0.5\linewidth]{../content/tina.jpg}
-  \caption{Complete assembly of TIM, shown with a few cookies ready to be scanned (in the work plane).}
+  \caption{Complete assembly of TIM, shown with a few cookies ready to be scanned (in the work plane). All of the 3D printed parts are available for download on the \href{https://doi.org/10.60705/3DPX/21561.3}{NIH 3D printing repository} and the software is  
+open source, with instructions to recreate this tool available on \href{https://github.com/temporalecologylab/TreeRings}{GitHub}. } % emwAug10 -- In addition to putting the links here, I would make sure each is sprinkled in around where most of the info related to it is introduced in the main text. 
   \label{fig:tim_assembled}
 \end{figure}
 
@@ -272,7 +277,8 @@ constrains core samples to approximately 1 500 mm in length (though a larger ACR
     \label{fig:digitization_time}
 \end{figure}
 
-\subsection{Strengths and Opportunities} %emw9Mar: And this section could become part of the Results & Discussion.... 
+\subsection{Strengths and Opportunities} %emw9Mar: And this section could become part of the Results & Discussion....  % emwAug10 -- check all your refs are working! I search for ? before I submit. Also you need to through and fix anything as shown below, I fixed one but there are others... If you have other ref issues, ask Victor or me for help. 
+% \citep{girardin_national_2021} \citep{grissino-mayer_international_1997}. --> \citep{girardin_national_2021,grissino-mayer_international_1997}.
 % add better opportunities
 TIM's design minimizes the barriers to build an affordable, efficient and high-resolution image capture system in smaller labs without compromising scan quality, and while allowing scanning of cookies and cores. We have measured tree ring widths using the digitized samples from TIM using CooRecorder as well as ImageJ \citep{schneider_nih_2012}. 
 %emw9Mar: Any citations for developing repos to share tree ring images? Or just more on building better open shared data for tree rings? 
@@ -280,7 +286,7 @@ TIM's design minimizes the barriers to build an affordable, efficient and high-r
 Publicly available tree-ring datasets can be found on multiple online repositories such as TreeSource's Tree-Rings Database for Canadian sites or the International Tree-Ring Data Bank (ITRDB) for worldwide data \citep{girardin_national_2021} \citep{grissino-mayer_international_1997}.
 Both of these databases offer metadata-rich data on measured tree-rings but do not store the source images of samples.
 One opportunity for this development could come as more universal and large-scale open-data storage of tree ring images come online. 
-Such open repositories would also increase the value of developing new frameworks count vessel or identify rings, which are already starting and have the potential to greatly decrease the time invested in manually identifying tree anatomy \citep{resente_mask_2021} \citep{polacek_automation_2023}. 
+Such open repositories would also increase the value of developing new frameworks count vessel or identify rings, which are already starting and have the potential to greatly decrease the time invested in manually identifying tree anatomy \citep{resente_mask_2021,polacek_automation_2023}. 
 With these more fully developed TIM could be extended to be run such frameworks while scanning, possibly taking additional scans only when needed to reach sufficient algorithm accuracy. %emw9Mar -- check my riffing here. 
 
 In its current state, TIM only provides scanned images and requires users to import them into other tools for additional visual analyses, such as measuring tree-ring widths or counting vessels.
@@ -303,8 +309,8 @@ Such an open-source device could facilitate the widespread sampling of tree ring
 %vvdm24Apr: and also something like "It will also support tree-ring research in countries where budget constraints may limit access to more expensive equipment..."?
 
 %vvdm24Apr: More general comment: I think it would be helpful to further justify (from an ecological perspective) why high-resolution scans are necessary? Not only to better distinguish the rings, but also for example to differentiate early wood and late wood... or something else (I'm not an expert)? 
-\section{Acknowledgments}
-The authors thank Deirdre Loughnan, Hoai Huong Nguyen Phan, Frederik Baumgarten for conversations and ideas to help bring this project to fruition. Additionally, we thank Xiaomao Wang and Christophe Rouleau-Desrochers for their help and patience in operating TIM during development. 
+\section{Acknowledgments} %emwAug10 -- also thank Victor added 
+The authors thank Deirdre Loughnan, Hoai Huong Nguyen Phan, Frederik Baumgarten and Victor Van der Meersch for conversations, ideas and review to help bring this project to fruition. Additionally, we thank Xiaomao Wang and Christophe Rouleau-Desrochers for their help and patience in operating TIM during development. 
 
 \section{Supplemental Information}
 

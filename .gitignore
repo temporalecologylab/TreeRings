@@ -14,3 +14,4 @@ code/focus_stacking_testing
 *.blg
 *.out
 *.DS_Store
+*DS_Store
