@@ -193,6 +193,7 @@ class Controller:
             # Targets are XYZ coordinates to jog to to capture an image.
             targets = np.vstack((sample.targets_top, sample.targets_bot))
             for target in targets:
+                self._gantry.block_for_jog()
                 start_stack = time.time()
                 if stop_capture.is_set():
                     break
@@ -232,7 +233,7 @@ class Controller:
                     if update_z != 0:
                         self._gantry.jog_relative_z(update_z)
 
-                self._gantry.block_for_jog()
+
                 sample.coordinates.append(self._gantry.get_xyz())
                 img_filenames = self.capture_images_multiple_z(sample.directory, self.n_images, self._gantry.feed_rate_z, self.height_range, self.acceleration_buffer, row, col)
                 focus_queue.put(img_filenames)
