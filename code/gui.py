@@ -1,7 +1,7 @@
 import gi
 gi.require_version('Gtk', '3.0')
 gi.require_version('Gst', '1.0')
-from gi.repository import Gtk, Gst, GObject, GLib
+from gi.repository import Gtk, Gst, GObject, GLib, Gdk
 from threading import Thread, Event
 import logging as log
 import controller
@@ -25,6 +25,9 @@ class App(Gtk.Window):
         n_images = self.config["controller"]["N_IMAGES_MULTIPLE_DISTANCES"]
         self.connect("destroy", self.quit_program)
         
+        self.connect("key-press-event", self.on_key_press)
+        self.connect("key-release-event", self.on_key_release)
+        
         self.controller = controller.Controller(gantry.Gantry(), camera.Camera(), focus.Focus(delete_flag=True, setpoint = math.floor(n_images / 2)))
 
         grid = Gtk.Grid()
@@ -41,6 +44,38 @@ class App(Gtk.Window):
         self.controller.quit()
         log.info("Destroy GTK window")
         Gtk.main_quit()
+    
+    def on_key_press(self, widget, event):
+        key = Gdk.keyval_name(event.keyval)
+        
+        # state given from Gdk 
+        state = event.state
+        
+        # bit check for whether shift is pressed
+        shift_held = state & Gdk.ModifierType.SHIFT_MASK
+        
+        # assign local variable jog_distance based on shift_held
+        self.jog_distance = 0.6 if shift_held else 0.2
+        
+        match (key):
+            case "w":
+                self.controller.jog_relative_y(self.jog_distance)
+            case "a":
+                self.controller.jog_relative_x(-1* self.jog_distance)
+            case "s":
+                self.controller.jog_relative_y(-1* self.jog_distance)
+            case "d":
+                self.controller.jog_relative_x(self.jog_distance)
+            case "q":
+                self.controller.jog_relative_z(self.jog_distance)
+            case "z":
+                self.controller.jog_relative_z(-1* self.jog_distance)
+        return True
+
+    def on_key_release(self, widget, event):
+        key = Gdk.keyval_name(event.keyval)
+        # stop jogging command 
+        return True 
 
     def create_entries(self, grid):
         ## Sample
