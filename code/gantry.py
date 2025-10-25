@@ -46,6 +46,7 @@ class Gantry:
             grbl_out_list = self._send_command(cmd)
         
             for grbl_out in grbl_out_list:
+                ## print(f"{grbl_out} is state in position monitor")
                 if "ok" in grbl_out:
                     continue
                 elif "WPos" in grbl_out:
@@ -60,9 +61,7 @@ class Gantry:
                     
                     self.position_lock.release()
 
-                    self.state_lock.acquire()
-                    self._state = self.parse_state(grbl_out)
-                    self.state_lock.release()
+                    self.parse_state(grbl_out)
 
                     if not self.quiet:
                         log.info("X {} \nY {}\nZ{}\n".format(_x, _y, _z))
@@ -103,7 +102,7 @@ class Gantry:
         else:
             raise ValueError("The input string does not contain valid coordinates")
 
-    def parse_state(self, grbl_status:str)->str:
+    def parse_state(self, grbl_status:str)->None:
         """Parse the state from the GRBL status report.
 
         Args:

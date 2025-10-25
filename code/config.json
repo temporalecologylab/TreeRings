@@ -28,8 +28,8 @@
             "PID_SCALE_FACTOR": 0.05,
             "Kp": 1.0,
             "Ki": 0,
-            "Kd": 0.05,
-            "BACKGROUND_STD_THRESHOLD": 0.125
+            "Kd": 0.00,
+            "BACKGROUND_STD_THRESHOLD": 0.03
         },
         "gantry":
         {
