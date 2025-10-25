@@ -3,12 +3,14 @@ import cv2
 import math
 import imutils
 
-IMAGE = cv2.imread("./height_1dot96mm.tif")
-RESIZE_PERCENTAGE = 0.3
-IMAGE_RESIZED = imutils.resize(IMAGE, width = int(IMAGE.shape[1] * RESIZE_PERCENTAGE))
-DISTANCE_MM = 1.96 # mm
+# --- EDIT HERE --- 
+IMAGE = cv2.imread("./test_dpi.tiff") # image which contains a known distance. Preferably a slide ruler.
+RESIZE_PERCENTAGE = 0.3 # percentage to resize the image. Needs to match what downscale applied to the samples. Check the scan metadata.json file if you are unsure.
+DISTANCE_MM = 0.5 # known distance that you will click in the image in millimeters
+# --- END EDIT HERE ---
 
 # If False, it will show the full resolution, if True it will show the resized
+IMAGE_RESIZED = imutils.resize(IMAGE, width = int(IMAGE.shape[1] * RESIZE_PERCENTAGE)) 
 SHOW_RESIZED = True
 
 # Variables to store the two points and their confirmation states
