@@ -47,35 +47,39 @@ class App(Gtk.Window):
     
     def on_key_press(self, widget, event):
         key = Gdk.keyval_name(event.keyval)
-        
-        # state given from Gdk 
         state = event.state
-        
-        # bit check for whether shift is pressed
+
+        # Check if a text entry has focus — if yes, ignore key handling
+        focus_widget = self.window.get_focus()
+        if isinstance(focus_widget, Gtk.Entry) or isinstance(focus_widget, Gtk.TextView):
+            return False  # let the widget handle typing
+
         shift_held = state & Gdk.ModifierType.SHIFT_MASK
-        
-        # assign local variable jog_distance based on shift_held
         self.jog_distance = 0.6 if shift_held else 0.2
-        
-        match (key):
+
+        match key:
             case "w":
-                self.controller.jog_relative_y(self.jog_distance)
+                self.controller.jog_relative_y(self.jog_distance, feed=900)
             case "a":
-                self.controller.jog_relative_x(-1* self.jog_distance)
+                self.controller.jog_relative_x(-self.jog_distance, feed=900)
             case "s":
-                self.controller.jog_relative_y(-1* self.jog_distance)
+                self.controller.jog_relative_y(-self.jog_distance, feed=900)
             case "d":
-                self.controller.jog_relative_x(self.jog_distance)
+                self.controller.jog_relative_x(self.jog_distance, feed=900)
             case "q":
-                self.controller.jog_relative_z(self.jog_distance)
+                self.controller.jog_relative_z(self.jog_distance, feed=900)
             case "z":
-                self.controller.jog_relative_z(-1* self.jog_distance)
-        return True
+                self.controller.jog_relative_z(-self.jog_distance, feed=900)
+            case _:
+                return False  # not a gantry control key
+
+        return True  # only return True when a control key was handled
+
 
     def on_key_release(self, widget, event):
         key = Gdk.keyval_name(event.keyval)
-        # stop jogging command 
-        return True 
+        # Optional: stop jogging if relevant
+        return key in {"w", "a", "s", "d", "q", "z"}
 
     def create_entries(self, grid):
         ## Sample
