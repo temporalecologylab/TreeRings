@@ -54,22 +54,28 @@ class App(Gtk.Window):
         if isinstance(focus_widget, Gtk.Entry) or isinstance(focus_widget, Gtk.TextView):
             return False  # let the widget handle typing
 
-        shift_held = state & Gdk.ModifierType.SHIFT_MASK
+        state = event.get_state()
+        shift_held = bool(state & Gdk.ModifierType.SHIFT_MASK)
+
+        # Adjust jog distance and feedrate
         self.jog_distance = 0.6 if shift_held else 0.2
+        base_feedrate = self.config["gantry"]["KEYBOARD_FEEDRATE_XY"]
+        feedrate = base_feedrate * (3 if shift_held else 1)  # triple speed when Shift held
+
 
         match key:
             case "w":
-                self.controller.jog_relative_y(self.jog_distance, feed=900)
+                self.controller.jog_relative_y(self.jog_distance, feedrate)
             case "a":
-                self.controller.jog_relative_x(-self.jog_distance, feed=900)
+                self.controller.jog_relative_x(-self.jog_distance, feedrate)
             case "s":
-                self.controller.jog_relative_y(-self.jog_distance, feed=900)
+                self.controller.jog_relative_y(-self.jog_distance, feedrate)
             case "d":
-                self.controller.jog_relative_x(self.jog_distance, feed=900)
+                self.controller.jog_relative_x(self.jog_distance, feedrate)
             case "q":
-                self.controller.jog_relative_z(self.jog_distance, feed=900)
+                self.controller.jog_relative_z(self.jog_distance, feedrate)
             case "z":
-                self.controller.jog_relative_z(-self.jog_distance, feed=900)
+                self.controller.jog_relative_z(-self.jog_distance, feedrate)
             case _:
                 return False  # not a gantry control key
 
