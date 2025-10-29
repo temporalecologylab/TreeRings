@@ -50,7 +50,7 @@ class App(Gtk.Window):
         state = event.state
 
         # Check if a text entry has focus — if yes, ignore key handling
-        focus_widget = self.window.get_focus()
+        focus_widget = self.get_focus()
         if isinstance(focus_widget, Gtk.Entry) or isinstance(focus_widget, Gtk.TextView):
             return False  # let the widget handle typing
 
