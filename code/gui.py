@@ -25,9 +25,9 @@ class App(Gtk.Window):
         n_images = self.config["controller"]["N_IMAGES_MULTIPLE_DISTANCES"]
         self.connect("destroy", self.quit_program)
         
-        self.connect("key-press-event", self.on_shift_press)
         self.connect("key-press-event", self.on_key_press)
         self.connect("key-release-event", self.on_key_release)
+        self.shift_toggle = False # start slow 
         
         self.controller = controller.Controller(gantry.Gantry(), camera.Camera(), focus.Focus(delete_flag=True, setpoint = math.floor(n_images / 2)))
 
@@ -46,13 +46,6 @@ class App(Gtk.Window):
         log.info("Destroy GTK window")
         Gtk.main_quit()
     
-    
-    def on_shift_press(self, widget, event):
-        key = Gdk.keyval_name(event.keyval)
-        if key in ("Shift_L", "Shift_R"):
-            self.shift_held = True
-            return False
-        return False 
         
     def on_key_press(self, widget, event):
         key = Gdk.keyval_name(event.keyval)
@@ -65,14 +58,11 @@ class App(Gtk.Window):
 
         state = event.get_state()
         # shift_held = bool(state & Gdk.ModifierType.SHIFT_MASK)
-        shift_held = getattr(self, "shift_held", False)
 
         # Adjust jog distance and feedrate
-        self.jog_distance = 0.6 if shift_held else 0.2
         base_feedrate = self.config["gantry"]["KEYBOARD_FEEDRATE_XY"]
-        feedrate = base_feedrate * (3 if shift_held else 1)  # triple speed when Shift held
-
-
+        feedrate = base_feedrate * (3 if self.shift_toggle else 1)
+        
         match key:
             case "w":
                 self.controller.jog_relative_y(self.jog_distance, feedrate)
@@ -86,6 +76,10 @@ class App(Gtk.Window):
                 self.controller.jog_relative_z(self.jog_distance, feedrate)
             case "z":
                 self.controller.jog_relative_z(-self.jog_distance, feedrate)
+            case "f": # current toggle to go faster  
+                self.shift_toggle = not self.shift_toggle
+                mode = "FAST" if self.shift_toggle else "SLOW"
+                print(f"Speed mode toggled to: {mode}")
             case _:
                 return False  # not a gantry control key
 
