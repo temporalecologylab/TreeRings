@@ -89,6 +89,7 @@ class App(Gtk.Window):
     def on_key_release(self, widget, event):
         key = Gdk.keyval_name(event.keyval)
         # Optional: stop jogging if relevant
+        self.controller.send_gcode_cmd("0x85")
         return key in {"w", "a", "s", "d", "q", "z"}
 
     def create_entries(self, grid):
