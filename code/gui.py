@@ -25,6 +25,7 @@ class App(Gtk.Window):
         n_images = self.config["controller"]["N_IMAGES_MULTIPLE_DISTANCES"]
         self.connect("destroy", self.quit_program)
         
+        self.connect("key-press-event", self.on_shift_press)
         self.connect("key-press-event", self.on_key_press)
         self.connect("key-release-event", self.on_key_release)
         
@@ -45,6 +46,14 @@ class App(Gtk.Window):
         log.info("Destroy GTK window")
         Gtk.main_quit()
     
+    
+    def on_shift_press(self, widget, event):
+        key = Gdk.keyval_name(event.keyval)
+        if key in ("Shift_L", "Shift_R"):
+            self.shift_held = True
+            return False
+        return False 
+        
     def on_key_press(self, widget, event):
         key = Gdk.keyval_name(event.keyval)
         state = event.state
@@ -55,7 +64,8 @@ class App(Gtk.Window):
             return False  # let the widget handle typing
 
         state = event.get_state()
-        shift_held = bool(state & Gdk.ModifierType.SHIFT_MASK)
+        # shift_held = bool(state & Gdk.ModifierType.SHIFT_MASK)
+        shift_held = getattr(self, "shift_held", False)
 
         # Adjust jog distance and feedrate
         self.jog_distance = 0.6 if shift_held else 0.2
