@@ -57,11 +57,9 @@ class App(Gtk.Window):
             return False  # let the widget handle typing
 
         state = event.get_state()
-        # shift_held = bool(state & Gdk.ModifierType.SHIFT_MASK)
-
-        # Adjust jog distance and feedrate
+        self.jog_distance = 1.0 
         base_feedrate = self.config["gantry"]["KEYBOARD_FEEDRATE_XY"]
-        feedrate = base_feedrate * (3 if self.shift_toggle else 1)
+        feedrate = base_feedrate * (2 if self.shift_toggle else 1)
         
         match key:
             case "w":
@@ -77,9 +75,14 @@ class App(Gtk.Window):
             case "z":
                 self.controller.jog_relative_z(-self.jog_distance, feedrate)
             case "f": # current toggle to go faster  
-                self.shift_toggle = not self.shift_toggle
+                self.shift_toggle = not self.shift_toggle                
+                #debug
                 mode = "FAST" if self.shift_toggle else "SLOW"
                 print(f"Speed mode toggled to: {mode}")
+                
+            case " ":
+                # create sample with spacebar
+                print(f"Create sample....")
             case _:
                 return False  # not a gantry control key
 
@@ -89,7 +92,7 @@ class App(Gtk.Window):
     def on_key_release(self, widget, event):
         key = Gdk.keyval_name(event.keyval)
         # Optional: stop jogging if relevant
-        self.controller.send_gcode_cmd("0x85")
+        # self.controller.send_gcode_cmd("0x85")
         return key in {"w", "a", "s", "d", "q", "z"}
 
     def create_entries(self, grid):
