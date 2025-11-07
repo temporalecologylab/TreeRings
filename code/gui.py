@@ -12,6 +12,7 @@ import gantry
 import camera
 import focus
 import math
+import serial as ser
 
 log.basicConfig(format='%(process)d-%(levelname)s-%(message)s', level=log.INFO)
 
@@ -58,30 +59,36 @@ class App(Gtk.Window):
 
         state = event.get_state()
         self.jog_distance = 1.0 
-        base_feedrate = self.config["gantry"]["KEYBOARD_FEEDRATE_XY"]
-        feedrate = base_feedrate * (2 if self.shift_toggle else 1)
-        
+        base_feedrate_xy = self.config["gantry"]["KEYBOARD_FEEDRATE_XY"]
+        base_feedrate_z = self.config["gantry"]["KEYBOARD_FEEDRATE_Z"]
+
+        feedrate_xy = base_feedrate_xy * (1.5 if self.shift_toggle else 0.67)
+        feedrate_z = 200
+
+        #  self.jog_distance = self.jog_distance * (0.60 if self.shift_toggle else 1)
+
         match key:
             case "w":
-                self.controller.jog_relative_y(self.jog_distance, feedrate)
+                self.controller.jog_relative_y(self.jog_distance, feedrate_xy)
             case "a":
-                self.controller.jog_relative_x(-self.jog_distance, feedrate)
+                self.controller.jog_relative_x(-self.jog_distance, feedrate_xy)
             case "s":
-                self.controller.jog_relative_y(-self.jog_distance, feedrate)
+                self.controller.jog_relative_y(-self.jog_distance, feedrate_xy)
             case "d":
-                self.controller.jog_relative_x(self.jog_distance, feedrate)
+                self.controller.jog_relative_x(self.jog_distance, feedrate_xy)
             case "q":
-                self.controller.jog_relative_z(self.jog_distance, feedrate)
+                self.controller.jog_relative_z(self.jog_distance, feedrate_z)
             case "z":
-                self.controller.jog_relative_z(-self.jog_distance, feedrate)
+                self.controller.jog_relative_z(-self.jog_distance, feedrate_z)
             case "f": # current toggle to go faster  
                 self.shift_toggle = not self.shift_toggle                
                 #debug
                 mode = "FAST" if self.shift_toggle else "SLOW"
                 print(f"Speed mode toggled to: {mode}")
                 
-            case " ":
+            case "p":
                 # create sample with spacebar
+                self.controller.cb_capture_image()
                 print(f"Create sample....")
             case _:
                 return False  # not a gantry control key
@@ -93,6 +100,8 @@ class App(Gtk.Window):
         key = Gdk.keyval_name(event.keyval)
         # Optional: stop jogging if relevant
         # self.controller.send_gcode_cmd("0x85")
+        self.controller.jog_cancel()
+        print("Key release")
         return key in {"w", "a", "s", "d", "q", "z"}
 
     def create_entries(self, grid):

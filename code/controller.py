@@ -361,6 +361,9 @@ class Controller:
         log.info("Jog {} mm to recenter vertical core. i: {}, i_middle: {}".format(d, i, i_middle))
 
     #### JOG METHODS ####
+    
+    def jog_cancel(self):
+        self._gantry.jog_cancel()
 
     def jog_relative_x(self, dist: float, feed:int = None):
         """Abstraction of gantry to jog in the x direction relative to its current position.
