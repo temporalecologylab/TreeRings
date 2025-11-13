@@ -15,7 +15,9 @@ import json
 from typing import Callable
 import utils
 import numpy as np
-
+import cv2
+import os
+import numpy as np
 
 class Controller:
     def __init__(self, g: gantry.Gantry, c: camera.Camera, f: focus.Focus):
@@ -81,6 +83,161 @@ class Controller:
         """
         self.directory = d
 
+    def variance_of_laplacian(self, image):
+        """Compute Laplacian variance (higher = sharper)."""
+        return cv2.Laplacian(image, cv2.CV_64F).var()
+
+    def roi_center(self, image, frac=0.2):
+        """Extract central region of image."""
+        h, w = image.shape[:2]
+        dw, dh = int(w * frac / 2), int(h * frac / 2)
+        cx, cy = w // 2, h // 2
+        return image[cy - dh: cy + dh, cx - dw: cx + dw]
+
+    def get_focus_metric(self,):
+        """Capture image and compute focus metric."""
+        temp_file = "./temp_image.tiff"
+        while True:
+            try:
+                self.camera.save_frame(temp_file)
+                time.sleep(0.15)
+                image = cv2.imread(temp_file, cv2.IMREAD_GRAYSCALE)
+                os.remove(temp_file)
+            except:
+                log.info("Could not capture tempfile, retrying")
+                continue
+            break
+        return self.variance_of_laplacian(self.roi_center(image, frac=0.2))
+
+    def autofocus(self):
+        self.golden_section_search(-0.2, 0.2, tol=0.05, max_iter=20)
+
+
+    def golden_section_search(self, x_l, x_u, tol=0.01, max_iter=20):
+        """
+        Perform golden section search for maximum focus metric between z=a and z=b (mm).
+        a < 0 < b. Returns the best z position (relative to start).
+
+        Implementation described in this video: https://www.youtube.com/watch?v=AGXq-ut2oJg
+        """
+        phi = 0.618 # golden ratio
+
+        z_current = 0  # Track current position
+
+        # Initial internal points
+        d = phi * (x_u - x_l)
+        x1 = x_u - d  # left internal point
+        x2 = x_l + d  # right internal point
+
+        # Move to x1 and evaluate
+        print(f"Move to x1 = {x1:.4f} mm")
+        self.jog_relative_z(x1, block=True)
+        z_current = x1
+        
+        f1 = self.get_focus_metric()
+        print(f"Focus @ x1 ({x1:.4f}): {f1:.2f}")
+
+        # Move to x2 and evaluate
+        print(f"Move to x2 = {x2:.4f} mm")
+        self.jog_relative_z(x2 - z_current, block=True)
+        z_current = x2
+        f2 = self.get_focus_metric()
+        print(f"Focus @ x2 ({x2:.4f}): {f2:.2f}")
+
+        # Main optimization loop
+        for i in range(max_iter):
+            if abs(x_u - x_l) < tol:
+                break
+
+            print(f"\nIter {i:02d}: a={x_l:.4f}, b={x_u:.4f}, f1={f1:.2f}, f2={f2:.2f}")
+
+            if f1 < f2: # Max is to the right, get rid of [x_l, x1) and update point references
+                x_l = x1
+                f_l = f1
+                x1 = x2
+                f1 = f2
+                d = phi * (x_u - x_l)
+                x2 = x_l + d
+                print(f"Move to new x2 = {x2:.4f} mm")
+                self.jog_relative_z(x2 - z_current, block=True)
+                z_current = x2
+                f2 = self.get_focus_metric()
+                print(f"Focus @ x2 ({x2:.4f}): {f2:.2f}")
+            else: # Max is to the left, get rid of (x2, x_u] and update point references)
+                x_u = x2
+                f_u = f2
+                x2 = x1
+                f2 = f1
+                d = phi * (x_u - x_l)
+                x1 = x_u - d
+                print(f"Move to new x1 = {x1:.4f} mm")
+                self.jog_relative_z(x1 - z_current, block=True)
+                z_current = x1
+                f1 = self.get_focus_metric()
+                print(f"Focus @ x1 ({x1:.4f}): {f1:.2f}")
+
+        # Choose best
+        best_z = x1 if f1 > f2 else x2
+        best_score = max(f1, f2)
+
+        # # Return to zero
+        # self.controller.jog_relative_z(-z_current, block=True)
+
+        # # Go to best focus
+        # self.controller.jog_relative_z(best_z, block=True)
+
+        print(f"\nBest focus at z={best_z:.3f} mm, score={best_score:.2f}")
+        return best_z, best_score
+
+    def capture_core(self, sample: sample.Sample, progress_callback:Callable, stop_capture: Event):
+    
+        # Set gantry acceleration limits
+        self._gantry._send_command("$120=10")
+        self._gantry._send_command("$121=10")
+        self._gantry._send_command("$122=5")
+        
+        self.set_directory(sample.directory)
+        start_time = time.time()
+
+        sample.set_start_time_imaging(start_time)
+
+        self.set_feed_rate(1)
+        img_num = 0
+        
+        self._gantry.jog_absolute_xyz(sample.x, sample.y, sample.z)
+        self._gantry.block_for_jog()
+        
+        while True and not stop_capture.is_set() and self.get_focus_metric() > 150:
+            start_stack = time.time()
+            
+            if img_num != 0:
+                self._gantry.jog_relative_y(sample.y_step_size)
+                self._gantry.block_for_jog()
+                time.sleep(0.25)
+
+            if img_num % 2 == 0:
+                self.autofocus()
+
+        # Targets are XYZ coordinates to jog to to capture an image.
+            sample.coordinates.append(self._gantry.get_xyz())
+
+            file_location = f"{sample.directory}/frame_{img_num}_{0}.tiff"
+            self.camera.save_frame(file_location)
+
+            img_num += 1
+
+            elapsed_time = time.time() - start_stack
+            progress_callback((elapsed_time, img_num, sample.rows*sample.cols))
+        
+            
+        ##
+        ## Make this a method
+        sample.rows = img_num
+        sample.cols = 1
+        end_time = time.time()
+        sample.set_end_time_imaging(end_time)
+        sample.to_json()
+
     #### SERPENTINE METHODS ####
     
     def capture_sample(self, sample: sample.Sample, progress_callback: Callable, stop_capture: Event):
@@ -119,6 +276,35 @@ class Controller:
             sample.set_end_time_imaging(end_time)
             sample.to_json()
             break
+            
+    def capture_all_cores(self, progress_callback: Callable, stop_capture: Event):
+        """Callable for the GUI to iterate through all samples. For multiple sample capture.
+
+        Args:
+            progress_callback (Callable): GUI widget to update progress bar
+            stop_capture (Event): Event to stop capture as soon as possible
+        """
+        while not stop_capture.is_set():
+            for i in range(len(self.samples)):
+                sample = self.samples.pop(-1)
+                width_est_pixels = sample.width / sample.image_width_mm * self.camera.w_pixels 
+                height_est_pixels = sample.height / sample.image_height_mm * self.camera.h_pixels
+                max_filesize_est = width_est_pixels * height_est_pixels * 3 / 10e6 # megabytes
+                log.info("MAX FILE SIZE ESTIMATE {} MB".format(round(max_filesize_est, 2)))
+                progress_callback((True, True, "{}_{}_{}".format(sample.species, sample.id1, sample.id2)))
+
+                self.capture_core(sample, progress_callback, stop_capture)
+                
+                # Only stitch if the capture complete successfully
+                if not stop_capture.is_set():
+                    print('stitching frames')
+                    self.stitch_frames(sample)
+                if len(self.samples) == 0:
+                    stop_capture.set()
+
+            return
+
+
 
     def capture_all_samples(self, progress_callback: Callable, stop_capture: Event):
         """Callable for the GUI to iterate through all samples. For multiple sample capture.
@@ -380,7 +566,7 @@ class Controller:
         """
         self._gantry.jog_relative_y(dist, feed)
 
-    def jog_relative_z(self, dist: float, feed:int = None):
+    def jog_relative_z(self, dist: float, feed:int = None, block=False):
         """Abstraction of gantry to jog in the Z direction relative to its current position.
 
         Args:
@@ -388,6 +574,9 @@ class Controller:
             feed (int): Feed rate in mm/min.
         """
         self._gantry.jog_relative_z(dist, feed)
+        
+        if block:
+            self._gantry.block_for_jog()
     
     def jog_absolute_x(self, pos: float, feed:int = None):
         """Abstraction of gantry to jog in the X direction to an absolute coordinate
@@ -549,7 +738,11 @@ class Controller:
             id2 = "na"
 
         #path_name = self.cb_capture_image()
-        ck = sample.Sample(width, height, species, id1, id2, notes, self.image_width_mm, self.image_height_mm, self.camera.w_pixels, self.camera.h_pixels, is_core, percent_overlap=overlap, x=center_x, y=center_y, z=center_z)
+        if not is_core:
+            ck = sample.Sample(width, height, species, id1, id2, notes, self.image_width_mm, self.image_height_mm, self.camera.w_pixels, self.camera.h_pixels, is_core, percent_overlap=overlap, x=center_x, y=center_y, z=center_z)
+        else:
+            ck = sample.Sample(0, -1, species, id1, id2, notes, self.image_width_mm, self.image_height_mm, self.camera.w_pixels, self.camera.h_pixels, is_core, percent_overlap=overlap, x=center_x, y=center_y, z=center_z)
+        
         self.samples.append(ck)
 
     def get_samples(self):
