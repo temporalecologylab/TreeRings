@@ -39,6 +39,9 @@ class Sample:
         tl_x = x - (self.width/2)
         tl_y = y + (self.height/2)
         tl_z = z
+        self.x = x
+        self.y = y
+        self.z = z
         self._top_left = (tl_x, tl_y, tl_z)
         self.species = species
         self.id1 = id1
