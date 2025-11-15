@@ -88,8 +88,20 @@ class App(Gtk.Window):
                 self.controller.cb_capture_image()
                 # print(f"Creating sample....")
             case "e":
-                self.cb_add_sample_dialog
-                print(f"Adding Sample...")
+                width = int(self.entry_width_sample.get_text())
+                height = int(self.entry_height_sample.get_text())
+                overlap, species, id1, id2, notes, is_core = self.show_metadata_dialog()
+                if species == False:
+                    return
+                if overlap == '':
+                    overlap = 50
+                else:
+                    overlap = float(overlap)
+                    species = species.replace(" ", "_").replace("/","_").replace(".","_")
+                    id1 = id1.replace(" ", "_").replace("/","_").replace(".","_")
+                    id2 = id2.replace(" ", "_").replace("/","_").replace(".","_")
+                self.controller.add_sample(width, height, overlap, species, id1, id2, notes, is_core)
+                log.info("Adding Sample \nW: {}\nH: {}\nO: {}\nS:  {}\nID1:  {}\nID2:  {}\nNotes:  {}\n".format(width, height, overlap, species, id1, id2, notes))
 
             case _:
                 return False  # not a gantry control key
