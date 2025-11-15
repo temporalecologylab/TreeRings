@@ -28,7 +28,7 @@ class App(Gtk.Window):
         
         self.connect("key-press-event", self.on_key_press)
         self.connect("key-release-event", self.on_key_release)
-        self.shift_toggle = False # start slow 
+        self.speed_toggle = True # start fast
         
         self.controller = controller.Controller(gantry.Gantry(), camera.Camera(), focus.Focus(delete_flag=True, setpoint = math.floor(n_images / 2)))
 
@@ -60,12 +60,11 @@ class App(Gtk.Window):
         state = event.get_state()
         self.jog_distance = 1.0 
         base_feedrate_xy = self.config["gantry"]["KEYBOARD_FEEDRATE_XY"]
-        base_feedrate_z = self.config["gantry"]["KEYBOARD_FEEDRATE_Z"]
 
-        feedrate_xy = base_feedrate_xy * (1.5 if self.shift_toggle else 0.67)
-        feedrate_z = 200
+        feedrate_xy = base_feedrate_xy * (1.5 if self.speed_toggle else 0.67)
+        feedrate_z = self.config["gantry"]["KEYBOARD_FEEDRATE_Z"]
 
-        #  self.jog_distance = self.jog_distance * (0.60 if self.shift_toggle else 1)
+        self.jog_distance = self.jog_distance * (1 if self.speed_toggle else 0.1)
 
         match key:
             case "w":
@@ -81,15 +80,17 @@ class App(Gtk.Window):
             case "z":
                 self.controller.jog_relative_z(-self.jog_distance, feedrate_z)
             case "f": # current toggle to go faster  
-                self.shift_toggle = not self.shift_toggle                
-                #debug
-                mode = "FAST" if self.shift_toggle else "SLOW"
-                print(f"Speed mode toggled to: {mode}")
+                self.speed_toggle = not self.speed_toggle                
+                # mode = "FAST" if self.speed_toggle else "SLOW"
+                # print(f"Speed mode toggled to: {mode}")
                 
             case "p":
-                # create sample with spacebar
                 self.controller.cb_capture_image()
-                print(f"Create sample....")
+                # print(f"Creating sample....")
+            case "e":
+                self.cb_add_sample_dialog
+                print(f"Adding Sample...")
+
             case _:
                 return False  # not a gantry control key
 
@@ -98,11 +99,8 @@ class App(Gtk.Window):
 
     def on_key_release(self, widget, event):
         key = Gdk.keyval_name(event.keyval)
-        # Optional: stop jogging if relevant
-        # self.controller.send_gcode_cmd("0x85")
         self.controller.jog_cancel()
-        print("Key release")
-        return key in {"w", "a", "s", "d", "q", "z"}
+        return key in {"w", "a", "s", "d", "q", "z", "f", "p", "e"}
 
     def create_entries(self, grid):
         ## Sample
