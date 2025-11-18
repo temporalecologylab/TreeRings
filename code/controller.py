@@ -234,6 +234,7 @@ class Controller:
 
     def capture_core_middle(self, sample: sample.Sample, progress_callback:Callable, stop_capture: Event):
         self.set_directory(sample.directory)
+        self._gantry.set_acceleration(fast=False)
         start_time = time.time()
         fake_image_count = 100
 
@@ -251,7 +252,6 @@ class Controller:
         coordinates_bot = []
         # Capture images starting in the middle of the core and move upwards
         while True and not stop_capture.is_set() and self.get_focus_metric() > 150:
-            start_stack = time.time()
             
             if img_num_top != 0:
                 self._gantry.jog_relative_y(sample.y_step_size)
@@ -260,8 +260,9 @@ class Controller:
 
             # Autofocus every other image. Test autofocusing every three images for the heck of it
             if img_num_top % 2 == 0:
+                start_stack = time.time()
                 self.autofocus()
-
+                
             # Targets are XYZ coordinates to jog to to capture an image.
             coordinates_top.append(self._gantry.get_xyz())
 
@@ -271,7 +272,9 @@ class Controller:
             img_num_top += 1
 
             elapsed_time = time.time() - start_stack
-            progress_callback((elapsed_time, img_num_top, fake_image_count))
+
+            if img_num_top % 2 == 0:
+                progress_callback((elapsed_time, img_num_top, fake_image_count))
         
         # Repeat the above procedure starting from the middle of the core but going in the opposite direction
         # jogging to the sample origin between the two edges of the core
