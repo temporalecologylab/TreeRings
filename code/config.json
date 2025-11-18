@@ -34,7 +34,10 @@
         "gantry":
         {
             "FEED_RATE_DEFAULT_XY": 600,
-            "FEED_RATE_DEFAULT_Z": 150
+            "FEED_RATE_DEFAULT_Z": 150,
+            "ACCELERATION_X": 10,
+            "ACCELERATION_Y": 10,
+            "ACCELERATION_Z": 5
         },
         "gui":
         {

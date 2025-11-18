@@ -22,6 +22,12 @@ class Gantry:
         self.feed_rate_z = self.config["gantry"]["FEED_RATE_DEFAULT_Z"]
         self.feed_rate_xy = self.config["gantry"]["FEED_RATE_DEFAULT_XY"] 
 
+        # Set gantry acceleration limits
+        self.acceleration_x = self.config["gantry"]["ACCELERATION_X"]
+        self.acceleration_y = self.config["gantry"]["ACCELERATION_Y"]
+        self.acceleration_z = self.config["gantry"]["ACCELERATION_Z"]
+
+        
         self.s = None
         self.stop_threads = False
 
@@ -42,6 +48,12 @@ class Gantry:
         cmd = "?"
         # Set WPos status reports
         self._send_command("$10=2")
+
+        # Set x acceleration
+        self._gantry._send_command(f"$120={self.acceleration_x}")
+        self._gantry._send_command(f"$121={self.acceleration_y}")
+        self._gantry._send_command(f"$122={self.acceleration_z}")
+
         while not self.stop_threads:
             grbl_out_list = self._send_command(cmd)
         
