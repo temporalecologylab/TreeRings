@@ -7,7 +7,7 @@ from pathlib import Path
 from datetime import datetime
 
 class Sample:
-    def __init__(self, sample_width_mm: int, sample_height_mm: int, species:str, id1:str, id2:str, notes:str, image_width_mm:float, image_height_mm:float, image_width_pixels:float, image_height_pixels:float, is_core:bool, percent_overlap:int = 50, is_vertical:bool = True, x:float = None, y:float = None, z:float = None):
+    def __init__(self, sample_width_mm: int, sample_height_mm: int, species:str, id1:str, id2:str, notes:str, image_width_mm:float, image_height_mm:float, image_width_pixels:float, image_height_pixels:float, is_core:bool, percent_overlap:int = 50, is_vertical:bool = True, x:float = None, y:float = None, z:float = None, directory:str = None):
         """Class which contains the necessary information for each sample that needs to be digitized. Data comes from user inputs from GUI. Data is saved in metadata.json files alongside stitched images
 
         Args:
@@ -27,6 +27,7 @@ class Sample:
             x (float, optional): X position of the center of the sample in the gantry coordinate system. Defaults to None.
             y (float, optional): Y position of the center of the sample in the gantry coordinate system. Defaults to None.
             z (float, optional): Z position of the center of the sample in the gantry coordinate system. Defaults to None.
+            directory (str): Directory to save sample data
         """
         self.width = sample_width_mm
         self.height = sample_height_mm
@@ -49,9 +50,13 @@ class Sample:
         self.notes = notes
 
         dirtime = datetime.now().strftime("%H_%M_%S")
-        directory = "./{}_{}_{}_{}".format(species, id1, id2, dirtime)
-        Path(directory).mkdir()
-        self.directory = directory
+
+        if directory is not None:
+            d = "./{}_{}_{}_{}".format(species, id1, id2, dirtime)
+        else:
+            d = "{}/{}_{}_{}_{}".format(directory, species, id1, id2, dirtime)
+        Path(d).mkdir()
+        self.directory = d
 
         self.image_width_mm = image_width_mm
         self.image_height_mm = image_height_mm

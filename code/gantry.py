@@ -404,6 +404,7 @@ class Gantry:
             self.log_serial_out(grbl_out)
             log.info("Input flushed")
             log.info("Starting Position Monitor")
+            log.info("Connected to GRBL via serial. Ready to control.")
        
             self.thread.start() 
             self.set_acceleration(50)        
