@@ -280,16 +280,15 @@ class Controller:
 
         while True and not stop_capture.is_set() and self.get_focus_metric() > 150:
             start_stack = time.time()
-            
-            if img_num_bot != 0:
-                self._gantry.jog_relative_y(-1 * sample.y_step_size)
-                self._gantry.block_for_jog()
-                time.sleep(0.25) # allow vibrations to settle
-
             # Autofocus every other image. Test autofocusing every three images for the heck of it
             if img_num_bot % 2 == 0:
                 self.autofocus()
-
+            
+            # Don't retake an image of the first position
+            self._gantry.jog_relative_y(-1 * sample.y_step_size)
+            self._gantry.block_for_jog()
+            time.sleep(0.25) # allow vibrations to settle
+            
             # Targets are XYZ coordinates to jog to to capture an image.
             coordinates_bot.append(self._gantry.get_xyz())
 
@@ -301,8 +300,8 @@ class Controller:
 
             elapsed_time = time.time() - start_stack
             progress_callback((elapsed_time, img_num_bot, fake_image_count))
-        
-        sample.coordinates(coordinates_top.extend(coordinates_bot))
+        coordinates_top.extend(coordinates_bot)
+        sample.coordinates(coordinates_top)
 
         ## Make this a method
         sample.rows = img_num_top + abs(img_num_bot)
@@ -820,9 +819,9 @@ class Controller:
 
         #path_name = self.cb_capture_image()
         if not is_core:
-            ck = sample.Sample(width, height, species, id1, id2, notes, self.image_width_mm, self.image_height_mm, self.camera.w_pixels, self.camera.h_pixels, is_core, percent_overlap=overlap, x=center_x, y=center_y, z=center_z)
+            ck = sample.Sample(width, height, species, id1, id2, notes, self.image_width_mm, self.image_height_mm, self.camera.w_pixels, self.camera.h_pixels, is_core, percent_overlap=overlap, x=center_x, y=center_y, z=center_z, directory=self.directory)
         else:
-            ck = sample.Sample(0, -1, species, id1, id2, notes, self.image_width_mm, self.image_height_mm, self.camera.w_pixels, self.camera.h_pixels, is_core, percent_overlap=overlap, x=center_x, y=center_y, z=center_z)
+            ck = sample.Sample(0, -1, species, id1, id2, notes, self.image_width_mm, self.image_height_mm, self.camera.w_pixels, self.camera.h_pixels, is_core, percent_overlap=overlap, x=center_x, y=center_y, z=center_z, directory=self.directory)
         
         self.samples.append(ck)
 

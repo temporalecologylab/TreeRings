@@ -80,10 +80,11 @@ class App(Gtk.Window):
             case "z":
                 self.controller.jog_relative_z(-self.jog_distance, feedrate_z)
             case "f": # current toggle to go faster  
-                self.speed_toggle = not self.speed_toggle                
-                # mode = "FAST" if self.speed_toggle else "SLOW"
-                # print(f"Speed mode toggled to: {mode}")
-                
+                self.speed_toggle = not self.speed_toggle          
+
+                if self.speed_toggle:
+                    self.controller._gantry.set_acceleration(fast=True)      
+                    
             case "p":
                 self.controller.cb_capture_image()
                 # print(f"Creating sample....")
@@ -277,7 +278,7 @@ class App(Gtk.Window):
     #    box.pack_start(button_capture_all_samples, True, True, 0)
 
     def create_capture_all_samples_button(self, box):
-        button_capture_all_samples = Gtk.Button(label="Golden Section Search Focus")
+        button_capture_all_samples = Gtk.Button(label="Capture All Samples")
         button_capture_all_samples.connect("clicked", self.capture_all_samples)
         # button_capture_all_samples.connect("clicked", self.cb_golden_section_search)
         # button_capture_all_samples.connect("clicked", self.capture_all_cores)

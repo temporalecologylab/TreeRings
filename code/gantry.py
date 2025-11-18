@@ -23,9 +23,12 @@ class Gantry:
         self.feed_rate_xy = self.config["gantry"]["FEED_RATE_DEFAULT_XY"] 
 
         # Set gantry acceleration limits
-        self.acceleration_x = self.config["gantry"]["ACCELERATION_X"]
-        self.acceleration_y = self.config["gantry"]["ACCELERATION_Y"]
-        self.acceleration_z = self.config["gantry"]["ACCELERATION_Z"]
+        self.acceleration_slow_x = self.config["gantry"]["ACCELERATION_SLOW_X"]
+        self.acceleration_slow_y = self.config["gantry"]["ACCELERATION_SLOW_Y"]
+        self.acceleration_slow_z = self.config["gantry"]["ACCELERATION_SLOW_Z"]
+        self.acceleration_fast_x = self.config["gantry"]["ACCELERATION_FAST_X"]
+        self.acceleration_fast_y = self.config["gantry"]["ACCELERATION_FAST_Y"]
+        self.acceleration_fast_z = self.config["gantry"]["ACCELERATION_FAST_Z"]
 
         
         self.s = None
@@ -48,12 +51,7 @@ class Gantry:
         cmd = "?"
         # Set WPos status reports
         self._send_command("$10=2")
-
-        # Set x acceleration
-        self._gantry._send_command(f"$120={self.acceleration_x}")
-        self._gantry._send_command(f"$121={self.acceleration_y}")
-        self._gantry._send_command(f"$122={self.acceleration_z}")
-
+        
         while not self.stop_threads:
             grbl_out_list = self._send_command(cmd)
         
@@ -377,12 +375,17 @@ class Gantry:
         if not self.quiet:
             log.info(' : ' + str(s_out.strip()))
 
-    def set_acceleration(self, acc=50):
+    def set_acceleration(self, fast: bool = False) -> None:
         # mm / sec^2
         # set xyz feed acceleration
-        _ = self._send_command("$120={}".format(acc))
-        _ = self._send_command("$121={}".format(acc))
-        _ = self._send_command("$122={}".format(acc))
+        if fast:
+            _ = self._send_command("$120={}".format(self.acceleration_fast_x))
+            _ = self._send_command("$121={}".format(self.acceleration_fast_y))
+            _ = self._send_command("$122={}".format(self.acceleration_fast_z))
+        else:
+            _ = self._send_command("$120={}".format(self.acceleration_slow_x))
+            _ = self._send_command("$121={}".format(self.acceleration_slow_y))
+            _ = self._send_command("$122={}".format(self.acceleration_slow_z))
 
     def serial_connect_port(self) -> None:
         """Connect via serial to GRBL as done in the given example. https://github.com/gnea/grbl/blob/master/doc/script/simple_stream.py 
@@ -408,7 +411,7 @@ class Gantry:
             log.info("Connected to GRBL via serial. Ready to control.")
        
             self.thread.start() 
-            self.set_acceleration(50)        
+            self.set_acceleration(fast=True)        
 
 
     def serial_disconnect_port(self):
