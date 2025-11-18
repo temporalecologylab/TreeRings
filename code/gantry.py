@@ -339,9 +339,10 @@ class Gantry:
         Command is ignored, if not in a JOG state or if jog cancel is already
         invoked and in-process.
         """
-        cmd = "\x85"
-        _ = self._send_command(cmd)
-    
+        #  cmd = "\x85"
+        #  _ = self._send_command(cmd)
+        self.s.write(bytes([0x85]))
+
     def pause(self) -> None:
         cmd = "M0"
         _ = self._send_command(cmd)

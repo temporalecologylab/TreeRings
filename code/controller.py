@@ -361,6 +361,9 @@ class Controller:
         log.info("Jog {} mm to recenter vertical core. i: {}, i_middle: {}".format(d, i, i_middle))
 
     #### JOG METHODS ####
+    
+    def jog_cancel(self):
+        self._gantry.jog_cancel()
 
     def jog_relative_x(self, dist: float, feed:int = None):
         """Abstraction of gantry to jog in the x direction relative to its current position.
@@ -433,6 +436,8 @@ class Controller:
             feed (int): Feed rate in mm/min.
         """
         self._gantry.jog_absolute_xyz(x, y, z, feed)
+    
+    ############## testing ###############
 
     def set_feed_rate(self, mode: int):
         """Setting feed rate between fast and slow
@@ -569,6 +574,8 @@ class Controller:
         self.samples=samples
 
    #### GANTRY METHODS ####
+    def send_gcode_cmd(self, cmd:str) -> list:
+       self._gantry._send_command(cmd)
 
     def serial_connect(self):
         """Connect to the gantry via USB serial

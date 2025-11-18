@@ -1,7 +1,7 @@
 import gi
 gi.require_version('Gtk', '3.0')
 gi.require_version('Gst', '1.0')
-from gi.repository import Gtk, Gst, GObject, GLib
+from gi.repository import Gtk, Gst, GObject, GLib, Gdk
 from threading import Thread, Event
 import logging as log
 import controller
@@ -12,6 +12,7 @@ import gantry
 import camera
 import focus
 import math
+import serial as ser
 
 log.basicConfig(format='%(process)d-%(levelname)s-%(message)s', level=log.INFO)
 
@@ -24,6 +25,10 @@ class App(Gtk.Window):
         self.set_size_request(self.config["gui"]["DEFAULT_WINDOW_SIZE"][0], self.config["gui"]["DEFAULT_WINDOW_SIZE"][1])
         n_images = self.config["controller"]["N_IMAGES_MULTIPLE_DISTANCES"]
         self.connect("destroy", self.quit_program)
+        
+        self.connect("key-press-event", self.on_key_press)
+        self.connect("key-release-event", self.on_key_release)
+        self.speed_toggle = True # start fast
         
         self.controller = controller.Controller(gantry.Gantry(), camera.Camera(), focus.Focus(delete_flag=True, setpoint = math.floor(n_images / 2)))
 
@@ -41,6 +46,73 @@ class App(Gtk.Window):
         self.controller.quit()
         log.info("Destroy GTK window")
         Gtk.main_quit()
+    
+        
+    def on_key_press(self, widget, event):
+        key = Gdk.keyval_name(event.keyval)
+        state = event.state
+
+        # Check if a text entry has focus — if yes, ignore key handling
+        focus_widget = self.get_focus()
+        if isinstance(focus_widget, Gtk.Entry) or isinstance(focus_widget, Gtk.TextView):
+            return False  # let the widget handle typing
+
+        state = event.get_state()
+        self.jog_distance = 1.0 
+        base_feedrate_xy = self.config["gantry"]["KEYBOARD_FEEDRATE_XY"]
+
+        feedrate_xy = base_feedrate_xy * (1.5 if self.speed_toggle else 0.67)
+        feedrate_z = self.config["gantry"]["KEYBOARD_FEEDRATE_Z"]
+
+        self.jog_distance = self.jog_distance * (1 if self.speed_toggle else 0.1)
+
+        match key:
+            case "w":
+                self.controller.jog_relative_y(self.jog_distance, feedrate_xy)
+            case "a":
+                self.controller.jog_relative_x(-self.jog_distance, feedrate_xy)
+            case "s":
+                self.controller.jog_relative_y(-self.jog_distance, feedrate_xy)
+            case "d":
+                self.controller.jog_relative_x(self.jog_distance, feedrate_xy)
+            case "q":
+                self.controller.jog_relative_z(self.jog_distance, feedrate_z)
+            case "z":
+                self.controller.jog_relative_z(-self.jog_distance, feedrate_z)
+            case "f": # current toggle to go faster  
+                self.speed_toggle = not self.speed_toggle                
+                # mode = "FAST" if self.speed_toggle else "SLOW"
+                # print(f"Speed mode toggled to: {mode}")
+                
+            case "p":
+                self.controller.cb_capture_image()
+                # print(f"Creating sample....")
+            case "e":
+                width = int(self.entry_width_sample.get_text())
+                height = int(self.entry_height_sample.get_text())
+                overlap, species, id1, id2, notes, is_core = self.show_metadata_dialog()
+                if species == False:
+                    return
+                if overlap == '':
+                    overlap = 50
+                else:
+                    overlap = float(overlap)
+                    species = species.replace(" ", "_").replace("/","_").replace(".","_")
+                    id1 = id1.replace(" ", "_").replace("/","_").replace(".","_")
+                    id2 = id2.replace(" ", "_").replace("/","_").replace(".","_")
+                self.controller.add_sample(width, height, overlap, species, id1, id2, notes, is_core)
+                log.info("Adding Sample \nW: {}\nH: {}\nO: {}\nS:  {}\nID1:  {}\nID2:  {}\nNotes:  {}\n".format(width, height, overlap, species, id1, id2, notes))
+
+            case _:
+                return False  # not a gantry control key
+
+        return True  # only return True when a control key was handled
+
+
+    def on_key_release(self, widget, event):
+        key = Gdk.keyval_name(event.keyval)
+        self.controller.jog_cancel()
+        return key in {"w", "a", "s", "d", "q", "z", "f", "p", "e"}
 
     def create_entries(self, grid):
         ## Sample
