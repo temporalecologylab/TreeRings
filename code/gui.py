@@ -164,6 +164,7 @@ class App(Gtk.Window):
         self.create_serial_connect_button(box_buttons0)
         self.create_g_code_homing_button(box_buttons0)
         self.create_capture_button(box_buttons0)
+        self.create_autofocus_button(box_buttons0)
         
         frame_buttons1 = Gtk.Frame()
         frame_buttons1.set_size_request(-1,-1)
@@ -177,9 +178,9 @@ class App(Gtk.Window):
         frame_buttons1.add(box_buttons1)
 
         
-        self.create_capture_all_samples_button(box_buttons1)
-        self.create_add_sample_dialog_button(box_buttons1)
         self.create_test_boundaries_button(box_buttons1)
+        self.create_add_sample_dialog_button(box_buttons1)
+        self.create_capture_all_samples_button(box_buttons1)
         self.create_view_added_sample_button(box_buttons1)
 
     def create_jogging_controls(self, grid):
@@ -277,9 +278,9 @@ class App(Gtk.Window):
 
     def create_capture_all_samples_button(self, box):
         button_capture_all_samples = Gtk.Button(label="Golden Section Search Focus")
-        # button_capture_all_samples.connect("clicked", self.capture_all_samples)
+        button_capture_all_samples.connect("clicked", self.capture_all_samples)
         # button_capture_all_samples.connect("clicked", self.cb_golden_section_search)
-        button_capture_all_samples.connect("clicked", self.capture_all_cores)
+        # button_capture_all_samples.connect("clicked", self.capture_all_cores)
         box.pack_start(button_capture_all_samples, True, True, 0)
 
     def capture_all_cores(self, widget):
@@ -334,131 +335,6 @@ class App(Gtk.Window):
         capture_thread.join()
         GLib.idle_add(dialog.destroy)
 
-    def cb_golden_section_search(self, widget):
-        import cv2
-        import os
-        import numpy as np
-        import time
-
-        # Set gantry acceleration limits
-        self.controller._gantry._send_command("$120=10")
-        self.controller._gantry._send_command("$121=10")
-        self.controller._gantry._send_command("$122=5")
-
-        # -------------------------
-        # Focus metric helpers
-        # -------------------------
-        def variance_of_laplacian(image):
-            """Compute Laplacian variance (higher = sharper)."""
-            return cv2.Laplacian(image, cv2.CV_64F).var()
-
-        def roi_center(image, frac=0.2):
-            """Extract central region of image."""
-            h, w = image.shape[:2]
-            dw, dh = int(w * frac / 2), int(h * frac / 2)
-            cx, cy = w // 2, h // 2
-            return image[cy - dh: cy + dh, cx - dw: cx + dw]
-
-
-        
-                
-        def get_focus_metric():
-            """Capture image and compute focus metric."""
-            temp_file = "./temp_image.tiff"
-            self.controller.camera.save_frame(temp_file)
-            time.sleep(0.15)
-            image = cv2.imread(temp_file, cv2.IMREAD_GRAYSCALE)
-            os.remove(temp_file)
-            return variance_of_laplacian(roi_center(image, frac=0.2))
-
-        # -------------------------
-        # Golden Section Search
-        # -------------------------
-        def golden_section_search(x_l, x_u, tol=0.01, max_iter=20):
-            """
-            Perform golden section search for maximum focus metric between z=a and z=b (mm).
-            a < 0 < b. Returns the best z position (relative to start).
-
-            Implementation described in this video: https://www.youtube.com/watch?v=AGXq-ut2oJg
-            """
-            phi = 0.618 # golden ratio
-
-            z_current = 0  # Track current position
-
-            # Initial internal points
-            d = phi * (x_u - x_l)
-            x1 = x_u - d  # left internal point
-            x2 = x_l + d  # right internal point
-
-            # Move to x1 and evaluate
-            print(f"Move to x1 = {x1:.4f} mm")
-            self.controller.jog_relative_z(x1, block=True)
-            z_current = x1
-            f1 = get_focus_metric()
-            print(f"Focus @ x1 ({x1:.4f}): {f1:.2f}")
-
-            # Move to x2 and evaluate
-            print(f"Move to x2 = {x2:.4f} mm")
-            self.controller.jog_relative_z(x2 - z_current, block=True)
-            z_current = x2
-            f2 = get_focus_metric()
-            print(f"Focus @ x2 ({x2:.4f}): {f2:.2f}")
-
-            # Main optimization loop
-            for i in range(max_iter):
-                if abs(x_u - x_l) < tol:
-                    break
-
-                print(f"\nIter {i:02d}: a={x_l:.4f}, b={x_u:.4f}, f1={f1:.2f}, f2={f2:.2f}")
-
-                if f1 < f2: # Max is to the right, get rid of [x_l, x1) and update point references
-                    x_l = x1
-                    f_l = f1
-                    x1 = x2
-                    f1 = f2
-                    d = phi * (x_u - x_l)
-                    x2 = x_l + d
-                    print(f"Move to new x2 = {x2:.4f} mm")
-                    self.controller.jog_relative_z(x2 - z_current, block=True)
-                    z_current = x2
-                    f2 = get_focus_metric()
-                    print(f"Focus @ x2 ({x2:.4f}): {f2:.2f}")
-                else: # Max is to the left, get rid of (x2, x_u] and update point references)
-                    x_u = x2
-                    f_u = f2
-                    x2 = x1
-                    f2 = f1
-                    d = phi * (x_u - x_l)
-                    x1 = x_u - d
-                    print(f"Move to new x1 = {x1:.4f} mm")
-                    self.controller.jog_relative_z(x1 - z_current, block=True)
-                    z_current = x1
-                    f1 = get_focus_metric()
-                    print(f"Focus @ x1 ({x1:.4f}): {f1:.2f}")
-
-            # Choose best
-            best_z = x1 if f1 > f2 else x2
-            best_score = max(f1, f2)
-
-            # # Return to zero
-            # self.controller.jog_relative_z(-z_current, block=True)
-
-            # # Go to best focus
-            # self.controller.jog_relative_z(best_z, block=True)
-
-            print(f"\nBest focus at z={best_z:.3f} mm, score={best_score:.2f}")
-            return best_z, best_score
-
-        # -------------------------
-        # Run autofocus
-        # -------------------------
-        time_start = time.time()
-        golden_section_search(-0.2, 0.2, tol=0.05, max_iter=20)
-        time_end = time.time()
-
-        print(f"\n Time to Focus: {time_end - time_start:.2f} s")
-
-
     def create_g_code_homing_button(self, box):
         button_g_code_homing = Gtk.Button(label="SET HOME")
         button_g_code_homing.connect("clicked", lambda w: self.controller.cb_homing_g_code())
@@ -473,6 +349,11 @@ class App(Gtk.Window):
         button_view_samples = Gtk.Button(label="View Samples Added")
         button_view_samples.connect("clicked", self.view_added_samples)
         box.pack_start(button_view_samples, True, True, 0)
+
+    def create_autofocus_button(self, box):
+        button_autofocus = Gtk.Button(label="Autofocus")
+        button_autofocus.connect("clicked", lambda w: self.controller.autofocus())
+        box.pack_start(button_autofocus, True, True, 0)
 
     def create_jog_buttons(self, box):
         label_jogging = Gtk.Label(label="Jogging Controls")

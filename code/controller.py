@@ -189,13 +189,7 @@ class Controller:
         print(f"\nBest focus at z={best_z:.3f} mm, score={best_score:.2f}")
         return best_z, best_score
 
-    def capture_core(self, sample: sample.Sample, progress_callback:Callable, stop_capture: Event):
-    
-        # Set gantry acceleration limits
-        self._gantry._send_command("$120=10")
-        self._gantry._send_command("$121=10")
-        self._gantry._send_command("$122=5")
-        
+    def capture_core_bottom(self, sample: sample.Sample, progress_callback:Callable, stop_capture: Event):
         self.set_directory(sample.directory)
         start_time = time.time()
 
@@ -233,6 +227,85 @@ class Controller:
         ##
         ## Make this a method
         sample.rows = img_num
+        sample.cols = 1
+        end_time = time.time()
+        sample.set_end_time_imaging(end_time)
+        sample.to_json()
+
+    def capture_core_middle(self, sample: sample.Sample, progress_callback:Callable, stop_capture: Event):
+        self.set_directory(sample.directory)
+        start_time = time.time()
+        fake_image_count = 100
+
+        sample.set_start_time_imaging(start_time)
+
+        self.set_feed_rate(1)
+        img_num_top = 0
+        img_num_bot = 0
+        
+        # jogging to the sample origin between the two edges of the core
+        self._gantry.jog_absolute_xyz(sample.x, sample.y, sample.z)
+        self._gantry.block_for_jog()
+        
+        coordinates_top = []
+        coordinates_bot = []
+        # Capture images starting in the middle of the core and move upwards
+        while True and not stop_capture.is_set() and self.get_focus_metric() > 150:
+            start_stack = time.time()
+            
+            if img_num_top != 0:
+                self._gantry.jog_relative_y(sample.y_step_size)
+                self._gantry.block_for_jog()
+                time.sleep(0.25) # allow vibrations to settle
+
+            # Autofocus every other image. Test autofocusing every three images for the heck of it
+            if img_num_top % 2 == 0:
+                self.autofocus()
+
+            # Targets are XYZ coordinates to jog to to capture an image.
+            coordinates_top.append(self._gantry.get_xyz())
+
+            file_location = f"{sample.directory}/frame_{img_num_top}_{0}.tiff"
+            self.camera.save_frame(file_location)
+
+            img_num_top += 1
+
+            elapsed_time = time.time() - start_stack
+            progress_callback((elapsed_time, img_num_top, fake_image_count))
+        
+        # Repeat the above procedure starting from the middle of the core but going in the opposite direction
+        # jogging to the sample origin between the two edges of the core
+        self._gantry.jog_absolute_xyz(sample.x, sample.y, sample.z)
+        self._gantry.block_for_jog()
+
+        while True and not stop_capture.is_set() and self.get_focus_metric() > 150:
+            start_stack = time.time()
+            
+            if img_num_bot != 0:
+                self._gantry.jog_relative_y(-1 * sample.y_step_size)
+                self._gantry.block_for_jog()
+                time.sleep(0.25) # allow vibrations to settle
+
+            # Autofocus every other image. Test autofocusing every three images for the heck of it
+            if img_num_bot % 2 == 0:
+                self.autofocus()
+
+            # Targets are XYZ coordinates to jog to to capture an image.
+            coordinates_bot.append(self._gantry.get_xyz())
+
+            file_location = f"{sample.directory}/frame_{img_num_bot}_{0}.tiff"
+            self.camera.save_frame(file_location)
+
+            # Not sure if this is going to be good enough to get the columns correct
+            img_num_bot -= 1
+
+            elapsed_time = time.time() - start_stack
+            progress_callback((elapsed_time, img_num_bot, fake_image_count))
+        
+        sample.coordinates(coordinates_top.extend(coordinates_bot))
+
+        ## Make this a method
+        sample.rows = img_num_top + abs(img_num_bot)
         sample.cols = 1
         end_time = time.time()
         sample.set_end_time_imaging(end_time)
@@ -293,7 +366,7 @@ class Controller:
                 log.info("MAX FILE SIZE ESTIMATE {} MB".format(round(max_filesize_est, 2)))
                 progress_callback((True, True, "{}_{}_{}".format(sample.species, sample.id1, sample.id2)))
 
-                self.capture_core(sample, progress_callback, stop_capture)
+                self.capture_core_bottom(sample, progress_callback, stop_capture)
                 
                 # Only stitch if the capture complete successfully
                 if not stop_capture.is_set():
@@ -316,13 +389,16 @@ class Controller:
         while not stop_capture.is_set():
             for i in range(len(self.samples)):
                 sample = self.samples.pop(-1)
-                width_est_pixels = sample.width / sample.image_width_mm * self.camera.w_pixels 
+                width_est_pixels = max(1, sample.width / sample.image_width_mm * self.camera.w_pixels)
                 height_est_pixels = sample.height / sample.image_height_mm * self.camera.h_pixels
                 max_filesize_est = width_est_pixels * height_est_pixels * 3 / 10e6 # megabytes
-                log.info("MAX FILE SIZE ESTIMATE {} MB".format(round(max_filesize_est, 2)))
+                # log.info("MAX FILE SIZE ESTIMATE {} MB".format(round(max_filesize_est, 2)))
                 progress_callback((True, True, "{}_{}_{}".format(sample.species, sample.id1, sample.id2)))
 
-                self.capture_sample(sample, progress_callback, stop_capture)
+                if sample.is_core:
+                    self.capture_core_middle(sample, progress_callback, stop_capture)
+                else:
+                    self.capture_sample(sample, progress_callback, stop_capture)
                 
                 # Only stitch if the capture complete successfully
                 if not stop_capture.is_set():
