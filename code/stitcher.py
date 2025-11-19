@@ -144,7 +144,7 @@ class Stitcher:
 
     def get_frames(self):
         # Create a regex pattern to match the filenames and extract row and column numbers
-        pattern = re.compile(r'frame_(\d+)_(\d+)')
+        pattern = re.compile(r'frame_(-?\d+)_(-?\d+)')
 
         # List all files in the directory
         files = os.listdir(self._frame_dir)
