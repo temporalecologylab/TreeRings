@@ -278,6 +278,7 @@ class Controller:
         
         # Repeat the above procedure starting from the middle of the core but going in the opposite direction
         # jogging to the sample origin between the two edges of the core
+        log.info("Top of core detected. Moving to middle position to capture bottom half of core.")
         self._gantry.jog_absolute_xyz(sample.x, sample.y, sample.z)
         self._gantry.block_for_jog()
 
@@ -303,8 +304,11 @@ class Controller:
 
             elapsed_time = time.time() - start_stack
             progress_callback((elapsed_time, img_num_top + abs(img_num_bot), fake_image_count))
+
+        log.info("Bottom of core detected. Capture complete.")
+        
         coordinates_top.extend(coordinates_bot)
-        sample.coordinates(coordinates_top)
+        sample.coordinates.append(coordinates_top)
 
         ## Make this a method
         sample.rows = img_num_top + abs(img_num_bot)
