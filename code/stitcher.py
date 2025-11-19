@@ -157,27 +157,25 @@ class Stitcher:
         
     #     log.info(sorted_paths)
     #     return sorted_paths
+    
     def get_frames(self):
         pattern = re.compile(r'^frame_(-?\d+)_(-?\d+)\.tif$')
 
         files = os.listdir(self._frame_dir)
 
-        matches = []
+        parsed = []
         for f in files:
             m = pattern.match(f)
             if m:
                 row = int(m.group(1))
                 col = int(m.group(2))
-                matches.append((row, col, f))
+                parsed.append((row, col, f))
 
-        # Sort by row, then column
-        matches.sort(key=lambda t: (t[0], t[1]))
-
-        # return only filenames in order
-        filenames = [t[2] for t in matches]
-        log.info(filenames)
-
+        parsed.sort(key=lambda x: (x[0], x[1]))  # sort by row, then col
+        filenames = [p[2] for p in parsed]
+        
         return filenames
+
      
     # @profile
     def stitch(self, resize=None):
