@@ -109,9 +109,11 @@ class Controller:
             break
         return self.variance_of_laplacian(self.roi_center(image, frac=0.2))
 
-    def autofocus(self):
-        self.golden_section_search(-0.2, 0.2, tol=0.05, max_iter=20)
-
+    def autofocus(self, range = None):
+        if range is None:
+            self.golden_section_search(-0.2, 0.2, tol=0.05, max_iter=20)
+        else:
+            self.golden_section_search(-1 * range / 2, range / 2, tol=0.05, max_iter=20)
 
     def golden_section_search(self, x_l, x_u, tol=0.01, max_iter=20):
         """
@@ -201,7 +203,7 @@ class Controller:
         self._gantry.jog_absolute_xyz(sample.x, sample.y, sample.z)
         self._gantry.block_for_jog()
         
-        while True and not stop_capture.is_set() and self.get_focus_metric() > 150:
+        while True and not stop_capture.is_set():
             start_stack = time.time()
             
             if img_num != 0:
@@ -222,7 +224,13 @@ class Controller:
 
             elapsed_time = time.time() - start_stack
             progress_callback((elapsed_time, img_num, sample.rows*sample.cols))
-        
+
+            counter = 0
+            while self.get_focus_metric() < 200 and counter < 2:
+                log.info("Focus metric low, attempting to refocus with larger searching range.")
+                self.autofocus(2) # increase the range if we didn't find a good focus. But stop if we never find a good focus 
+                counter += 1
+
             
         ##
         ## Make this a method
@@ -251,7 +259,7 @@ class Controller:
         coordinates_top = []
         coordinates_bot = []
         # Capture images starting in the middle of the core and move upwards
-        while True and not stop_capture.is_set() and self.get_focus_metric() > 150:
+        while True and not stop_capture.is_set():
             
             if img_num_top != 0:
                 self._gantry.jog_relative_y(sample.y_step_size)
@@ -275,6 +283,12 @@ class Controller:
 
             if img_num_top % 2 == 0:
                 progress_callback((elapsed_time, img_num_top, fake_image_count))
+
+            counter = 0
+            while self.get_focus_metric() < 200 and counter < 2:
+                log.info("Focus metric low, attempting to refocus with larger searching range.")
+                self.autofocus(2) # increase the range if we didn't find a good focus. But stop if we never find a good focus 
+                counter += 1
         
         # Repeat the above procedure starting from the middle of the core but going in the opposite direction
         # jogging to the sample origin between the two edges of the core
@@ -282,7 +296,7 @@ class Controller:
         self._gantry.jog_absolute_xyz(sample.x, sample.y, sample.z)
         self._gantry.block_for_jog()
 
-        while True and not stop_capture.is_set() and self.get_focus_metric() > 150:
+        while True and not stop_capture.is_set():
             start_stack = time.time()
             # Autofocus every other image. Test autofocusing every three images for the heck of it
             if img_num_bot % 2 == 0:
@@ -304,6 +318,12 @@ class Controller:
 
             elapsed_time = time.time() - start_stack
             progress_callback((elapsed_time, img_num_top + abs(img_num_bot), fake_image_count))
+
+            counter = 0
+            while self.get_focus_metric() < 200 and counter < 2:
+                log.info("Focus metric low, attempting to refocus with larger searching range.")
+                self.autofocus(2) # increase the range if we didn't find a good focus. But stop if we never find a good focus 
+                counter += 1
 
         log.info("Bottom of core detected. Capture complete.")
         
