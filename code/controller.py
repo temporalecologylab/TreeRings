@@ -262,7 +262,7 @@ class Controller:
             if img_num_top % 2 == 0:
                 start_stack = time.time()
                 self.autofocus()
-                
+
             # Targets are XYZ coordinates to jog to to capture an image.
             coordinates_top.append(self._gantry.get_xyz())
 
@@ -302,7 +302,7 @@ class Controller:
             img_num_bot -= 1
 
             elapsed_time = time.time() - start_stack
-            progress_callback((elapsed_time, img_num_bot, fake_image_count))
+            progress_callback((elapsed_time, img_num_top + abs(img_num_bot), fake_image_count))
         coordinates_top.extend(coordinates_bot)
         sample.coordinates(coordinates_top)
 
