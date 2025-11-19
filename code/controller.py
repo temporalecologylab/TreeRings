@@ -94,7 +94,25 @@ class Controller:
         cx, cy = w // 2, h // 2
         return image[cy - dh: cy + dh, cx - dw: cx + dw]
 
-    def get_focus_metric(self,):
+
+    def roi_top(self, image, frac=0.2):
+        """Extract top central region of the image."""
+        h, w = image.shape[:2]
+        dw = int(w * frac / 2)
+        dh = int(h * frac)
+        cx = w // 2
+        return image[0:dh, cx - dw: cx + dw]
+
+
+    def roi_bottom(self, image, frac=0.2):
+        """Extract bottom central region of the image."""
+        h, w = image.shape[:2]
+        dw = int(w * frac / 2)
+        dh = int(h * frac)
+        cx = w // 2
+        return image[h - dh:h, cx - dw: cx + dw]
+
+    def get_focus_metric(self, position = None):
         """Capture image and compute focus metric."""
         temp_file = "./temp_image.tiff"
         while True:
@@ -107,7 +125,13 @@ class Controller:
                 log.info("Could not capture tempfile, retrying")
                 continue
             break
-        return self.variance_of_laplacian(self.roi_center(image, frac=0.2))
+
+        if position == "top":
+            return self.variance_of_laplacian(self.roi_top(image, frac=0.3))
+        elif position == "bottom":
+            return self.variance_of_laplacian(self.roi_bottom(image, frac=0.3))
+        else:
+            return self.variance_of_laplacian(self.roi_center(image, frac=0.2))
 
     def autofocus(self, range = None):
         if range is None:
@@ -285,14 +309,19 @@ class Controller:
                 progress_callback((elapsed_time, img_num_top, fake_image_count))
 
             counter = 0
-            while self.get_focus_metric() < 200 and counter < 2:
+            if self.get_focus_metric("bot") < 200:
                 log.info("Focus metric low, attempting to refocus with larger searching range.")
                 self.autofocus(2) # increase the range if we didn't find a good focus. But stop if we never find a good focus 
-                counter += 1
-        
+                
+                if self.get_focus_metric("bot") < 200:
+                    log.info("Top of core detected. Moving to middle position to capture bottom half of core.")
+                    break
+                else:
+                    file_location = f"{sample.directory}/frame_{img_num_bot}_{0}.tiff"
+                    self.camera.save_frame(file_location)
+                    
         # Repeat the above procedure starting from the middle of the core but going in the opposite direction
         # jogging to the sample origin between the two edges of the core
-        log.info("Top of core detected. Moving to middle position to capture bottom half of core.")
         self._gantry.jog_absolute_xyz(sample.x, sample.y, sample.z)
         self._gantry.block_for_jog()
 
@@ -319,14 +348,18 @@ class Controller:
             elapsed_time = time.time() - start_stack
             progress_callback((elapsed_time, img_num_top + abs(img_num_bot), fake_image_count))
 
-            counter = 0
-            while self.get_focus_metric() < 200 and counter < 2:
+            if self.get_focus_metric("top") < 200:
                 log.info("Focus metric low, attempting to refocus with larger searching range.")
                 self.autofocus(2) # increase the range if we didn't find a good focus. But stop if we never find a good focus 
-                counter += 1
 
-        log.info("Bottom of core detected. Capture complete.")
-        
+                # If you somehow get a good focus score, save it and continue
+                if self.get_focus_metric("top") < 200:
+                    log.info("Bottom of core detected due to low focus metric. Capture complete.")
+                    break
+                else:
+                    file_location = f"{sample.directory}/frame_{img_num_bot}_{0}.tiff"
+                    self.camera.save_frame(file_location)
+
         coordinates_top.extend(coordinates_bot)
         sample.coordinates.append(coordinates_top)
 
