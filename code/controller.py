@@ -121,17 +121,17 @@ class Controller:
                 time.sleep(0.15)
                 image = cv2.imread(temp_file, cv2.IMREAD_GRAYSCALE)
                 os.remove(temp_file)
+                if position == "top":
+                    return self.variance_of_laplacian(self.roi_top(image, frac=0.3))
+                elif position == "bottom":
+                    return self.variance_of_laplacian(self.roi_bottom(image, frac=0.3))
+                else:
+                    return self.variance_of_laplacian(self.roi_center(image, frac=0.2))
             except:
                 log.info("Could not capture tempfile, retrying")
                 continue
             break
 
-        if position == "top":
-            return self.variance_of_laplacian(self.roi_top(image, frac=0.3))
-        elif position == "bottom":
-            return self.variance_of_laplacian(self.roi_bottom(image, frac=0.3))
-        else:
-            return self.variance_of_laplacian(self.roi_center(image, frac=0.2))
 
     def autofocus(self, range = None):
         if range is None:
@@ -309,7 +309,6 @@ class Controller:
             if img_num_top % 2 == 0:
                 progress_callback((elapsed_time, img_num_top, fake_image_count))
 
-            counter = 0
             if self.get_focus_metric("bot") < 200:
                 log.info("Focus metric low, attempting to refocus with larger searching range.")
                 self.autofocus(2) # increase the range if we didn't find a good focus. But stop if we never find a good focus 
@@ -328,9 +327,9 @@ class Controller:
 
         stop = False
         while True and not stop_capture.is_set() and not stop:
-            start_stack = time.time()
             # Autofocus every other image. Test autofocusing every three images for the heck of it
             if img_num_bot % 2 == 0:
+                start_stack = time.time()
                 self.autofocus()
             
             # Don't retake an image of the first position
@@ -348,7 +347,9 @@ class Controller:
             img_num_bot -= 1
 
             elapsed_time = time.time() - start_stack
-            progress_callback((elapsed_time, img_num_top + abs(img_num_bot), fake_image_count))
+
+            if img_num_bot % 2 == 0:
+                progress_callback((elapsed_time, img_num_top + abs(img_num_bot), fake_image_count))
 
             if self.get_focus_metric("top") < 200:
                 log.info("Focus metric low, attempting to refocus with larger searching range.")
