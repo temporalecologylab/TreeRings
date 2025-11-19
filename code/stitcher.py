@@ -152,7 +152,7 @@ class Stitcher:
         # Filter and sort the files based on the row and column numbers
         sorted_paths = sorted(
             (f for f in files if pattern.match(f)),
-            key=lambda f: (int(pattern.match(f).group(1)), int(pattern.match(f).group(2)))
+            key=lambda f: (int(-1*pattern.match(f).group(1)), int(pattern.match(f).group(2)))
             )
         
         log.info(sorted_paths)
