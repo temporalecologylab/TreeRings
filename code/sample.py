@@ -48,6 +48,7 @@ class Sample:
         self.id1 = id1
         self.id2 = id2
         self.notes = notes
+        self.image_count = 0
 
         dirtime = datetime.now().strftime("%H_%M_%S")
 
@@ -81,6 +82,10 @@ class Sample:
         self.stitch_depth = None
         self.dpi = None
 
+    def increment_image_count(self):
+        """Increment the image counter when a good image is taken"""
+        self.image_count += 1
+        
     def to_json(self, directory = None):
         metadata = {
             "species": self.species,
