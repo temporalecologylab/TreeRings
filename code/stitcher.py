@@ -142,20 +142,43 @@ class Stitcher:
                 compression='LZW'
             )
 
-    def get_frames(self):
-        # Create a regex pattern to match the filenames and extract row and column numbers
-        pattern = re.compile(r'frame_(-?\d+)_(-?\d+)')
+    # def get_frames(self):
+    #     # Create a regex pattern to match the filenames and extract row and column numbers
+    #     pattern = re.compile(r'frame_(-?\d+)_(-?\d+)')
 
-        # List all files in the directory
+    #     # List all files in the directory
+    #     files = os.listdir(self._frame_dir)
+
+    #     # Filter and sort the files based on the row and column numbers
+    #     sorted_paths = sorted(
+    #         (f for f in files if pattern.match(f)),
+    #         key=lambda f: (int(pattern.match(f).group(1)), int(pattern.match(f).group(2)))
+    #         )
+        
+    #     log.info(sorted_paths)
+    #     return sorted_paths
+    def get_frames(self):
+        pattern = re.compile(r'^frame_(-?\d+)_(-?\d+)\.tif$')
+
         files = os.listdir(self._frame_dir)
 
-        # Filter and sort the files based on the row and column numbers
-        sorted_paths = sorted(
-            (f for f in files if pattern.match(f)),
-            key=lambda f: (int(pattern.match(f).group(1)), int(pattern.match(f).group(2)))
-            )
-        
-        return sorted_paths
+        matches = []
+        for f in files:
+            m = pattern.match(f)
+            if m:
+                row = int(m.group(1))
+                col = int(m.group(2))
+                matches.append((row, col, f))
+
+        # Sort by row, then column
+        matches.sort(key=lambda t: (t[0], t[1]))
+
+        # return only filenames in order
+        filenames = [t[2] for t in matches]
+        log.info(filenames)
+
+        return filenames
+     
     # @profile
     def stitch(self, resize=None):
         start_time = time.time()
