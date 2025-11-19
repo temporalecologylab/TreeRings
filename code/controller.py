@@ -282,8 +282,9 @@ class Controller:
         
         coordinates_top = []
         coordinates_bot = []
+        stop = False
         # Capture images starting in the middle of the core and move upwards
-        while True and not stop_capture.is_set():
+        while True and not stop_capture.is_set() and not stop:
             
             if img_num_top != 0:
                 self._gantry.jog_relative_y(sample.y_step_size)
@@ -315,17 +316,18 @@ class Controller:
                 
                 if self.get_focus_metric("bot") < 200:
                     log.info("Top of core detected. Moving to middle position to capture bottom half of core.")
-                    break
+                    stop = True
                 else:
                     file_location = f"{sample.directory}/frame_{img_num_bot}_{0}.tiff"
                     self.camera.save_frame(file_location)
-                    
+
         # Repeat the above procedure starting from the middle of the core but going in the opposite direction
         # jogging to the sample origin between the two edges of the core
         self._gantry.jog_absolute_xyz(sample.x, sample.y, sample.z)
         self._gantry.block_for_jog()
 
-        while True and not stop_capture.is_set():
+        stop = False
+        while True and not stop_capture.is_set() and not stop:
             start_stack = time.time()
             # Autofocus every other image. Test autofocusing every three images for the heck of it
             if img_num_bot % 2 == 0:
@@ -355,7 +357,7 @@ class Controller:
                 # If you somehow get a good focus score, save it and continue
                 if self.get_focus_metric("top") < 200:
                     log.info("Bottom of core detected due to low focus metric. Capture complete.")
-                    break
+                    stop = True
                 else:
                     file_location = f"{sample.directory}/frame_{img_num_bot}_{0}.tiff"
                     self.camera.save_frame(file_location)
