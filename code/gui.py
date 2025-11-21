@@ -546,11 +546,11 @@ class App(Gtk.Window):
     # Core Alignment Methods Testing
     
     
-    def variance_of_laplacian(image):
+    def variance_of_laplacian(self, image):
         """Compute the Laplacian of the image and return the focus measure."""
         return cv2.Laplacian(image, cv2.CV_64F).var()
 
-    def center_band_grid(image, n_col, band_height_frac=0.2):
+    def center_band_grid(self, image, n_col, band_height_frac=0.2):
         """
         Create tiles that intersect the horizontal midpoint of the image.
         Each tile spans a portion of the width (n_col divisions)
