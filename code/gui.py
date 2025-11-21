@@ -13,6 +13,12 @@ import camera
 import focus
 import math
 
+# temp
+import numpy as np
+import cv2
+import os
+import time
+
 log.basicConfig(format='%(process)d-%(levelname)s-%(message)s', level=log.INFO)
 
 class App(Gtk.Window):
@@ -263,6 +269,12 @@ class App(Gtk.Window):
         radio_button_fast = Gtk.RadioButton.new_with_label_from_widget(self.jog_speed, "Fast")
         radio_button_fast.connect("toggled", self.cb_speed_switch, 2)
         arrow_grid.attach(radio_button_fast, 0, 2, 1, 1)
+
+    def core_alignment_button(self, box):
+       button_capture_all_samples = Gtk.Button(label="Core Alignment Focus")
+       # button_capture_all_samples.connect("clicked", self.capture_all_samples)
+       button_capture_all_samples.connect("clicked", self.cb_core_alignment)
+       box.pack_start(button_capture_all_samples, True, True, 0)
         
     def cb_speed_switch(self, button, speed):
         if button.get_active():
@@ -528,6 +540,111 @@ class App(Gtk.Window):
         self.controller.image_width_mm = width
         self.zoom_combo.set_active(0)
         log.info("Update Image Width: {} mm".format(width))        
+        
+        
+    # Core Alignment Methods Testing
+    
+    
+    def variance_of_laplacian(image):
+        """Compute the Laplacian of the image and return the focus measure."""
+        return cv2.Laplacian(image, cv2.CV_64F).var()
+
+    def center_band_grid(image, n_col, band_height_frac=0.2):
+        """
+        Create tiles that intersect the horizontal midpoint of the image.
+        Each tile spans a portion of the width (n_col divisions)
+        and covers a horizontal band centered vertically.
+        """
+        h, w = image.shape[:2]
+        band_half = int((h * band_height_frac) / 2)
+        cy = h // 2
+
+        y_start = max(cy - band_half, 0)
+        y_end   = min(cy + band_half, h)
+
+        x_breaks = np.linspace(0, w, n_col + 1, dtype=int)
+        tiles = []
+        for c in range(n_col):
+            x0, x1 = x_breaks[c], x_breaks[c+1]
+            tile = image[y_start:y_end, x0:x1]
+            tiles.append(tile)
+
+        return tiles, (y_start, y_end), x_breaks
+
+    def cb_core_alignment(self):
+        # take the current cv2 feed
+        
+        # TEMP
+        IMG_THRESHOLD= 200 # add to config probs 
+        W_PIXELS_NO_CROP=3840
+        MM_TO_PIXEL_RATIO = 2/ W_PIXELS_NO_CROP # assuming ~ 2-3 mm in our field of view when scanning
+        
+        print("reading image from pipeline...")
+        temp_file = "./temp_image.tiff"
+        img_array = []
+        self.controller.camera.save_frame(temp_file)    #CHANGE THIS
+        print("successfully saved frame from pipeline...")
+    
+        
+        time.sleep(0.15)
+        image = cv2.imread(temp_file, cv2.IMREAD_GRAYSCALE)
+        os.remove(temp_file)
+        
+        # based on the image, create grid
+        tiles, (y_start, y_end), x_breaks = self.center_band_grid(
+            image, n_col=4, band_height_frac=0.2
+        )
+        
+        tile_w = 0 # store into a function global
+        tile_w_avg = 0
+        tile_values = []
+
+        # calculate the laplacian, save to an array
+        for c, tile in enumerate(tiles):
+            fm = self.variance_of_laplacian(tile)
+            img_array.append(fm)
+            print(f"Appending {fm} to array")
+
+            # Store the average? tile_w into a function global
+            x0, x1 = x_breaks[c], x_breaks[c+1]
+            tile_w = x1 - x0
+            tile_values.append(tile_w)
+        
+        
+        tile_w_avg = sum(tile_values) / len(tile_values) # shouldn't they all be the same?...
+        print(f"Tile average: {tile_w_avg}")
+
+        # interpret array: control logic 
+        # control logic: there has to be an even amount of low thresholds on each side of the image? lets use 2 pointer logic
+        left_count = int()
+        right_count = int()
+        left_count = 0 # integer
+        right_count = 0 # integer
+        right_ptr = len(img_array)
+        
+        print("starting control logic")
+        for left_ptr in range(len(img_array) / 2): # iterate half of the array, e.g. len = 10, iterate until 5
+            if img_array[left_ptr] < IMG_THRESHOLD:
+                left_count += 1
+            if img_array[right_ptr] < IMG_THRESHOLD: 
+                right_count += 1
+            right_ptr -= 1
+        
+        # motor movements required logic: 
+        # have to move left by the amount to even out
+        if left_count > right_count: 
+            tiles_move = left_count - right_count # MOVE left - right 
+            pixels_move = tile_w_avg * tiles_move
+            jog_distance = pixels_move * MM_TO_PIXEL_RATIO
+            print(f"logic says to move LEFT by: {jog_distance} ")
+            # self.controller.jog_relative_x(-1 * jog_distance)
+            
+        if right_count > left_count:
+            tiles_move = right_count - left_count # MOVE right - left 
+            pixels_move = tile_w_avg * tiles_move
+            jog_distance = pixels_move * MM_TO_PIXEL_RATIO
+            print(f"logic says to move RIGHT by: {jog_distance} ")
+            # self.controller.jog_relative_x(jog_distance)
         
 if __name__ == "__main__":
     #Gst.init(None)
