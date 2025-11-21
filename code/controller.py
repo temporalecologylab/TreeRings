@@ -448,7 +448,7 @@ class Controller:
             sample.increment_image_count()
 
             # Move to the next position
-            self._gantry.jog_relative_y(sample.y_step_size)
+            self._gantry.jog_relative_y(-1 * sample.y_step_size)
             self._gantry.block_for_jog()
             time.sleep(0.25) # allow vibrations to settle
 
@@ -478,7 +478,7 @@ class Controller:
         self._gantry.jog_absolute_xyz(sample.x, sample.y, sample.z)        
 
         # Capture the bottom half of the core
-        self.capture_core_bottom(sample, progress_callback, stop_capture)
+        self.capture_bottom_section(sample, progress_callback, stop_capture)
 
         sample.rows = sample.image_count
         sample.cols = 1
