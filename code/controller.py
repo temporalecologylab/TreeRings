@@ -428,6 +428,7 @@ class Controller:
             # Check if terminating condition is met (core no longer detected)
             if self.get_focus_metric("top") < 200:
                 log.info("Focus metric low, attempting to refocus with larger searching range.")
+                start_stack = time.time()
                 self.autofocus(2, position = "top") # increase the range if we didn't find a good focus. But stop if we never find a good focus 
                 
                 # Check again if the focus metric at the top of the image is still low
