@@ -115,6 +115,7 @@ class App(Gtk.Window):
         self.create_add_sample_dialog_button(box_buttons1)
         self.create_test_boundaries_button(box_buttons1)
         self.create_view_added_sample_button(box_buttons1)
+        self.create_core_alignment_button(box_buttons1)
 
     def create_jogging_controls(self, grid):
         frame_jogging = Gtk.Frame(label="Jogging Controls")
@@ -270,11 +271,11 @@ class App(Gtk.Window):
         radio_button_fast.connect("toggled", self.cb_speed_switch, 2)
         arrow_grid.attach(radio_button_fast, 0, 2, 1, 1)
 
-    def core_alignment_button(self, box):
-       button_capture_all_samples = Gtk.Button(label="Core Alignment Focus")
+    def create_core_alignment_button(self, box):
+       button_core_alignment = Gtk.Button(label="Core Alignment Focus")
        # button_capture_all_samples.connect("clicked", self.capture_all_samples)
-       button_capture_all_samples.connect("clicked", self.cb_core_alignment)
-       box.pack_start(button_capture_all_samples, True, True, 0)
+       button_core_alignment.connect("clicked", self.cb_core_alignment)
+       box.pack_start(button_core_alignment, True, True, 0)
         
     def cb_speed_switch(self, button, speed):
         if button.get_active():
@@ -571,13 +572,13 @@ class App(Gtk.Window):
 
         return tiles, (y_start, y_end), x_breaks
 
-    def cb_core_alignment(self):
+    def cb_core_alignment(self, widget):
         # take the current cv2 feed
         
         # TEMP
         IMG_THRESHOLD= 200 # add to config probs 
         W_PIXELS_NO_CROP=3840
-        MM_TO_PIXEL_RATIO = 2/ W_PIXELS_NO_CROP # assuming ~ 2-3 mm in our field of view when scanning
+        MM_TO_PIXEL_RATIO = 2 / W_PIXELS_NO_CROP # assuming ~ 2-3 mm in our field of view when scanning
         
         print("reading image from pipeline...")
         temp_file = "./temp_image.tiff"
@@ -592,7 +593,7 @@ class App(Gtk.Window):
         
         # based on the image, create grid
         tiles, (y_start, y_end), x_breaks = self.center_band_grid(
-            image, n_col=4, band_height_frac=0.2
+            image, n_col=10, band_height_frac=0.2
         )
         
         tile_w = 0 # store into a function global
@@ -616,36 +617,37 @@ class App(Gtk.Window):
 
         # interpret array: control logic 
         # control logic: there has to be an even amount of low thresholds on each side of the image? lets use 2 pointer logic
-        left_count = int()
-        right_count = int()
-        left_count = 0 # integer
-        right_count = 0 # integer
-        right_ptr = len(img_array)
-        
-        print("starting control logic")
-        for left_ptr in range(len(img_array) / 2): # iterate half of the array, e.g. len = 10, iterate until 5
+
+        left_count = 0
+        right_count = 0
+        right_ptr = len(img_array) - 1
+
+        for left_ptr in range(len(img_array) // 2):
             if img_array[left_ptr] < IMG_THRESHOLD:
                 left_count += 1
-            if img_array[right_ptr] < IMG_THRESHOLD: 
+            if img_array[right_ptr] < IMG_THRESHOLD:
                 right_count += 1
             right_ptr -= 1
         
         # motor movements required logic: 
         # have to move left by the amount to even out
-        if left_count > right_count: 
-            tiles_move = left_count - right_count # MOVE left - right 
-            pixels_move = tile_w_avg * tiles_move
+        dX = left_count - right_count
+        if dX > 0:
+            # move LEFT
+            pixels_move = tile_w_avg * dX
             jog_distance = pixels_move * MM_TO_PIXEL_RATIO
-            print(f"logic says to move LEFT by: {jog_distance} ")
-            # self.controller.jog_relative_x(-1 * jog_distance)
-            
-        if right_count > left_count:
-            tiles_move = right_count - left_count # MOVE right - left 
-            pixels_move = tile_w_avg * tiles_move
+            print(f"Move LEFT by {jog_distance} mm")
+
+        elif dX < 0:
+            # move RIGHT
+            dX = abs(dX)
+            pixels_move = tile_w_avg * dX
             jog_distance = pixels_move * MM_TO_PIXEL_RATIO
-            print(f"logic says to move RIGHT by: {jog_distance} ")
-            # self.controller.jog_relative_x(jog_distance)
-        
+            print(f"Move RIGHT by {jog_distance} mm")
+
+        else:
+            print("Already centered")
+                
 if __name__ == "__main__":
     #Gst.init(None)
     app = App()
