@@ -15,11 +15,10 @@ import json
 from typing import Callable
 import utils
 import numpy as np
-import alignment
 
 
 class Controller:
-    def __init__(self, g: gantry.Gantry, c: camera.Camera, f: focus.Focus, a: alignment.Alignment):
+    def __init__(self, g: gantry.Gantry, c: camera.Camera, f: focus.Focus):
         """Abstraction of the controller which moves the gantry, gets information from the GUI, operates the camera, and determines when to stitch.
 
             g (gantry.Gantry): Gantry instance to interface with the GRBL controller.
@@ -44,7 +43,6 @@ class Controller:
         self._gantry = g
         self.camera = c
         self.focus = f
-        self.align = a
 
         #attributes
         self.image_height_mm = self.config["gui"]["DEFAULT_IMAGE_HEIGHT_MM"]
@@ -597,21 +595,3 @@ class Controller:
         # Set the datum to work with G90 jogs 
         self._gantry.set_origin()
         
-        
-    #### ALIGNMENT METHODS ####
-    def control_alignment(self):
-        """
-        Performs an alignment in the X-Y plane as the gantry system is taking images.
-        Computes the laplacian on the current camera frame, and returns number of steps 
-        needed to shift in the x and y for the gantry to realign
-        """
-        
-        # Step 1: create the grid 
-        
-        # Step 2: calculate the laplacian for the grid 
-        
-        # Step 3: determine how many boxes the camera needs to shift by
-        
-        # Step 4: convert the number of boxes into real mm
-        
-        # Step 5: move the gantry system relative based on the camera
