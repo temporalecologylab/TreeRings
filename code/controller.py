@@ -231,7 +231,7 @@ class Controller:
             start_stack = time.time()
             
             if img_num != 0:
-                self._gantry.jog_relative_y(sample.y_step_size)
+                self._gantry.jog_relative_y(-1 * sample.y_step_size)
                 self._gantry.block_for_jog()
                 time.sleep(0.25)
 
