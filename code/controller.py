@@ -394,7 +394,6 @@ class Controller:
 
             # Check if autofocus is needed based on focus metric drop
             elif self.get_focus_metric() / previous_focus_metric < focus_metric_threshold:
-                start_stack = time.time()
                 self.autofocus()
                 previous_focus_metric = self.get_focus_metric() # store the value after autofocus
 
@@ -411,8 +410,8 @@ class Controller:
             time.sleep(0.25) # allow vibrations to settle
 
             if img_num_top % 2 == 0:
-                elapsed_time = time.time() - start_stack
-                progress_callback((elapsed_time / counter, sample.image_count, fake_image_count))
+                elapsed_time = time.time() - sample.start_time_imaging
+                progress_callback((elapsed_time / sample.image_count, sample.image_count, fake_image_count))
                 counter = 0
 
     def capture_bottom_section(self, sample: sample.Sample, progress_callback:Callable, stop_capture: Event)->int:
@@ -428,7 +427,6 @@ class Controller:
             # Check if terminating condition is met (core no longer detected)
             if self.get_focus_metric("top") < 200:
                 log.info("Focus metric low, attempting to refocus with larger searching range.")
-                start_stack = time.time()
                 self.autofocus(2, position = "top") # increase the range if we didn't find a good focus. But stop if we never find a good focus 
                 
                 # Check again if the focus metric at the top of the image is still low
@@ -438,7 +436,6 @@ class Controller:
 
             # Check if autofocus is needed based on focus metric drop
             elif self.get_focus_metric() / previous_focus_metric < focus_metric_threshold:
-                start_stack = time.time()
                 self.autofocus()
                 previous_focus_metric = self.get_focus_metric() # store the value after autofocus
 
@@ -454,8 +451,8 @@ class Controller:
             time.sleep(0.25) # allow vibrations to settle
 
             if img_num_bot % 2 == 0:
-                elapsed_time = time.time() - start_stack
-                progress_callback((elapsed_time, sample.image_count, fake_image_count))
+                elapsed_time = time.time() - sample.start_time_imaging
+                progress_callback((elapsed_time / sample.image_count, sample.image_count, fake_image_count))
 
     def capture_core_middle_2(self, sample: sample.Sample, progress_callback:Callable, stop_capture: Event):
         # Set the directory to save the images
