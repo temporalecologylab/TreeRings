@@ -1,0 +1,11 @@
+For all of the movement keyboard controls, you can tap the key once to move a set distance or you can hold it to get smooth continuous motion.
+Note that continuous motion works best if you are moving in 'fast' mode.
+
+W: +Y Movement
+A: -X Movement
+S: -Y Movement
+D: +D Movement
+Q: +Z Movement
+Z: -Z Movement
+E: Add sample shortcut
+F: Toggle 'fast' and 'slow' keyboard movement. Fast movement has a larger step size than slow. Use 'slow' to focus and center the core.
