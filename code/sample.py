@@ -134,8 +134,8 @@ class Sample:
             metadata["stitch_depth"] = self.stitch_depth
 
         if self.is_core:
-            metadata["sample_height_mm"] = self.rows * self.image_height_mm
-            metadata["sample_width_mm"] = self.image_width_mm
+            metadata["approximate_sample_height_mm"] = self.rows * self.image_height_mm * self.percent_overlap
+            metadata["approximate_sample_width_mm"] = self.image_width_mm
 
         if directory is None:
             utils.write_metadata(metadata, self.directory)
