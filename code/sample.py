@@ -93,6 +93,7 @@ class Sample:
             "cols": self.cols,
             "id1": self.id1,
             "id2": self.id2,
+            "dpi": self.dpi,
             "resolution_h": self.image_height_pixels,
             "resolution_w": self.image_width_pixels,
             "photo_count": self.rows * self.cols,
@@ -131,6 +132,10 @@ class Sample:
         
         if self.stitch_depth is not None:
             metadata["stitch_depth"] = self.stitch_depth
+
+        if self.is_core:
+            metadata["sample_height_mm"] = self.rows * self.image_height_mm
+            metadata["sample_width_mm"] = self.image_width_mm
 
         if directory is None:
             utils.write_metadata(metadata, self.directory)
