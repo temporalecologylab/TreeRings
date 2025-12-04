@@ -18,7 +18,8 @@
       "FAST_FEED_RATE_Z": 150,
       "MAX_FILE_SIZE_GB": 10,
       "CORE_CENTERING_RANGE": 5,
-      "N_IMAGES_CORE_CENTERING": 9
+      "N_IMAGES_CORE_CENTERING": 9,
+      "FOCUS_THRESHOLD": 150
     },
     "focus": {
       "PID_SCALE_FACTOR": 0.05,
