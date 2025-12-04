@@ -62,7 +62,9 @@ class Sample:
         self.image_width_mm = image_width_mm
         self.image_height_mm = image_height_mm
         self.rows, self.cols, self.x_step_size, self.y_step_size = self.calculate_grid_params()
-        self.targets_top, self.targets_bot = self.calculate_image_locations(self.rows, self.cols, self.x_step_size, self.y_step_size) # Each index of the (-1, 5) shape array is (X, Y, Z, row, col)
+        
+        if not is_core:
+            self.targets_top, self.targets_bot = self.calculate_image_locations(self.rows, self.cols, self.x_step_size, self.y_step_size) # Each index of the (-1, 5) shape array is (X, Y, Z, row, col)
         self.background = []
         self.background_std = []
         self.coordinates = []
@@ -134,7 +136,7 @@ class Sample:
             metadata["stitch_depth"] = self.stitch_depth
 
         if self.is_core:
-            metadata["approximate_sample_height_mm"] = self.rows * self.image_height_mm * self.percent_overlap
+            metadata["approximate_sample_height_mm"] = self.rows * self.image_height_mm * self.percent_overlap / 100
             metadata["approximate_sample_width_mm"] = self.image_width_mm
 
         if directory is None:
