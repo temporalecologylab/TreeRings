@@ -250,7 +250,7 @@ class Controller:
             progress_callback((elapsed_time, img_num, sample.rows*sample.cols))
 
             counter = 0
-            while self.get_focus_metric() < 200 and counter < 2:
+            while self.get_focus_metric() < 150 and counter < 2:
                 log.info("Focus metric low, attempting to refocus with larger searching range.")
                 self.autofocus(2) # increase the range if we didn't find a good focus. But stop if we never find a good focus 
                 counter += 1
@@ -309,11 +309,11 @@ class Controller:
             if img_num_top % 2 == 0:
                 progress_callback((elapsed_time, img_num_top, fake_image_count))
 
-            if self.get_focus_metric("bot") < 200:
+            if self.get_focus_metric("bot") < 150:
                 log.info("Focus metric low, attempting to refocus with larger searching range.")
                 self.autofocus(2) # increase the range if we didn't find a good focus. But stop if we never find a good focus 
                 
-                if self.get_focus_metric("bot") < 200:
+                if self.get_focus_metric("bot") < 150:
                     log.info("Top of core detected. Moving to middle position to capture bottom half of core.")
                     stop = True
                 else:
@@ -351,12 +351,12 @@ class Controller:
             if img_num_bot % 2 == 0:
                 progress_callback((elapsed_time, img_num_top + abs(img_num_bot), fake_image_count))
 
-            if self.get_focus_metric("top") < 200:
+            if self.get_focus_metric("top") < 150:
                 log.info("Focus metric low, attempting to refocus with larger searching range.")
                 self.autofocus(2) # increase the range if we didn't find a good focus. But stop if we never find a good focus 
 
                 # If you somehow get a good focus score, save it and continue
-                if self.get_focus_metric("top") < 200:
+                if self.get_focus_metric("top") < 150:
                     log.info("Bottom of core detected due to low focus metric. Capture complete.")
                     stop = True
                 else:
@@ -383,12 +383,12 @@ class Controller:
         while True and not stop_capture.is_set():
             
             # Check if terminating condition is met (core no longer detected)
-            if self.get_focus_metric("bottom") < 200:
+            if self.get_focus_metric("bottom") < 150:
                 log.info("Focus metric low, attempting to refocus with larger searching range.")
                 self.autofocus(2, position = "bottom") # increase the range if we didn't find a good focus. But stop if we never find a good focus 
                 
                 # Check again if the focus metric at the bottom of the image is still low
-                if self.get_focus_metric("bottom") < 200:
+                if self.get_focus_metric("bottom") < 150:
                     log.info("Top of core detected. Moving to middle position to capture bottom half of core.")
                     break
 
@@ -425,12 +425,12 @@ class Controller:
         # Capture images starting in the middle of the core and move downwards
         while True and not stop_capture.is_set():
             # Check if terminating condition is met (core no longer detected)
-            if self.get_focus_metric("top") < 200:
+            if self.get_focus_metric("top") < 150:
                 log.info("Focus metric low, attempting to refocus with larger searching range.")
                 self.autofocus(2, position = "top") # increase the range if we didn't find a good focus. But stop if we never find a good focus 
                 
                 # Check again if the focus metric at the top of the image is still low
-                if self.get_focus_metric("top") < 200:
+                if self.get_focus_metric("top") < 150:
                     log.info("Bottom of core detected. Capture complete. Stitching frames.")
                     break
 
