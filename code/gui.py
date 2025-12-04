@@ -252,7 +252,7 @@ class App(Gtk.Window):
         self.entry_width_img.connect('focus-out-event', self.print_img_width_entry)
 
     def create_add_sample_dialog_button(self, box):
-        button_add_dialog = Gtk.Button(label="Add Sample")
+        button_add_dialog = Gtk.Button(label="Add Sample [e]")
         button_add_dialog.connect("clicked", self.cb_add_sample_dialog)
         box.pack_start(button_add_dialog, True, True, 0)
 
@@ -342,7 +342,7 @@ class App(Gtk.Window):
         box.pack_start(button_g_code_homing, True, True, 0)
 
     def create_capture_button(self, box):
-        button_capture = Gtk.Button(label="Capture Single Image")
+        button_capture = Gtk.Button(label="Capture Single Image [p]")
         button_capture.connect("clicked", lambda w: self.controller.cb_capture_image())
         box.pack_start(button_capture, True, True, 0)
 
@@ -371,35 +371,35 @@ class App(Gtk.Window):
         arrow_grid = Gtk.Grid()
         box.pack_start(arrow_grid, True, True, 0)
 
-        button_y_plus = Gtk.Button(label="Y+")
+        button_y_plus = Gtk.Button(label="Y+ [w]")
         button_y_plus.connect("clicked", lambda w: self.controller.jog_relative_y(self.jog_distance))
         arrow_grid.attach(button_y_plus, 2, 0, 1, 1)
 
-        button_y_minus = Gtk.Button(label="Y-")
+        button_y_minus = Gtk.Button(label="Y- [s]")
         button_y_minus.connect("clicked", lambda w: self.controller.jog_relative_y(-1 * self.jog_distance))
         arrow_grid.attach(button_y_minus, 2, 2, 1, 1)
 
-        button_x_plus = Gtk.Button(label="X+")
+        button_x_plus = Gtk.Button(label="X+ [d]")
         button_x_plus.connect("clicked", lambda w: self.controller.jog_relative_x(self.jog_distance))
         arrow_grid.attach(button_x_plus, 3, 1, 1, 1)
 
-        button_x_minus = Gtk.Button(label="X-")
+        button_x_minus = Gtk.Button(label="X- [a]")
         button_x_minus.connect("clicked", lambda w: self.controller.jog_relative_x(-1 * self.jog_distance))
         arrow_grid.attach(button_x_minus, 1, 1, 1, 1)
 
-        button_z_plus = Gtk.Button(label="Z+")
+        button_z_plus = Gtk.Button(label="Z+ [q]")
         button_z_plus.connect("clicked", lambda w: self.controller.jog_relative_z(self.jog_distance))
         arrow_grid.attach(button_z_plus, 4, 0, 1, 1)
 
-        button_z_minus = Gtk.Button(label="Z-")
+        button_z_minus = Gtk.Button(label="Z- [z]")
         button_z_minus.connect("clicked", lambda w: self.controller.jog_relative_z(-1 * self.jog_distance))
         arrow_grid.attach(button_z_minus, 4, 2, 1, 1)
         
-        self.jog_speed = Gtk.RadioButton.new_with_label_from_widget(None, "Slow")
+        self.jog_speed = Gtk.RadioButton.new_with_label_from_widget(None, "Slow [f]")
         self.jog_speed.connect("toggled", self.cb_speed_switch, 1)
         arrow_grid.attach(self.jog_speed, 0, 0, 1, 1)
 
-        radio_button_fast = Gtk.RadioButton.new_with_label_from_widget(self.jog_speed, "Fast")
+        radio_button_fast = Gtk.RadioButton.new_with_label_from_widget(self.jog_speed, "Fast [f]")
         radio_button_fast.connect("toggled", self.cb_speed_switch, 2)
         arrow_grid.attach(radio_button_fast, 0, 2, 1, 1)
         
