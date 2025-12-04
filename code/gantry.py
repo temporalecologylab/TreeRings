@@ -424,7 +424,7 @@ class Gantry:
        
             self.thread.start() 
             self.set_acceleration(fast=True)        
-            self.set_soft_limits()
+            # self .set_soft_limits() # causing errors i think
             
 
     def serial_disconnect_port(self):
