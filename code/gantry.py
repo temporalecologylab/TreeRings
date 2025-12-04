@@ -387,6 +387,18 @@ class Gantry:
             _ = self._send_command("$121={}".format(self.acceleration_slow_y))
             _ = self._send_command("$122={}".format(self.acceleration_slow_z))
 
+    def set_soft_limits(self) -> None:
+        x_soft_limit_mm = 900 # mm
+        y_soft_limit_mm = 900
+        z_soft_limit_mm = 300
+        _ = self._send_command("$131={}".format(x_soft_limit_mm))
+        _ = self._send_command("$132={}".format(y_soft_limit_mm))
+        _ =self._send_command("$133={}".format(z_soft_limit_mm))
+
+
+        
+        
+
     def serial_connect_port(self) -> None:
         """Connect via serial to GRBL as done in the given example. https://github.com/gnea/grbl/blob/master/doc/script/simple_stream.py 
         """
@@ -412,7 +424,8 @@ class Gantry:
        
             self.thread.start() 
             self.set_acceleration(fast=True)        
-
+            self.set_soft_limits()
+            
 
     def serial_disconnect_port(self):
     	#TODO: somehow make it so we dont have to reset blackbox?
