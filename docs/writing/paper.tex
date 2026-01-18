@@ -99,7 +99,7 @@ To fit on the end-effector plates of the ACRO system, we made an adapter to conn
 The size of the work plane is ultimately up to the size of the ACRO kit that is purchased---allowing for more flexibility.
 Building on top of kits allowed for quick assembly with sound instructions and saved development time. 
 For the camera, we chose a 12MP Raspberry Pi HQ Camera equipped with a SEEED studio microscope lens with adjustable focal length resulting in up to 150x zoom. The focal length was adjusted to make the field of view approximately 3 mm by 5 mm height and width. The camera was connected to the gantry machine using custom, 3D printed, adapters.
-For the computer, we implemented all of the software control, image stitching, and graphical user interface (GUI) to run on an NVIDIA Jetson Orin Nano (Jetson edge computer), which also connects to the camera via a MIPI cable. 
+For the computer, we implemented all of the software control, image stitching, and graphical user interface (GUI) to run on an NVIDIA Jetson Orin Nano (Jetson edge computer), which also connects to the camera via a MIPI cable. %emw17Jan2026 -- given we talk about RAM later, I think perhaps here we should give a few details on the specs -- so in the () we write Jetson edge computer with XX RAM etc?
 Controlling the machine is done by launching a Python program and interacting with the GUI. 
 
 By choosing this combination, we were able to reduce the weight and cost of the camera significantly. This minimized the design challenges of stabilizing the movement of a heavier DSLR and allowed us to invest more in a powerful computer that can handle intensive image processing. 
@@ -294,7 +294,7 @@ With the same images, multiple final stitched resolutions can be made.
 
 We found some samples were impossible to scan without additional preparation. The most common scenario leading to an incomplete scan was due to regions of the core having few distinguishable SIFT features. 
 Samples often begin to lack features when focusing on lightly-colored sapwood. SIFT features may also lack where there are sanding blemishes or other imperfections on the scanning surface. 
-In such cases, we developed two methods that add features to the sample to aid the stitching process.
+In such cases, we developed two methods that add features to the sample to aid the stitching process. %emw17Jan2026 -- we say two methods but we introduce just one ... ? We should introduce the other one or update these to be one section that introduces 'a method.'
 
 \subsubsection{Particle Smearing}
 
