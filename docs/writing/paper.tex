@@ -18,7 +18,7 @@
 \geometry{margin=1in}          
 
 % Title section
-\title{TIM: Tree Imaging Machine for low-cost digital images of tree cores and cookies} 
+\title{TIM: Tree Imaging Machine for high resolution rapid digital images of tree cores and cookies}
 \author{Adam Fong,$^{1}$ Chloe Curry,$^{1}$ Yue Zhang$^{1, 2}$ and E.M. Wolkovich$^{1}$} %emw14Apr2025: You should ask Chloe and Sandy who they want their names displayed (middle initial etc.)
 \date{\today}
 
@@ -29,34 +29,34 @@
 \noindent $^{1}$Forest and Conservation Sciences, University of British Columbia, Vancouver, BC, Canada\\
 $^{2}$Department of Computer Science and Engineering, University of California San Diego, La Jolla, CA, USA\\ 
 
-%emw24Feb: I added some text to abstract and intro that I am not 100% sure you would need for some journals, but I think you will need for MEE. 
-%emw9Mar:
-
 \begin{abstract}  
-1.  Studies of tree rings from climatology to ecology have benefitted recently from new methods to image wood rapidly and efficiently, helping to scale up the number and quality of image samples. Current approaches, however, are limited in dimensionality, the amount of user-time involved per sample, and can be cost-prohibitive. % Getting rid of open-source as CaptuRING is cheap but GigaPixel is expensive and not open source
-2.  To address these limitations, we designed the Tree Imaging Machine (TIM)---a do-it-yourself scanning tool to digitize tree cookies and cores with open-source hardware, software and related instructions. % emwAug10 -- check my addition: correct? You could add the links here if you want 
-TIM takes partially overlapping microscopic images of samples and stitches the individual images together to form 
-a mosaic, which can be zoomed in to visualize features on the scale of 0.01 mm. 
-3. With scans of up to 21 140 DPI, TIM produces one of the highest resolution images among similar tools for less than \$3 000 USD. Operators can prepare sample batches of multiple samples, letting the machine work until the queue is finished. Given this batch approach and automatic stitching, TIM provides a major speed advance for high-resolution image capture of tree rings. 
-% We designed TIM to have a large working plane to allow digitizing cores over 50 cm and complete cookies. % emwAug10 -- I would cut the above as suggested for MEE and put back in for more tree ring focused journals. I moved around something below and edited above because of that ...  
-4. TIM provides an important advance in scanning resolution, tree cookie sampling, maximum core sample size, batch digitization, and cost in a single package. This promotes the digitization of larger samples and can collect data at finer resolutions in an open-source design which can be built on and improved as new technologies become available. Designed as completely open-source, we hope TIM will facilitate the widespread sampling of tree rings across diverse ecosystems and reduce barriers for researchers with tight budgets. 
+
+1.  Studies of tree rings from climatology to ecology have become increasingly important with anthropogenic climate change, with a need for more research across more locations and species. Meeting the increasing demand requires methods to image wood samples rapidly and efficiently, while also producing high quality high resolution images. % Getting rid of open-source as CaptuRING is cheap but GigaPixel is expensive and not open source
+
+2.  Here we present the Tree Imaging Machine (TIM)---a do-it-yourself fully open scanning tool to digitize tree cookies and cores. TIM takes partially overlapping microscopic images of samples and stitches the individual images together to form a mosaic, which can be zoomed in to visualize features on the scale of 0.01 mm. 
+We provide all instructions for the open-source hardware, using readily available parts, alongside the related software. % emwAug10 -- check my addition: correct? You could add the links here if you want 
+
+3. With scans of up to 21 140 DPI (0.83 pixels per micron), TIM produces one of the highest resolution images among similar tools for less than \$3 000 USD. Operators can prepare multiple samples to be scanned in a batch, letting the machine work until the queue is finished. Given this batch approach and automatic stitching, TIM provides a major speed advance for high-resolution image capture of tree rings, and can rapidly digitize cores of over 50 cm and complete cookies. % amfJan25 -- Does this speed need to be quantified? Maybe even just an average time per scan from the metadata that was already collected.
+
+4. TIM provides a new method to gather high quality tree ring images at larger sizes and dimensions, integrating higher scanning resolution, tree cookie sampling, and batch digitization in a single low-cost package. 
+Designed as completely open-source, we hope TIM will facilitate the widespread sampling of tree rings across diverse ecosystems and reduce barriers for researchers with smaller budgets. 
 % Archive GitHub with Zenodo? I'm nervous as the code base is updated relatively frequently... will this be a problem? Or do I only ever make one 'release' https://docs.github.com/en/repositories/archiving-a-github-repository/referencing-and-citing-content  % emwAug10 -- I think you can leave it on GitHub and see what whichever journal you end up in wants
 % emwAug10 -- this is a great sentence below, I would get it into cover letter or abstract! I tagged on one version above for now ... 
 % Such an open-source device could facilitate the widespread sampling of tree rings across diverse ecosystems and reduce barriers for researchers with tight budgets. 
 
 \end{abstract}
 
-\section{Introduction} %emw9Mar:  edits throughout to tighten things up... please check I did not add typos or nonsensical stuff. 
+\section{Introduction} 
 Incremental growth rings from trees have provided valuable insights into the abiotic and biotic environment across multiple fields---from climatology to forestry and ecology. Dated tree rings from dendrochronology have been critical to
 reconstructing past climates of regional and local environments, providing the most accurate, precise, and reliable dating among alternatives \citep{mann_northern_1999}, and thus informing  our understanding of climate change today \citep{fritts_dendroclimatology_1971,williams_using_2010,guibal_dendrochronology_2021,sheppard_dendroclimatology_2010,williams_large_2020}. Tree rings are also increasingly used in ecology to understand how plant competition affects tree growth in addition to climate \citep{buechling_climate_2017} and have implications in forestry to managing stand dynamics \citep{canham_neighborhood_2004}. These fields have leveraged two basic types of tree sampling techniques to capture the variation of tree rings: cores, which are cylindrical samples collected using an incremental borer, and `cookies,' which are entire cross sections \citep[and thus allow measuring as many radii from the sample as desired,][]{speer_fundamentals_2010}. As understanding tree growth and managing forest becomes more critical to mitigating climate change, scaling up the collection and processing of tree ring samples has become increasingly important.
 
-The first computer-based method to measure tree ring widths used a microcomputer, a stage micrometer, and a push button. With this technique, still used widely today, a trained technician shifts a core underneath a microscope objective and pushes a button connected to a microcomputer to record a ring's location \citep{robinson_microcomputer_1980}.
-This method has high precision but depends heavily on specific technicians and maintains no image record, preventing later measurement reproducibility and uncertainty quantification \citep{levanic_atrics_2007}.
+The first computer-based method to measure tree ring widths used a microcomputer, a stage micrometer, and a push button, and is still used today. To acquire data, a trained technician shifts a core underneath a microscope objective and pushes a button connected to a microcomputer to record a ring's location \citep{robinson_microcomputer_1980}.
+This method has high precision, but depends heavily on specific technicians and maintains no image record, preventing later measurement reproducibility and uncertainty quantification \citep{levanic_atrics_2007}.
 
 Image analysis of tree rings was later implemented to reduce both errors in sampling and sampling bias across individual technicians, with major methods developed in the 1980s and 1990s to digitize tree ring samples using optical scanning \citep{mcmillin_application_1982,guay_new_1992}. Optical scanners are still readily available for purchase, using a top of the line scanner (e.g., Epson Perfection V850 Pro) produces a maximum resolutions of 6 400 dpi and scan area of up to 21.6 cm x 29.7 cm.
 More recent techniques have aimed to achieve higher resolutions and/or larger samples through a different digitization approach---using an image-capturing system. These systems rely on a microscope camera to take images, motors to move the sample or camera, a computer to manage the capturing, and a second, more powerful, computer to stitch images into a larger composite image.
 Decreasing the field of view of each captured image increases the resolution of the final stitched image without restricting the size of the sample \citep{muhlich_stitching_2022}.
-Stitching multiple images into one mosaic is a common technique used in other fields such as mineralogy and cellular biology \citep{ro_image_2021,mohammadi_fast_2024}, which was
+Stitching multiple images into one mosaic is a common technique used in other fields such as mineralogy and cellular biology \citep{ro_image_2021}, which was
 first implemented for tree rings through the Advanced Tree-Ring Image Capturing System (ATRICS) \citep{levanic_atrics_2007}. % Adding ATRICS after introducing the image and stitch method
 
 Since ATRICS was introduced in 2007, image capture and stitching of tree rings have become more common. Today CaptuRING offers a more modern do-it-yourself alternative to ATRICS, creating scans up to 5 339 dpi using a DSLR camera and motorized stage \citep{garcia-hidalgo_capturing_2022}. 
@@ -68,42 +68,43 @@ Second, Gigapixel automatically stitches individual images together once imaging
 Additionally, both of these systems are designed to capture images along a singular axis as the entire width of a core fits within a single image's field of view.
 This assumption fundamentally restricts the digitization only to cores, as cookies have a two dimensional scanning surface. %emw9Mar: later 2/3 of paragraph very nice. 
 
-To address some of the current limitations, while building upon the open-source and open-hardware philosophies of CaptuRING with the functionality of Gigapixel, we designed the Tree Imaging Machine (TIM).
+To address some of the current limitations, while building upon the open-source and open-hardware philosophies of CaptuRING, we designed the Tree Imaging Machine (TIM).
 We added support to digitize both cookies and cores, increased the maximum sample length, perform image stitching directly without the need for manual file transfer, and capture batches of samples sequentially---all while minimizing cost.
 Our design requires the use of 3D printed components and common hand tools such as hex keys and wrenches. No specialized equipment or power tools are required beyond this. 
 Excluding 3D printed parts, the total cost of the machine is approximately \$2 200 USD \citep[compared to the \$70 000 USD of the Gigapixel,][]{griffin_gigapixel_2021}.
 We chose to use a Raspberry Pi HQ camera with a microscope lens to save on purchasing a professional camera with a macro lens. Professional camera setups are comparable in price to the entire cost of TIM.
-These savings combined with not needing to purchase a professional stitching software license (such as PTGui (New House Internet Services BV, Rotterdam, NL), the suggested software to use with CaptuRING) makes TIM a more economical option than most products current available. Additionally the design is open-source and open-hardware allowing for contributors to add new sensors or alter the control methods. 
+These savings combined with not needing to purchase a professional stitching software license (such as PTGui from New House Internet Services BV, Rotterdam, NL, which is the suggested software to use with CaptuRING) makes TIM a more economical option than most products current available. Additionally the design is open-source and open-hardware allowing for contributors to add new sensors or alter the control methods. 
 
 \section{Methods}
 
-\subsection{TIM System Design} % this is so dry fix later. The engineer in me loves a dry title
+\subsection{TIM System Overview} % this is so dry fix later. The engineer in me loves a dry title
 
 \begin{figure}
   \centering
-  \includegraphics[height=0.5\linewidth]{../content/tina.jpg}
-  \caption{Complete assembly of TIM, shown with a few cookies ready to be scanned (in the work plane). All of the 3D printed parts are available for download on the \href{https://doi.org/10.60705/3DPX/21561.3}{NIH 3D printing repository} and the software is  
+  \includegraphics[height=0.5\linewidth]{../content/tina.jpg} % There are a few limits which don't sound correct to me in this part (file size, machine design, quality sanding, etc.)
+  \caption{Complete assembly of TIM, shown with a few smaller cookies ready to be scanned. All of the 3D printed parts are available for download on the \href{https://doi.org/10.60705/3DPX/21561.3}{NIH 3D printing repository} and the software is  
 open source, with instructions to recreate this tool available on \href{https://github.com/temporalecologylab/TreeRings}{GitHub}. } % emwAug10 -- In addition to putting the links here, I would make sure each is sprinkled in around where most of the info related to it is introduced in the main text. 
   \label{fig:tim_assembled}
 \end{figure}
 
 % Good topic sentence! Can you walk reader more carefully through each item? You may need to re-order them .. But basically, pick the most useful order and then write: For the camera .... For the gantry machine ... You might also use this space to say, in contrast to previous approaches that have used XX giant camera, we used ... and otherwise point out the novelty when it comes up. 
 TIM can be thought of as a combination of multiple subsystems: a gantry machine, camera, and computer (Figure \ref{fig:tim_assembled}). 
-For the gantry machine, cartesian movement in the $X$, $Y$ and $Z$ directions is a result of two machine kits and a motor controller from OpenBuilds---the ACRO 1010, the NEMA 17 lead screw linear actuator, and the X32 Motor Controller running GRBL firmware. %vvdm24Apr: I think the Figure 1 could be improve, by indicating the different components (camera, motors...)? I also wonder wheter a schematic diagram would be better than a photo, or maybe at least edit the photo (e.g. remove the wall with the fire extinguisher! Unless, of course, there's a high probability the machine catches fire... :-) )
+For the gantry machine, cartesian movement in the $X$, $Y$ and $Z$ directions is a result of two machine kits and a motor controller from OpenBuilds---the ACRO 1010, the NEMA 17 lead screw linear actuator, and the X32 Motor Controller running Grbl firmware. %vvdm24Apr: I think the Figure 1 could be improve, by indicating the different components (camera, motors...)? I also wonder wheter a schematic diagram would be better than a photo, or maybe at least edit the photo (e.g. remove the wall with the fire extinguisher! Unless, of course, there's a high probability the machine catches fire... :-) )
 The machine kit includes extruded aluminum rails, carriages to slide along the rails, stepper motors to control the $X$ and $Y$ movement, and all the hardware to assemble the machine. 
-To fit on the build plates of the ACRO system, we made an adapter to connect the linear actuator to the X and Y axis, thus creating motion in the Z axis.
+To fit on the end-effector plates of the ACRO system, we made an adapter to connect the linear actuator to the $X$ and $Y$ axis, thus creating motion in the $Z$ axis.
 The size of the work plane is ultimately up to the size of the ACRO kit that is purchased---allowing for more flexibility.
 Building on top of kits allowed for quick assembly with sound instructions and saved development time. 
-For the camera, we chose a 12MP Raspberry Pi HQ Camera equipped with a SEEED studio microscope lens with 150X zoom. The camera was connected to the gantry machine using custom, 3D printed, adapters.
-For the computer, we implemented all of the software control, image stitching, and graphical user interface (GUI) to run on an NVIDIA Jetson Orin Nano (Jetson edge computer), which also connects to the camera via a MIPI cable. 
-Controlling the machine is done by launching a Python program and interacting with mouse button clicks on the GUI. 
+For the camera, we chose a 12MP Raspberry Pi HQ Camera equipped with a SEEED studio microscope lens with adjustable focal length resulting in up to 150x zoom. The focal length was adjusted to make the field of view approximately 3 mm by 5 mm height and width. The camera was connected to the gantry machine using custom, 3D printed, adapters.
+For the computer, we implemented all of the software control, image stitching, and graphical user interface (GUI) to run on an NVIDIA Jetson Orin Nano 8GB (Jetson edge computer), which also connects to the camera via a MIPI cable. % amf28jan2026 The Jetson Orin Nano 8GB is it's complete product name
 
 By choosing this combination, we were able to reduce the weight and cost of the camera significantly. This minimized the design challenges of stabilizing the movement of a heavier DSLR and allowed us to invest more in a powerful computer that can handle intensive image processing. 
-The Jetson is an edge computer which drives a monitor for a GUI, sends commands to the motor controller to move the machine, runs image processing calculations for control, and performs calculations to stitch individual images into one mosaic. 
+The Jetson is an edge computer which drives a monitor for a GUI, sends commands to the motor controller to move the machine, runs image processing calculations for machine control, and performs calculations to stitch individual images into one mosaic. 
 
 \subsection{Preparing Cookies and Cores}
-TIM can scan both tree cookies and tree cores. Sample preparation for both are equally important but require different approaches.
-The general guidelines used for preparing cookies and cores applies---requiring samples to be sanded with incrementally increasing sand paper grit to produce an even surface for scanning \citep{speer_fundamentals_2010}. We sanded cookies using an orbital sander with mesh sandpaper from 60 to 800 grit, then used a microscope to visually inspect the quality of the sanding. We considered the sample to be sufficiently prepared when vessels were easily identifiable.
+TIM can scan both tree cookies and tree cores but they need to be well prepared before scanning. Samples that are not well sanded may not have enough detail when stitching images together into the complete mosaic.
+The general guidelines used for preparing cookies and cores applies---requiring samples to be sanded with incrementally increasing sand paper grit. Samples must be uniformly sanded and have planar surface for scanning \citep{speer_fundamentals_2010}.
+We sanded samples using a 4 inch belt sander with lower grits between 120 and 240 for the bulk of the material removal.
+An orbital sander was used to sand the finer grits between 240 and 400. We then used a microscope to visually inspect the quality of the sanding. Samples were considered to be sufficiently prepared when vessels were easily recognizable.
 
 TIM requires additional sanding considerations for each sample type. 
 For cookies, it is important to have the top and bottom surfaces nearly parallel. 
@@ -125,21 +126,37 @@ For cookies, it is important to have the top and bottom surfaces nearly parallel
   \label{fig:sample_levelling}
 \end{figure}
 Small differences in plane angle can be corrected using the 3D printed leveling table we designed (Figure \ref{fig:ideal_levelling}). 
+
 For cores, care should be taken to maximize the scanning surface. This means removing material to be coincident to the center of the cross section of the core. 
 Similarly to cookies, the scanning surface should be as close to parallel to the XY-plane as possible, but generally does not need to be leveled using the leveling tables.
-Cores also need to be aligned to be parallel to the $Y$ axis to be digitized, using a squaring tool (or similar) to help with alignment. Any warping in core mounts needs to be counteracted with the use of trigger clamps. 
 
-\subsection{Sample Digitization} % Methods
+\subsection{Scanning Samples} % Methods
 
-The subsystems of TIM can be best understood by following the process from sample setup through obtaining a stitched image. 
-To achieve this with a fixed focus camera, the samples must be nearly orthogonal to the camera lens. 
-Once the sample is level, the operator follows a procedure to inform TIM of where the sample is, and the its size using buttons on the GUI to navigate and focus the camera on the center of the sample. 
-The sample height and width in the $X$ and $Y$ dimensions are then entered in the GUI to be saved. Finally, the user must click the `Add Sample' button which provides more fields to add sample identifiers and save the center coordinate.
-This procedure can be repeated to create a queue of samples to digitize as a batch. One additional parameter that needs to be defined is the height and width of the field of view of one image from the camera. 
-We adjusted the focal length of the camera using the zoom ring to have a constant field of view of approximately 3 mm x 5 mm when in-focus.  
-The sample height and width, sample identifiers, sample type, sample center coordinate, and the height and width of an image provides sufficient information to digitize a sample.
+TIM can scan cores, cookies, and sections of cookies. Each one of these scans requires a slightly different process, which we describe in separate subsections.
+A few principles are common regardless of what is being scanned, and we describe these first. 
+% The subsystems of TIM can be best understood by following the process from sample setup through obtaining a stitched image. 
+% To achieve this with a fixed focus camera, the samples must be nearly orthogonal to the camera lens. 
+% Once the sample is level, the operator follows a procedure to inform TIM of where the sample is, and the its size using buttons on the GUI to navigate and focus the camera on the center of the sample. 
+% The sample height and width in the $X$ and $Y$ dimensions are then entered in the GUI to be saved. Finally, the user must click the `Add Sample' button which provides more fields to add sample identifiers and save the center coordinate.
+% This procedure can be repeated to create a queue of samples to digitize as a batch. One additional parameter that needs to be defined is the height and width of the field of view of one image from the camera. 
+% We adjusted the focal length of the camera using the zoom ring to have a constant field of view of approximately 3 mm x 5 mm when in-focus.  
+% The sample height and width, sample identifiers, sample type, sample center coordinate, and the height and width of an image provides sufficient information to digitize a sample.
 
-\subsubsection{Exhaustive Sample Traverse}  
+% \subsubsection{Exhaustive Cookie Traverse}  
+
+
+% The goal of this sample transverse is to obtain in-focus images that have a region of overlap with each of its neighbors---the basis of image stitching (Figure \ref{FIGURE LABEL}). 
+% The coordinates of each image-to-be-captured are derived from the sample's center coordinate, the height and width of the sample, the height and width of an image frame, and the user provided percentage overlap between images.  
+% Our design can capture cores by defining the sample width to be zero and the height of the core to be used. So long as the cores are aligned to be parallel to the Y axis, this minimizes imaging time as only one column of images is captured.
+% Digitizing cookies requires a rectangular grid of images to be taken in both the X and Y axes. 
+% The user provides enough information to find the X and Y coordinates of each image, but the Z coordinate must be found with an algorithmic focusing procedure. 
+
+\subsubsection{Regions of Overlap for Stitching}
+
+The individual images from TIM have a field of view of approximately 3 mm x 5 mm. Because cores and cookies can be many orders of magnitude larger than one of these images, the final scan of these samples will be the combination of many images stitched together.
+Stitching two images together requires both images to share a region of overlap in which the subject of the image is the same \citep{mohammadi_comparative_2024}.
+Unique features inside this region of overlap act as a map to connect the two images.
+By default TIM is set to have a 33\% overlap with its neighbor but this can be adjusted easily while adding a sample in the GUI.
 
 \begin{figure}
   \centering
@@ -161,152 +178,195 @@ The sample height and width, sample identifiers, sample type, sample center coor
       \caption{}
       \label{SUBFIGURE LABEL 3}
   \end{subfigure} 
-  \caption{An example imaging process of a cookie sample. Here, the height and width of the capture region enclose the entire surface area of the cookie.  TIM begins by generating a grid of target coordinates to systematically capture a grid of continuous and partially overlapping images (a). TIM takes its first image at the center coordinate of the sample, then the rectangular field of view from the camera moves to adjacent target coordinates until it reaches the left boundary---capturing an image for each target coordinate (b). After completing the row, TIM moves to a new row and continues capturing adjacent images (c). }
+  \caption{An example imaging process of a cookie sample in two dimensions. Here, the height and width of the capture region enclose the entire surface area of the cookie.  TIM begins by generating a grid of target coordinates to systematically capture a grid of continuous and partially overlapping images (a). TIM takes its first image at the center coordinate of the sample, then the rectangular field of view from the camera moves to adjacent target coordinates until it reaches the left boundary---capturing an image for each target coordinate (b). After completing the row, TIM moves to a new row and continues capturing adjacent images (c). }
   \label{FIGURE LABEL}
   \end{figure}
 
-The goal of this sample transverse is to obtain in-focus images that have a region of overlap with each of its neighbors---the basis of image stitching (Figure \ref{FIGURE LABEL}). 
-The coordinates of each image-to-be-captured are derived from the sample's center coordinate, the height and width of the sample, the height and width of an image frame, and the user provided percentage overlap between images.  
-Our design can capture cores by defining the sample width to be zero and the height of the core to be used. So long as the cores are aligned to be parallel to the Y axis, this minimizes imaging time as only one column of images is captured.
-Digitizing cookies requires a rectangular grid of images to be taken in both the X and Y axes. 
-The user provides enough information to find the X and Y coordinates of each image, but the Z coordinate must be found with an algorithmic focusing procedure. 
+\subsubsection{Golden Section Search Autofocusing}
 
-\subsubsection{Image Focusing}
+Most microscope lenses are a fixed focal length, requiring the subject to be moved in relation to the lens for focusing. Additionally, inexpensive microscope lenses often have a very small depth of field. 
+Variations of height across the length of a sanded sample result in images losing focus during a scan (Figure \ref{fig:realistic_levelling}). 
+An autofocusing algorithm was implemented using a Golden Section Search method as described by \citep{gu_region_2015} to capture in-focus images. In short, the camera's position is moved in the $Z$ axis and stops when it maximizes the sharpness metric of the image. 
+We found the variance of Laplacian sharpness metric to be easy to implement in Python and robust across samples \citep{pech-pacheco_diatom_2000}. 
 
-With TIM's microscope lens, the depth of field of the image is sensitive enough that sub-millimeter heights can move an image out-of-focus.
+\subsubsection{Core Scanning Procedure}
 
-This means that the height collected when adding a sample ($Z_0$, we provide a complete glossary of notation used to describe the methods, see Table \ref{tab:math_notation}) does not produce in-focus images throughout the entire surface area of the sample.
-To capture an in-focus image at height $Z_{focused,k}$, for each unique image coordinate $(X_k, Y_k)$, we implemented a time-conscious software procedure. 
-Our procedure involves two stages and starts at the known center coordinate of the sample.
-The first stage takes advantage of the requirement that the sample is in-focus when adding it to be scanned.
-Starting at the center coordinate allows the initial $Z_0$ value, captured when adding a sample, to find $Z_{focused,0}$. 
-After finding an in-focus image, TIM navigates to the next neighboring image coordinate to find its in-focus image, using the previous neighbor's in-focus height as an initial approximation.
+Scanning a core starts with aligning the length of the sample to the $Y$-axis of the machine at any $X$ position. We 3D printed a tray to hold multiple cores next to each other to make the alignment process faster.
+From there, the operator needs to navigate the camera to an in-focus position anywhere along the core and enter basic metadata such as sample ID.
+Multiple cores can be put next to each other and added to a queue to be sequentially scanned for operational convenience. 
 
-Finding an in-focus image is completed by comparing the image sharpness of a set of images at varying heights (a vector $\boldsymbol{Z_k}$) but the same coordinate $(X_k, Y_k)$. 
-The differences in height between each image are equally spaced, and are described by the relative distance to the starting height, $Z_k$, in the vector $\boldsymbol{\delta}$. 
-We found that it is important to have a distance of no more than 0.1 mm between each image in the stack of images to maximize the likelihood of an in-focus image at height $Z_{focused,k}$.
-A height range of 1 mm provides a sufficient distribution of image sharpness. TIM needs to take 11 images at different heights to navigate this height range with the given step size between each image. The number of images taken is an editable parameter in the configuration file and can be increased, along with the height range, if TIM Is not obtaining in-focus images.
+\begin{figure}
+  \centering
+  \begin{subfigure}{.5\textwidth}
+    \centering
+    \includegraphics[height=0.5\linewidth]{../diagrams/gui_screenshot.png}
+    \caption{GUI}
+    \label{fig:gui}
+  \end{subfigure}%
+  \begin{subfigure}{.5\textwidth}
+    \centering
+    \includegraphics[height=0.5\linewidth]{../diagrams/add_sample_dialog.png}
+    \caption{`Add Sample' dialog}
+    \label{fig:add_sample}
+  \end{subfigure}
+  \begin{subfigure}{.5\textwidth}
+    \centering
+    \includegraphics[height=0.5\linewidth]{../diagrams/camera_viewer.png}
+    \caption{Live camera feed window}
+    \label{fig:live_feed}
+  \end{subfigure}
+  \caption{TIM is controlled using a GUI, popup windows, and a live camera feed.} 
+  \label{fig:gui_figure}
+\end{figure}
 
-Our focusing procedure begins at 0.5 mm above $Z_k$ and finishes with the last image at 0.5 mm below $Z_k$.
-The 11 images then have their normalized variance calculated in a separate thread to measure the image sharpness \citep{sampat_extensive_2014}.
-The image with the maximum score is saved and can be considered the most in-focus image, while the rest are deleted. 
-Now $Z_{focused,k}$ has been found for $(X_k, Y_k)$ and the camera can now be moved to the next image coordinates $(X_{k+1}, Y_{k+1})$ and repeat the process to find a new in-focus height.
+A button on the GUI will start the procedure to scan all of the samples that were added to the queue. The machine first moves to the position that was recorded when the operator added the sample. 
+It then moves up the length of the core in the positive direction of the $Y$-axis, capturing overlapping images until the top edge of the core is captured. 
+TIM then returns back to the starting location, repeating the imaging procedure in the negative direction of the $Y$-axis until encountering the bottom edge of the core.
 
-The second stage of our time-efficient focusing procedure uses a feedback loop to update the initial $Z_k$ at each image location $(X_k, Y_k, Z_k)$. 
-Without a feedback loop, the sample alignment must have a difference in height no greater than 0.5 mm ($d_1 - d_2 < 0.5\,\text{mm}$ in Figure \ref{fig:realistic_levelling}). 
-Rather than increasing this height range, a greater alignment error can be managed by adjusting the starting image height until $Z_{focused,k}$ is at the center index of $\boldsymbol{Z_{samples,k}}$. 
-The likelihood of an adjacent image, at the coordinate $(X_{k+1}, Y_{k+1})$, containing an in-focus image is highest in this scenario. 
-A negative feedback  
-proportional-integral-derivative (PID) control algorithm is used to adjust the initial height of each image, with $\alpha_k$, whenever the camera moves in the X or Y dimensions \citep{odwyer_summary_2000}. 
-This alleviates the need of having remarkably level sample alignment ($d_1 - d_2 < 0.5\,\text{mm}$ in Figure \ref{fig:realistic_levelling}). 
-\[
-Z_k = \begin{cases}
-  Z_0 & \text{if } k = 0,\\
-  Z_{k-1} + \alpha_k \\
-  \end{cases}
-\]
-\[\boldsymbol{\delta} = 
-\begin{bmatrix}
-  0.5 \\
-  0.4 \\
-  \vdots \\
-  -0.4 \\
-  -0.5 \\
-  \end{bmatrix}\]
-\[
-Z_{focused,k} \in
-\boldsymbol{Z_k} = 
-Z_k + \boldsymbol{\delta}
-\] 
+The top and bottom edges of the core are detected by comparing the sharpness metric to a configurable threshold.
+When the camera moves past either edge of a core, there is no subject in the focused plane of the lens. These images are very blurry and the sharpness metric is at least an order of magnitude less than the images that are focused on the core. 
+If the Golden Section Search algorithm only finds images with a sharpness metric lower than this threshold, it is safe to assume the sample is no longer in the frame. 
+The same threshold was used across all cores across 5 species that we have scanned, but tuning may be required to prevent false positives. 
+This technique reduces scanning setup time as the operator does not need to measure the length of each core when adding the sample into scanning queue.
 
-To reduce motion blur in the images, the range of $\boldsymbol{Z_k}$ is traversed at constant velocity and images are captured without stopping. 
-Decoupling the auxiliary camera control from the G-code commands to control the machine has shown to decrease digitization time and decrease vibrational effects from acceleration and deceleration \citep{propst_time_2025}.
-This is a variation of the standard approach used in 3D printing and Computer Numerical Control (CNC) machining. 
+Golden Section Search autofocusing is robust, but takes up to 10 seconds to get the most in-focus image in our implementation. When capturing tens or hundreds of images per sample, autofocusing time becomes significant.
+In the interest of minimizing scanning time per sample, we chose to only autofocus when necessary. Autofocusing occurs on the very first image to get a baseline sharpness metric. The machine then moves to capture the neighboring image.
+If the new image has at least a sharpness metric of 95\% of its previously imaged neighbor, we choose not to run the autofocusing loop. If the prepared surface of the core is perfectly planar to the table that TIM is installed on, it is possible to only autofocus once for tens of images.
+With the samples we prepared, there usually needed to be an autofocusing procedure for every 5-10 images. 
   
 \subsubsection{Accounting for Translation Error Between Core Samples}
 
-Difficulties arise when more than one core are added to the digitization queue.
-The ACRO has a theoretical 4.5 micron translational accuracy, but has not been achieved despite significant effort.
-These inaccuracies can cause drift in the images with relation to the core and result in the width of the core not being within the field of view of the images.
+Movement accuracy issues arise when more than one core is added to the digitization queue.
+While the ACRO has a theoretical 4.5 micron translational accuracy, the machine still sometimes over- or under-shoots the true location when moving to a stored location of the core---resulting in the core not being centered in the frame.
 We thus implemented a centering procedure that realigns the center of the core to the center of the image frame when the machine moves 
 to a new sample. 
 
-First, the camera is moved to the initial coordinates of the camera when the sample is first saved by the user $(X_0, Y_0, Z_0$, Table \ref{tab:math_notation}) of the new core. 
-From there, the camera is moved across a window, at constant velocity. %emw9Mar:  w is introduced nicely below. Need to try to follow this format when possible. 
-The width of the window, $w$, in millimeters is defined in the machine configuration file and is editable %emw9Mar:  we need a noun below ...
-(from $X_0 - 1/2*{w}, Y_0, Z_0$ to $X_0 + 1/2*{w}, Y_0, Z_0)$. 
-Images are captured at equal distance intervals analogously to the image focusing procedure. 
-Once again, the image with the highest normalized variance score is considered the best image and its location is used as the realigned $X_0$.
-This procedure drastically improves digitization quality of batches of cores.
+The goal with the recentering procedure is to prevent the scan from including significant portions of blurry background.
+This process works by creating a region of interest in a horizontal strip through the center of the image. The strip is further segmented into multiple subsections aligned in a row.
+In each of the subsections, the sharpness metric is calculated. Subsections with very low sharpness are likely to be background.
+If background is detected in the left most or right most subsections, corrective movements in the $X$ direction are made to recenter the core.
+% ADD FIGURE Include figure about the center strip technique for centering
 
-\subsubsection{Stitching}
+% First, the camera is moved to the initial coordinates of the camera when the sample is first saved by the user $(X_0, Y_0, Z_0$, Table \ref{tab:math_notation}) of the new core. 
+% From there, the camera is moved across a window, at constant velocity. %emw9Mar:  w is introduced nicely below. Need to try to follow this format when possible. 
+% The width of the window, $w$, in millimeters is defined in the machine configuration file and is editable %emw9Mar:  we need a noun below ...
+% (from $X_0 - 1/2*{w}, Y_0, Z_0$ to $X_0 + 1/2*{w}, Y_0, Z_0)$. 
+% Images are captured at equal distance intervals analogously to the image focusing procedure. 
+% Once again, the image with the highest normalized variance score is considered the best image and its location is used as the realigned $X_0$.
+% This procedure drastically improves digitization quality of batches of cores.
+
+\subsubsection{Cookie Scanning Procedures}  
+
+Cookies can be both partially and completely scanned. Scanning entire cookies is possible and requires the operator to define a minimum bounding box using the Sample Height and Sample Width text boxes in the GUI.
+Additionally, the operator must navigate the camera to the center of the cookie before adding the sample to the queue. A button called ``Test Cookie Boundaries" was made to trace the bounding box of the cookie for the operator
+to verify that the sample is truly within the bounds. These height and width bounds are used to calculate where the machine needs to move to achieve a set of partially overlapping images in both directions. 
+
+The file sizes of entire cookie scans can quickly become too large to analyze with commonly available software. A full resolution scan (21 140 DPI) of a 10 cm x 10 cm cookie is multiple gigabytes in a lossless file format. 
+TIM can adjust the resolution of the final scan to be any percentage of the maximum DPI if needed. Whole cookie scans are interesting for archiving but will need special considerations for most samples at high resolution. 
+
+Portions of cookies can be scanned by treating them as if they were a core. This can be done by aligning the pith of the cookie's major or minor axis to the $Y$ axis and using the core scanning procedure. Any radius of the cookie can be scanned this way.
+
+\subsubsection{Image Stitching}
 
 Image stitching is a well explored field, ranging from panoramic images taken on smart phones to highly tuned microscopy slide stitching. 
 Stitching one image to another requires both to share a region of overlap. When capturing a sample using TIM, the operator has the ability to choose a percentage amount of overlap between images.
 Most samples are digitized with a percentage overlap between 33\% and 50\%.
 
-After testing numerous image stitching software APIs, we found the Python package Stitch2D most capable of stitching our images successfully. % need to reference this
-This package wraps OpenCV functions for finding distinctive image features using the SIFT feature detector and matches these features within the overlapping region of adjacent images \citep{lowe_distinctive_2004}. 
+After testing numerous image stitching softwares, we found the Python package Stitch2D most capable of stitching our images successfully \citep{mansur_stitch2d_2022}. % need to reference this
+This package wraps OpenCV functions for finding distinctive image features using the scale-invariant feature transform (SIFT) method and matches these features within the overlapping region of adjacent images \citep{lowe_distinctive_2004}. 
 The default implementation of the package produces high quality stitches but is memory inefficient. %is this wording correct?, I'm trying to kindly say it was memory inefficient
-We implemented a few key memory-conscious changes such as loading only one image into RAM at a time and writing the final image to a memory-mapped NumPy file before converting to a TIFF file. These changes allowed for the package to run on a Jetson edge computer without a problem.
+We implemented a few key memory-conscious changes such as loading only one image into RAM at a time and writing the final image to a memory-mapped NumPy file before converting to a TIFF file. These changes allowed for the package to run without being limited by RAM on a Jetson edge computer without a problem.
 
 Some tree ring analyses may not need the maximum scanning resolution produced by TIM. At maximum resolution, TIM's scans quickly produce large file sizes and can be costly to store at scale. 
 To address this, a parameter in the machine configuration file allows the operator to choose a downsizing ratio to apply to images before they are stitched, decreasing the file size of the scans.
 With the same images, multiple final stitched resolutions can be made. 
 
+\subsection{Scanning Hard-to-Stitch Samples} 
+
+We found some samples were impossible to scan without additional preparation. The most common scenario leading to an incomplete scan was due to regions of the core having few distinguishable SIFT features. 
+Samples often begin to lack features when focusing on lightly-colored sapwood. SIFT features may also lack where there are sanding blemishes or other imperfections on the scanning surface. 
+In such cases, we developed a particle smearing method which add features to the sample, aiding the stitching process. 
+
+\subsubsection{Particle Smearing}
+
+The ideal method for adding features to the sample is to smear small particles with contrasting color compared to the surface of the sample. 
+Our powder of choice was 600 mesh silicon carbide powder as it is inexpensive, available at pottery supply stores, has reliable grain sizes smaller than the finest sand paper we used, and provides good color contrast with most wood. 
+Additionally, silicon carbide is very hard so it will not be broken into smaller grains when smearing into the surface of the sample. 
+
+%amf28jan2026 -- FLAGGING flagging
+%emw17Jan2026 -- something missing here ... can you check this whole paragraph is as clear as possible and send back to me for a quick review? (Flag this section somehow.)
+No extra tools are needed for this method--a fingertip dipped in the powder is sufficient. T powder shehould be smeared across the sample's sanded surface, smoothing any clumps of powder in the process. 
+When applied correctly, trace amounts of silicon carbide will be embedded in the surface roughness of the sample which can not be seen without microscope magnification. Images of a core before and after powder smearing can be seen in Figure \ref{fig:core_smearing} 
+Most of the silicon carbide can be removed after scanning is complete by blowing compressed air on the sample. 
+
+
+
+\begin{figure}
+  \centering
+  \begin{subfigure}{.5\textwidth}
+    \centering
+    \includegraphics[height=0.5\linewidth]{../diagrams/core_no_smearing.png}
+    \caption{Without powder smearing}
+    \label{fig:core_without_smearing}
+  \end{subfigure}%
+  \begin{subfigure}{.5\textwidth}
+    \centering
+    \includegraphics[height=0.5\linewidth]{../diagrams/core_with_smearing.png}
+    \caption{With powder smearing}
+    \label{fig:core_with_smearing}
+  \end{subfigure}
+  \caption{A hard-to-scan sample with and without silicon carbide smeared on the surface of the core.}
+  \label{fig:core_smearing}
+\end{figure}
+ 
 \section{Results \& Discussion} 
 %emw9Mar: I wondered about this being Results & Discussion ... would MEE be okay with that? It would work better for the paper I think. What do the guidelines say on formatting for articles? 
 % MEE's guidelines have a distinct Results section from Discussion although maybe they're flexible on this? Conclusion is optional for MEE
 
-
-
-TIM is capable of producing extremely high resolution scans. We calculated the maximum dots per inch (DPI) at 21 140 of individual images captured from the system using a microscopy slide scale (with 0.01 mm graduations, Figure \ref{fig:dpi_measurements}), and developed a Python tool to replicate this for varied lens focal lengths. When downscaling the final stitch, 
+TIM is capable of producing extremely high resolution scans. We calculated the maximum dots per inch (DPI) at 21 500 of individual images captured from the system using a microscopy slide scale (with 0.01 mm graduations, Figure \ref{fig:dpi_measurements}), and developed a Python tool to replicate this for varied lens focal lengths. When downscaling the final stitch, 
 DPI scales linearly with the downscale percentage defined in the machine parameters. 
 
-Digitizing samples takes significantly longer for cookies than it does for cores (Figure \ref{fig:digitization_time}). This is due to the surface area of cookies requiring more images as it has a square relationship to sample radius.
+Digitizing samples takes significantly longer for cookies than it does for cores (Figure \ref{fig:digitization_time}). This is due to the surface area of cookies requiring more images, as it has a square relationship to sample radius.
 For large cookies, the operator can choose to selectively scan a radius of the cookie instead of the whole surface. A single radius contains a portion of each ring. Scanning complete cookies at maximum DPI is unrealistic as file size limits are quickly encountered with small diameter cookies. 
 
 To fit into the maximum 2.5 GB limits of a TIFF file, the maximum diameter of a cookie scanned at 30\% of maximum resolution is limited to approximately 130 mm. This maximum cookie diameter is significantly smaller than the maximum core sample length. At maximum resolution, the file size limit 
-constrains core samples to approximately 1 500 mm in length (though a larger ACRO frame than shown here would be needed to support this sample length). Samples larger than this limit can still be scanned, but TIM saves them as an uncompressed binary NumPy memory-mapped array file is produced. Currently, NumPy files are not supported by standard image viewers like ImageJ and would require custom tools to work with. %emw9Mar: Like custom Python scripts? I think we might be more explicit here if we mean that. 
+constrains core samples to approximately 1 500 mm in length (though a larger ACRO frame than shown here would be needed to support this sample length). 
+Samples larger than this limit can still be scanned, but TIM saves them as an uncompressed binary NumPy memory-mapped array file. Currently, NumPy files are not supported by standard image viewers like ImageJ and require custom tools to work with. %emw17Jan2026 -- any chance we can give an (e.g., THIS tool) to the end here? %amf28Jan2026 -- This would be some GUI wrapping NumPy functions which are made to edit the NumPy files. I'm certain this could be done but it doesn't really seem worth it. I imagine in order for it to actually be useful, it would need to offer complete annotation functionality for marking and be user friendly in a way that I wouldn't be able to churn out quickly.
 
 \begin{figure}
     \centering
     \includegraphics[height=0.5\linewidth]{../../code/plots/time_and_area.png}
     \caption{Time to digitize a sample is dependent on the sample's surface area and the desired final resolution.
-    Cores benefit from linear surface area to sample length. The range of sample included are from a 3mm x 220mm core to a 75mm x 56mm cookie. True sampling times are drastically influenced by configurable machine parameters.} 
+    Cores benefit from linear surface area to sample length. The range of samples included span from a 3 mm x 220 mm core to a 75 mm x 56 mm cookie. The theoretical maximum sample dimensions are limited by the working plane of the machine, approximately 500 mm x 500 mm in our configuration. True sampling times are drastically influenced by configurable machine parameters such as percentage image overlap.}  
     \label{fig:digitization_time}
 \end{figure}
 
-\subsection{Strengths and Opportunities} %emw9Mar: And this section could become part of the Results & Discussion....  % emwAug10 -- check all your refs are working! I search for ? before I submit. Also you need to through and fix anything as shown below, I fixed one but there are others... If you have other ref issues, ask Victor or me for help. 
-% \citep{girardin_national_2021} \citep{grissino-mayer_international_1997}. --> \citep{girardin_national_2021,grissino-mayer_international_1997}.
-% add better opportunities
-TIM's design minimizes the barriers to build an affordable, efficient and high-resolution image capture system in smaller labs without compromising scan quality, and while allowing scanning of cookies and cores. We have measured tree ring widths using the digitized samples from TIM using CooRecorder as well as ImageJ \citep{schneider_nih_2012}. 
-%emw9Mar: Any citations for developing repos to share tree ring images? Or just more on building better open shared data for tree rings? 
-% It appears databases store data after images are processed and measured, potentially too expensive to store image datasets at high resolution?
-Publicly available tree-ring datasets can be found on multiple online repositories such as TreeSource's Tree-Rings Database for Canadian sites or the International Tree-Ring Data Bank (ITRDB) for worldwide data \citep{girardin_national_2021} \citep{grissino-mayer_international_1997}.
-Both of these databases offer metadata-rich data on measured tree-rings but do not store the source images of samples.
-One opportunity for this development could come as more universal and large-scale open-data storage of tree ring images come online. 
-Such open repositories would also increase the value of developing new frameworks count vessel or identify rings, which are already starting and have the potential to greatly decrease the time invested in manually identifying tree anatomy \citep{resente_mask_2021,polacek_automation_2023}. 
-With these more fully developed TIM could be extended to be run such frameworks while scanning, possibly taking additional scans only when needed to reach sufficient algorithm accuracy. %emw9Mar -- check my riffing here. 
+\subsection{Strengths and Opportunities} 
+TIM's design minimizes the barriers to build an affordable, efficient and high-resolution image capture system. TIM does not compromise scan quality and can scan both cookies and cores. We have measured tree ring widths using the digitized samples from TIM using CooRecorder as well as ImageJ \citep{schneider_nih_2012}, but the utility of these images could be extended through new open-data approaches. 
+For example, while most tree ring repositories \citep[e.g.,the International Tree-Ring Data Bank or TreeSource's Tree-Rings Database for Canadian sites][]{grissino-mayer_international_1997,girardin_national_2021} do not store the source images of samples currently, they provide rich metadata, which could be used to link to images stored on other more flexible repositories. 
+Eventually extending these databases to include source images of cores and cookies (and annotating them in bulk), however, would be beneficial to field and potentially provide training data for deep learning models for vessel counting and tree ring boundary identification. 
+Examples of such models exist and have the potential to significantly decrease the time invested in manually identifying tree anatomy \citep{resente_mask_2021,polacek_automation_2023}.
+With more robust identification models, TIM could be extended to run these models while scanning.
+%amf28Jan2026 -- FLAGGING quick review
+%emw17Jan2026 -- check my edits above and I will give this section another quick read before submission. 
 
 In its current state, TIM only provides scanned images and requires users to import them into other tools for additional visual analyses, such as measuring tree-ring widths or counting vessels.
-A useful addition to TIM would be to automatically detect tree-ring widths or other metrics while capturing images using computer vision models. We expect this may be possible as these methods improve in efficiency. Currently, we found that tree-ring detection by a recent machine learning algorithm  \citeauthor[R-CNN presented by][]{polacek_automation_2023} for a scanned core (23294 x 897 pixels) took 15 minutes on a high-performance cluster (UBC ARC Sockeye) and 3.5 hours on a smaller server (RTX A6000 GPU server). 
+A useful addition to TIM would be to automatically detect tree-ring widths or other metrics while capturing images using computer vision models. We expect this may be possible as these methods improve in computational efficiency and accuracy. Currently, we found that tree-ring detection by a recent machine learning algorithm  \citep[R-CNN presented by][]{polacek_automation_2023} for a scanned core (23294 x 897 pixels) took 15 minutes on a high-performance cluster (UBC ARC Sockeye) and 3.5 hours on a smaller server (RTX A6000 GPU server). 
 Although the Jetson edge computer is not as powerful as these servers, running these models in parallel to the image capturing algorithms would further reduce manual data annotation of tree-rings, and thus could help scale-up data collection.
 
-An additional major frontier for machines such as TIM is integrating additional sensors. While much of the current imaging time of samples comes from taking a vertical stack of images to obtain one in-focus image, advanced microscopy applications have overcome similar challenges through supplemental sensors that measure the distance between the subject and lens.
-Adding such sensor support and a control loop to focus images could significantly reduce sampling time on the scale of an order of magnitude. 
-Using rotary encoders on each of the motors controlling the X and Y movement would be a welcomed addition---this would greatly increase the 
-accuracy of the the location of the camera on the work plane.  
+TIM relies on purchasing a CNC machine kit from OpenBuilds which is subject to availability. Fortunately, our software is compatible with any cartesian CNC machine controlled by the Grbl software, a common and open-source CNC motion controller software.
+Many alternative CNC kits are available but would require new adapters to be made to hold the lens, camera, and computer to the machine.
+% amf30dec I don't like this paragraph anymore.
+% An additional major frontier for machines such as TIM is integrating additional sensors. While much of the current imaging time of samples comes from taking a vertical stack of images to obtain one in-focus image, advanced microscopy applications have overcome similar challenges through supplemental sensors that measure the distance between the subject and lens.
+% Adding such sensor support and a control loop to focus images could significantly reduce sampling time on the scale of an order of magnitude. 
+% Using rotary encoders on each of the motors controlling the X and Y movement would be a welcomed addition---this would greatly increase the 
+% accuracy of the the location of the camera on the work plane.  
 
-\section{Conclusion} % I think we could remind the reader here of what gaps TIM addresses, but I can help do that next time.  %emw9Mar: This section could move down and become conclusions if we merge the Results & Discussion. 
-By taking advantage of a common three degree of freedom cartesian machine design, powerful edge computing, and a microscope camera we were able to design a cost effective and high resolution digitization tool for wood samples. 
+\section{Conclusion}  
+By taking advantage of a common three axis cartesian machine design, powerful edge computing, and a microscope camera we were able to design a cost effective and high resolution digitization tool for wood samples. 
 Our design significantly increases the maximum sample length and maximum resolution compared to common alternatives in the field. 
-In addition, the machine design was intended to be readily replicated by labs with minimal engineering experience and equipment. 
-Such an open-source device could facilitate the widespread sampling of tree rings across diverse ecosystems and reduce barriers for researchers with tight budgets. 
-
-%emw14Apr2025: Add acknowledgments here: Deirdre, Hoai Huong Nguyen Phan, Fredi, CRD, Mao etc. 
-
-%vvdm24Apr: and also something like "It will also support tree-ring research in countries where budget constraints may limit access to more expensive equipment..."?
+In addition, TIM is intended to be readily replicated by labs without significant engineering capacity and equipment. 
+We hope that such an open-source device will facilitate the widespread sampling of tree rings across diverse ecosystems and reduce barriers for researchers with smaller budgets. 
 
 %vvdm24Apr: More general comment: I think it would be helpful to further justify (from an ecological perspective) why high-resolution scans are necessary? Not only to better distinguish the rings, but also for example to differentiate early wood and late wood... or something else (I'm not an expert)? 
 \section{Acknowledgments} %emwAug10 -- also thank Victor added 

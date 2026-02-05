@@ -7,7 +7,7 @@ from pathlib import Path
 from datetime import datetime
 
 class Sample:
-    def __init__(self, sample_width_mm: int, sample_height_mm: int, species:str, id1:str, id2:str, notes:str, image_width_mm:float, image_height_mm:float, image_width_pixels:float, image_height_pixels:float, is_core:bool, percent_overlap:int = 50, is_vertical:bool = True, x:float = None, y:float = None, z:float = None):
+    def __init__(self, sample_width_mm: int, sample_height_mm: int, species:str, id1:str, id2:str, notes:str, image_width_mm:float, image_height_mm:float, image_width_pixels:float, image_height_pixels:float, is_core:bool, percent_overlap:int = 50, is_vertical:bool = True, x:float = None, y:float = None, z:float = None, directory:str = None):
         """Class which contains the necessary information for each sample that needs to be digitized. Data comes from user inputs from GUI. Data is saved in metadata.json files alongside stitched images
 
         Args:
@@ -27,6 +27,7 @@ class Sample:
             x (float, optional): X position of the center of the sample in the gantry coordinate system. Defaults to None.
             y (float, optional): Y position of the center of the sample in the gantry coordinate system. Defaults to None.
             z (float, optional): Z position of the center of the sample in the gantry coordinate system. Defaults to None.
+            directory (str): Directory to save sample data
         """
         self.width = sample_width_mm
         self.height = sample_height_mm
@@ -39,21 +40,31 @@ class Sample:
         tl_x = x - (self.width/2)
         tl_y = y + (self.height/2)
         tl_z = z
+        self.x = x
+        self.y = y
+        self.z = z
         self._top_left = (tl_x, tl_y, tl_z)
         self.species = species
         self.id1 = id1
         self.id2 = id2
         self.notes = notes
+        self.image_count = 0
 
         dirtime = datetime.now().strftime("%H_%M_%S")
-        directory = "./{}_{}_{}_{}".format(species, id1, id2, dirtime)
-        Path(directory).mkdir()
-        self.directory = directory
+
+        if directory is not None:
+            d = "./{}_{}_{}_{}".format(species, id1, id2, dirtime)
+        else:
+            d = "{}/{}_{}_{}_{}".format(directory, species, id1, id2, dirtime)
+        Path(d).mkdir()
+        self.directory = d
 
         self.image_width_mm = image_width_mm
         self.image_height_mm = image_height_mm
         self.rows, self.cols, self.x_step_size, self.y_step_size = self.calculate_grid_params()
-        self.targets_top, self.targets_bot = self.calculate_image_locations(self.rows, self.cols, self.x_step_size, self.y_step_size) # Each index of the (-1, 5) shape array is (X, Y, Z, row, col)
+        
+        if not is_core:
+            self.targets_top, self.targets_bot = self.calculate_image_locations(self.rows, self.cols, self.x_step_size, self.y_step_size) # Each index of the (-1, 5) shape array is (X, Y, Z, row, col)
         self.background = []
         self.background_std = []
         self.coordinates = []
@@ -73,6 +84,10 @@ class Sample:
         self.stitch_depth = None
         self.dpi = None
 
+    def increment_image_count(self):
+        """Increment the image counter when a good image is taken"""
+        self.image_count += 1
+        
     def to_json(self, directory = None):
         metadata = {
             "species": self.species,
@@ -80,6 +95,7 @@ class Sample:
             "cols": self.cols,
             "id1": self.id1,
             "id2": self.id2,
+            "dpi": self.dpi,
             "resolution_h": self.image_height_pixels,
             "resolution_w": self.image_width_pixels,
             "photo_count": self.rows * self.cols,
@@ -118,6 +134,10 @@ class Sample:
         
         if self.stitch_depth is not None:
             metadata["stitch_depth"] = self.stitch_depth
+
+        if self.is_core:
+            metadata["approximate_sample_height_mm"] = self.rows * self.image_height_mm * self.percent_overlap / 100
+            metadata["approximate_sample_width_mm"] = self.image_width_mm
 
         if directory is None:
             utils.write_metadata(metadata, self.directory)

@@ -15,7 +15,9 @@ import json
 from typing import Callable
 import utils
 import numpy as np
-
+import cv2
+import os
+import numpy as np
 
 class Controller:
     def __init__(self, g: gantry.Gantry, c: camera.Camera, f: focus.Focus):
@@ -37,6 +39,7 @@ class Controller:
         self.fast_feed_rate_xy = self.config["controller"]["FAST_FEED_RATE_XY"]
         self.fast_feed_rate_z = self.config["controller"]["FAST_FEED_RATE_Z"]
         self.max_dpi = self.config["camera"]["MAX_DPI"]
+        self.focus_threshold = self.config["controller"]["FOCUS_THRESHOLD"]
     
         #Objects
         self.samples = []
@@ -82,8 +85,408 @@ class Controller:
         """
         self.directory = d
 
-    #### SERPENTINE METHODS ####
+    def variance_of_laplacian(self, image):
+        """Compute Laplacian variance (higher = sharper)."""
+        return cv2.Laplacian(image, cv2.CV_64F).var()
+
+    def roi_center(self, image, frac=0.2):
+        """Extract central region of image."""
+        h, w = image.shape[:2]
+        dw, dh = int(w * frac / 2), int(h * frac / 2)
+        cx, cy = w // 2, h // 2
+        return image[cy - dh: cy + dh, cx - dw: cx + dw]
+
+
+    def roi_top(self, image, frac=0.2):
+        """Extract top central region of the image."""
+        h, w = image.shape[:2]
+        dw = int(w * frac / 2)
+        dh = int(h * frac)
+        cx = w // 2
+        return image[0:dh, cx - dw: cx + dw]
+
+
+    def roi_bottom(self, image, frac=0.2):
+        """Extract bottom central region of the image."""
+        h, w = image.shape[:2]
+        dw = int(w * frac / 2)
+        dh = int(h * frac)
+        cx = w // 2
+        return image[h - dh:h, cx - dw: cx + dw]
+
+    def get_focus_metric(self, position = None):
+        """Capture image and compute focus metric."""
+        temp_file = "./temp_image.tiff"
+        while True:
+            try:
+                self.camera.save_frame(temp_file)
+                time.sleep(0.15)
+                image = cv2.imread(temp_file, cv2.IMREAD_GRAYSCALE)
+                os.remove(temp_file)
+                if position == "top":
+                    return self.variance_of_laplacian(self.roi_top(image, frac=0.3))
+                elif position == "bottom":
+                    return self.variance_of_laplacian(self.roi_bottom(image, frac=0.3))
+                else:
+                    return self.variance_of_laplacian(self.roi_center(image, frac=0.2))
+            except:
+                log.info("Could not capture tempfile, retrying")
+                continue
+            break
+
+
+    def autofocus(self, range = None, position = None):
+        if range is None:
+            self.golden_section_search(-0.2, 0.2, tol=0.05, max_iter=20, position = position)
+        else:
+            self.golden_section_search(-1 * range / 2, range / 2, tol=0.05, max_iter=20, position = position)
+
+    def golden_section_search(self, x_l, x_u, tol=0.01, max_iter=20, position = None):
+        """
+        Perform golden section search for maximum focus metric between z=a and z=b (mm).
+        a < 0 < b. Returns the best z position (relative to start).
+
+        Implementation described in this video: https://www.youtube.com/watch?v=AGXq-ut2oJg
+        """
+        phi = 0.618 # golden ratio
+
+        z_current = 0  # Track current position
+
+        # Initial internal points
+        d = phi * (x_u - x_l)
+        x1 = x_u - d  # left internal point
+        x2 = x_l + d  # right internal point
+
+        # Move to x1 and evaluate
+        print(f"Move to x1 = {x1:.4f} mm")
+        self.jog_relative_z(x1, block=True)
+        z_current = x1
+        
+        f1 = self.get_focus_metric(position=position)
+        print(f"Focus @ x1 ({x1:.4f}): {f1:.2f}")
+
+        # Move to x2 and evaluate
+        print(f"Move to x2 = {x2:.4f} mm")
+        self.jog_relative_z(x2 - z_current, block=True)
+        z_current = x2
+        f2 = self.get_focus_metric(position=position)
+        print(f"Focus @ x2 ({x2:.4f}): {f2:.2f}")
+
+        # Main optimization loop
+        for i in range(max_iter):
+            if abs(x_u - x_l) < tol:
+                break
+
+            print(f"\nIter {i:02d}: a={x_l:.4f}, b={x_u:.4f}, f1={f1:.2f}, f2={f2:.2f}")
+
+            if f1 < f2: # Max is to the right, get rid of [x_l, x1) and update point references
+                x_l = x1
+                f_l = f1
+                x1 = x2
+                f1 = f2
+                d = phi * (x_u - x_l)
+                x2 = x_l + d
+                print(f"Move to new x2 = {x2:.4f} mm")
+                self.jog_relative_z(x2 - z_current, block=True)
+                z_current = x2
+                f2 = self.get_focus_metric(position=position)
+                print(f"Focus @ x2 ({x2:.4f}): {f2:.2f}")
+            else: # Max is to the left, get rid of (x2, x_u] and update point references)
+                x_u = x2
+                f_u = f2
+                x2 = x1
+                f2 = f1
+                d = phi * (x_u - x_l)
+                x1 = x_u - d
+                print(f"Move to new x1 = {x1:.4f} mm")
+                self.jog_relative_z(x1 - z_current, block=True)
+                z_current = x1
+                f1 = self.get_focus_metric(position=position)
+                print(f"Focus @ x1 ({x1:.4f}): {f1:.2f}")
+
+        # Choose best
+        best_z = x1 if f1 > f2 else x2
+        best_score = max(f1, f2)
+
+        # # Return to zero
+        # self.controller.jog_relative_z(-z_current, block=True)
+
+        # # Go to best focus
+        # self.controller.jog_relative_z(best_z, block=True)
+
+        print(f"\nBest focus at z={best_z:.3f} mm, score={best_score:.2f}")
+        return best_z, best_score
+
+    def capture_core_bottom(self, sample: sample.Sample, progress_callback:Callable, stop_capture: Event):
+        self.set_directory(sample.directory)
+        start_time = time.time()
+
+        sample.set_start_time_imaging(start_time)
+
+        self.set_feed_rate(1)
+        img_num = 0
+        
+        self._gantry.jog_absolute_xyz(sample.x, sample.y, sample.z)
+        self._gantry.block_for_jog()
+        
+        while True and not stop_capture.is_set():
+            start_stack = time.time()
+            
+            if img_num != 0:
+                self._gantry.jog_relative_y(-1 * sample.y_step_size)
+                self._gantry.block_for_jog()
+                time.sleep(0.25)
+
+            if img_num % 2 == 0:
+                self.autofocus()
+
+        # Targets are XYZ coordinates to jog to to capture an image.
+            sample.coordinates.append(self._gantry.get_xyz())
+
+            file_location = f"{sample.directory}/frame_{img_num}_{0}.tiff"
+            self.camera.save_frame(file_location)
+
+            img_num += 1
+
+            elapsed_time = time.time() - start_stack
+            progress_callback((elapsed_time, img_num, sample.rows*sample.cols))
+
+            counter = 0
+            while self.get_focus_metric() < self.focus_threshold and counter < 2:
+                log.info("Focus metric low, attempting to refocus with larger searching range.")
+                self.autofocus(2) # increase the range if we didn't find a good focus. But stop if we never find a good focus 
+                counter += 1
+
+            
+        ##
+        ## Make this a method
+        sample.rows = img_num
+        sample.cols = 1
+        end_time = time.time()
+        sample.set_end_time_imaging(end_time)
+        sample.to_json()
+
+    def capture_core_middle(self, sample: sample.Sample, progress_callback:Callable, stop_capture: Event):
+        self.set_directory(sample.directory)
+        self._gantry.set_acceleration(fast=False)
+        start_time = time.time()
+        fake_image_count = 100
+
+        sample.set_start_time_imaging(start_time)
+
+        self.set_feed_rate(1)
+        img_num_top = 0
+        img_num_bot = 0
+        
+        # jogging to the sample origin between the two edges of the core
+        self._gantry.jog_absolute_xyz(sample.x, sample.y, sample.z)
+        self._gantry.block_for_jog()
+        
+        coordinates_top = []
+        coordinates_bot = []
+        stop = False
+        # Capture images starting in the middle of the core and move upwards
+        while True and not stop_capture.is_set() and not stop:
+            
+            if img_num_top != 0:
+                self._gantry.jog_relative_y(sample.y_step_size)
+                self._gantry.block_for_jog()
+                time.sleep(0.25) # allow vibrations to settle
+
+            # Autofocus every other image. Test autofocusing every three images for the heck of it
+            if img_num_top % 2 == 0:
+                start_stack = time.time()
+                self.autofocus()
+
+            # Targets are XYZ coordinates to jog to to capture an image.
+            coordinates_top.append(self._gantry.get_xyz())
+
+            file_location = f"{sample.directory}/frame_{img_num_top}_{0}.tiff"
+            self.camera.save_frame(file_location)
+
+            img_num_top += 1
+
+            elapsed_time = time.time() - start_stack
+
+            if img_num_top % 2 == 0:
+                progress_callback((elapsed_time, img_num_top, fake_image_count))
+
+            if self.get_focus_metric("bot") < self.focus_threshold:
+                log.info("Focus metric low, attempting to refocus with larger searching range.")
+                self.autofocus(2) # increase the range if we didn't find a good focus. But stop if we never find a good focus 
+                
+                if self.get_focus_metric("bot") < self.focus_threshold:
+                    log.info("Top of core detected. Moving to middle position to capture bottom half of core.")
+                    stop = True
+                else:
+                    file_location = f"{sample.directory}/frame_{img_num_bot}_{0}.tiff"
+                    self.camera.save_frame(file_location)
+
+        # Repeat the above procedure starting from the middle of the core but going in the opposite direction
+        # jogging to the sample origin between the two edges of the core
+        self._gantry.jog_absolute_xyz(sample.x, sample.y, sample.z)
+        self._gantry.block_for_jog()
+
+        stop = False
+        while True and not stop_capture.is_set() and not stop:
+            # Autofocus every other image. Test autofocusing every three images for the heck of it
+            if img_num_bot % 2 == 0:
+                start_stack = time.time()
+                self.autofocus()
+            
+            # Don't retake an image of the first position
+            self._gantry.jog_relative_y(-1 * sample.y_step_size)
+            self._gantry.block_for_jog()
+            time.sleep(0.25) # allow vibrations to settle
+            
+            # Targets are XYZ coordinates to jog to to capture an image.
+            coordinates_bot.append(self._gantry.get_xyz())
+
+            file_location = f"{sample.directory}/frame_{img_num_bot}_{0}.tiff"
+            self.camera.save_frame(file_location)
+
+            # Not sure if this is going to be good enough to get the columns correct
+            img_num_bot -= 1
+
+            elapsed_time = time.time() - start_stack
+
+            if img_num_bot % 2 == 0:
+                progress_callback((elapsed_time, img_num_top + abs(img_num_bot), fake_image_count))
+
+            if self.get_focus_metric("top") < self.focus_threshold:
+                log.info("Focus metric low, attempting to refocus with larger searching range.")
+                self.autofocus(2) # increase the range if we didn't find a good focus. But stop if we never find a good focus 
+
+                # If you somehow get a good focus score, save it and continue
+                if self.get_focus_metric("top") < self.focus_threshold:
+                    log.info("Bottom of core detected due to low focus metric. Capture complete.")
+                    stop = True
+                else:
+                    file_location = f"{sample.directory}/frame_{img_num_bot}_{0}.tiff"
+                    self.camera.save_frame(file_location)
+
+        coordinates_top.extend(coordinates_bot)
+        sample.coordinates.append(coordinates_top)
+
+        ## Make this a method
+        sample.rows = img_num_top + abs(img_num_bot)
+        sample.cols = 1
+        end_time = time.time()
+        sample.set_end_time_imaging(end_time)
+        sample.to_json()
+
+    def capture_top_section(self, sample: sample.Sample, progress_callback:Callable, stop_capture: Event)->int:
+        fake_image_count = 100
+        img_num_top = 0
+        previous_focus_metric = -1
+        focus_metric_threshold = 0.95 # 95 percent of previous focus metric
+        counter = 0
+        # Capture images starting in the middle of the core and move upwards
+        while True and not stop_capture.is_set():
+            
+            # Check if terminating condition is met (core no longer detected)
+            if self.get_focus_metric("bottom") < self.focus_threshold:
+                log.info("Focus metric low, attempting to refocus with larger searching range.")
+                self.autofocus(2, position = "bottom") # increase the range if we didn't find a good focus. But stop if we never find a good focus 
+                
+                # Check again if the focus metric at the bottom of the image is still low
+                if self.get_focus_metric("bottom") < self.focus_threshold:
+                    log.info("Top of core detected. Moving to middle position to capture bottom half of core.")
+                    break
+
+            # Check if autofocus is needed based on focus metric drop
+            elif self.get_focus_metric() / previous_focus_metric < focus_metric_threshold:
+                self.autofocus()
+                previous_focus_metric = self.get_focus_metric() # store the value after autofocus
+
+            # Save an image at the current position
+            file_location = f"{sample.directory}/frame_{img_num_top}_{0}.tiff"
+            self.camera.save_frame(file_location)
+            img_num_top += 1
+            counter += 1
+            sample.increment_image_count()
+
+            # Move to the next position
+            self._gantry.jog_relative_y(sample.y_step_size)
+            self._gantry.block_for_jog()
+            time.sleep(0.25) # allow vibrations to settle
+
+            if img_num_top % 2 == 0:
+                elapsed_time = time.time() - sample.start_time_imaging
+                progress_callback((elapsed_time / sample.image_count, sample.image_count, fake_image_count))
+                counter = 0
+
+    def capture_bottom_section(self, sample: sample.Sample, progress_callback:Callable, stop_capture: Event)->int:
+        fake_image_count = 100
+        img_num_bot = -1
+        previous_focus_metric = -1
+        focus_metric_threshold = 0.95 # 95 percent of previous focus metric
+       
+        self._gantry.jog_relative_y(-1 * sample.y_step_size) # move to the next position to avoid recapturing the middle image
+
+        # Capture images starting in the middle of the core and move downwards
+        while True and not stop_capture.is_set():
+            # Check if terminating condition is met (core no longer detected)
+            if self.get_focus_metric("top") < self.focus_threshold:
+                log.info("Focus metric low, attempting to refocus with larger searching range.")
+                self.autofocus(2, position = "top") # increase the range if we didn't find a good focus. But stop if we never find a good focus 
+                
+                # Check again if the focus metric at the top of the image is still low
+                if self.get_focus_metric("top") < self.focus_threshold:
+                    log.info("Bottom of core detected. Capture complete. Stitching frames.")
+                    break
+
+            # Check if autofocus is needed based on focus metric drop
+            elif self.get_focus_metric() / previous_focus_metric < focus_metric_threshold:
+                self.autofocus()
+                previous_focus_metric = self.get_focus_metric() # store the value after autofocus
+
+            # Save an image at the current position
+            file_location = f"{sample.directory}/frame_{img_num_bot}_{0}.tiff"
+            self.camera.save_frame(file_location)
+            img_num_bot -= 1
+            sample.increment_image_count()
+
+            # Move to the next position
+            self._gantry.jog_relative_y(-1 * sample.y_step_size)
+            self._gantry.block_for_jog()
+            time.sleep(0.25) # allow vibrations to settle
+
+            if img_num_bot % 2 == 0:
+                elapsed_time = time.time() - sample.start_time_imaging
+                progress_callback((elapsed_time / sample.image_count, sample.image_count, fake_image_count))
+
+    def capture_core_middle_2(self, sample: sample.Sample, progress_callback:Callable, stop_capture: Event):
+        # Set the directory to save the images
+        self.set_directory(sample.directory)
+
+        # Set gantry acceleration to slow for less camera shake
+        self._gantry.set_acceleration(fast=False)
+        self.set_feed_rate(1)
+
+        # Note the start time for determining total sample imaging time        
+        start_time = time.time()
+        sample.set_start_time_imaging(start_time)
+
+        # Navigate to the sample's origin
+        self._gantry.jog_absolute_xyz(sample.x, sample.y, sample.z)        
     
+        # Capture top half of the core
+        self.capture_top_section(sample, progress_callback, stop_capture)
+
+        # Navigate back to the sample's origin'
+        self._gantry.jog_absolute_xyz(sample.x, sample.y, sample.z)        
+
+        # Capture the bottom half of the core
+        self.capture_bottom_section(sample, progress_callback, stop_capture)
+
+        sample.rows = sample.image_count
+        sample.cols = 1
+        end_time = time.time()
+        sample.set_end_time_imaging(end_time)
+        sample.to_json()
+
+    #### SERPENTINE METHODS ####
     def capture_sample(self, sample: sample.Sample, progress_callback: Callable, stop_capture: Event):
         """Abstraction to execute a capture sequence. This involves moving the the top left of the sample, traversing in a serpentining pattern 
         across the dimensions of the sample. At each step in the grid, multiple images are taken and only the most in focus is kept. 
@@ -120,8 +523,8 @@ class Controller:
             sample.set_end_time_imaging(end_time)
             sample.to_json()
             break
-
-    def capture_all_samples(self, progress_callback: Callable, stop_capture: Event):
+            
+    def capture_all_cores(self, progress_callback: Callable, stop_capture: Event):
         """Callable for the GUI to iterate through all samples. For multiple sample capture.
 
         Args:
@@ -137,7 +540,39 @@ class Controller:
                 log.info("MAX FILE SIZE ESTIMATE {} MB".format(round(max_filesize_est, 2)))
                 progress_callback((True, True, "{}_{}_{}".format(sample.species, sample.id1, sample.id2)))
 
-                self.capture_sample(sample, progress_callback, stop_capture)
+                self.capture_core_bottom(sample, progress_callback, stop_capture)
+                
+                # Only stitch if the capture complete successfully
+                if not stop_capture.is_set():
+                    print('stitching frames')
+                    self.stitch_frames(sample)
+                if len(self.samples) == 0:
+                    stop_capture.set()
+
+            return
+
+
+
+    def capture_all_samples(self, progress_callback: Callable, stop_capture: Event):
+        """Callable for the GUI to iterate through all samples. For multiple sample capture.
+
+        Args:
+            progress_callback (Callable): GUI widget to update progress bar
+            stop_capture (Event): Event to stop capture as soon as possible
+        """
+        while not stop_capture.is_set():
+            for i in range(len(self.samples)):
+                sample = self.samples.pop(-1)
+                width_est_pixels = max(1, sample.width / sample.image_width_mm * self.camera.w_pixels)
+                height_est_pixels = sample.height / sample.image_height_mm * self.camera.h_pixels
+                max_filesize_est = width_est_pixels * height_est_pixels * 3 / 10e6 # megabytes
+                # log.info("MAX FILE SIZE ESTIMATE {} MB".format(round(max_filesize_est, 2)))
+                progress_callback((True, True, "{}_{}_{}".format(sample.species, sample.id1, sample.id2)))
+
+                if sample.is_core:
+                    self.capture_core_middle_2(sample, progress_callback, stop_capture)
+                else:
+                    self.capture_sample(sample, progress_callback, stop_capture)
                 
                 # Only stitch if the capture complete successfully
                 if not stop_capture.is_set():
@@ -362,6 +797,9 @@ class Controller:
         log.info("Jog {} mm to recenter vertical core. i: {}, i_middle: {}".format(d, i, i_middle))
 
     #### JOG METHODS ####
+    
+    def jog_cancel(self):
+        self._gantry.jog_cancel()
 
     def jog_relative_x(self, dist: float, feed:int = None):
         """Abstraction of gantry to jog in the x direction relative to its current position.
@@ -381,7 +819,7 @@ class Controller:
         """
         self._gantry.jog_relative_y(dist, feed)
 
-    def jog_relative_z(self, dist: float, feed:int = None):
+    def jog_relative_z(self, dist: float, feed:int = None, block=False):
         """Abstraction of gantry to jog in the Z direction relative to its current position.
 
         Args:
@@ -389,6 +827,9 @@ class Controller:
             feed (int): Feed rate in mm/min.
         """
         self._gantry.jog_relative_z(dist, feed)
+        
+        if block:
+            self._gantry.block_for_jog()
     
     def jog_absolute_x(self, pos: float, feed:int = None):
         """Abstraction of gantry to jog in the X direction to an absolute coordinate
@@ -434,6 +875,8 @@ class Controller:
             feed (int): Feed rate in mm/min.
         """
         self._gantry.jog_absolute_xyz(x, y, z, feed)
+    
+    ############## testing ###############
 
     def set_feed_rate(self, mode: int):
         """Setting feed rate between fast and slow
@@ -550,7 +993,11 @@ class Controller:
             id2 = "na"
 
         #path_name = self.cb_capture_image()
-        ck = sample.Sample(width, height, species, id1, id2, notes, self.image_width_mm, self.image_height_mm, self.camera.w_pixels, self.camera.h_pixels, is_core, percent_overlap=overlap, x=center_x, y=center_y, z=center_z)
+        if not is_core:
+            ck = sample.Sample(width, height, species, id1, id2, notes, self.image_width_mm, self.image_height_mm, self.camera.w_pixels, self.camera.h_pixels, is_core, percent_overlap=overlap, x=center_x, y=center_y, z=center_z, directory=self.directory)
+        else:
+            ck = sample.Sample(0, -1, species, id1, id2, notes, self.image_width_mm, self.image_height_mm, self.camera.w_pixels, self.camera.h_pixels, is_core, percent_overlap=overlap, x=center_x, y=center_y, z=center_z, directory=self.directory)
+        
         self.samples.append(ck)
 
     def get_samples(self):
@@ -570,6 +1017,8 @@ class Controller:
         self.samples=samples
 
    #### GANTRY METHODS ####
+    def send_gcode_cmd(self, cmd:str) -> list:
+       self._gantry._send_command(cmd)
 
     def serial_connect(self):
         """Connect to the gantry via USB serial
