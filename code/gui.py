@@ -628,6 +628,10 @@ class App(Gtk.Window):
             if img_array[right_ptr] < IMG_THRESHOLD:
                 right_count += 1
             right_ptr -= 1
+            
+        print("-------------Image Data-------------")
+        print(" ".join(str(x) for x in img_array))
+        print(f"Left Count under Threshold {left_count} | Right Count Under Threshold {right_count}")
         
         # motor movements required logic: 
         # have to move left by the amount to even out
