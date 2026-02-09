@@ -20,17 +20,20 @@ TIM is built on top of a common gantry machine design with movement in X, Y and 
 
 The Tree Imaging Machine (TIM) is a new low-cost, open-source tool for scanning high-resolution images of wood samples, adaptable to other applications. By working on batches of many samples and performing image stitching automatically, TIM makes it possible to easily collect thousands of years of data in one day.
 
-### Journal's Scope
+## Keywords (8 maximum)
 
-- MEE focuses on developing and sharing new methods in ecology and evolution.
-- Publishes work across many sub-disciplines in a unified forum.
-- Emphasizes the description and analysis of new methods, rather than the results obtained using those methods.
-- Accepts various types of papers:
-    Full-length research articles
-    Short descriptions of tools, hardware, or software
-    Reviews
-- Perspectives on methodological development
-- Defines "methods" broadly—can be analytical, practical, or conceptual.
-- A key goal is to maximize the adoption of new techniques by the research community.
-- As of 6 July 2022, all submissions are published fully Open Access.
-- Offers details on Open Access policy and fee waivers online.
+1. Dendrochronology
+2. Tree-rings
+3. Scanning
+4. Do-it-yourself
+
+## Recommended Reviewers (4 minimum)
+
+| First Name | Last Name | Email | Institution | Recommend or Oppose |
+| --- | --- | --- | --- | --- |
+| Miguel | García-Hidalgo | miguel.garcia.hidalgo@uva.es | Universidad de Valladolid, Soria, Spain | Recommend |
+
+## Recommended Editors (1 minimum from a predefined list of editors)
+
+## Cover Letter (max 32768 words)
+
