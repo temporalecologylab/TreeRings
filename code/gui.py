@@ -778,15 +778,19 @@ class App(Gtk.Window):
         if dX > 0:
             # move LEFT
             pixels_move = tile_w_avg * dX
-            jog_distance = pixels_move * MM_TO_PIXEL_RATIO
-            print(f"Move LEFT by {jog_distance} mm")
+            self.jog_distance = pixels_move * MM_TO_PIXEL_RATIO
+            print(f"Move LEFT by {self.jog_distance} mm")
+            
+            # self.controller.jog_relative_x(-1 * self.jog_distance)
 
         elif dX < 0:
             # move RIGHT
             dX = abs(dX)
             pixels_move = tile_w_avg * dX
-            jog_distance = pixels_move * MM_TO_PIXEL_RATIO
-            print(f"Move RIGHT by {jog_distance} mm")
+            self.jog_distance = pixels_move * MM_TO_PIXEL_RATIO
+            print(f"Move RIGHT by {self.jog_distance} mm")
+            
+            # self.controller.jog_relative_x(self.jog_distance)
 
         else:
             print("Already centered")
