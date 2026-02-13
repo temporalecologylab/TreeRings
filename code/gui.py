@@ -717,7 +717,7 @@ class App(Gtk.Window):
         # TEMP
         IMG_THRESHOLD= 200 # add to config probs 
         W_PIXELS_NO_CROP=3840
-        MM_TO_PIXEL_RATIO = 2 / W_PIXELS_NO_CROP # assuming ~ 2-3 mm in our field of view when scanning
+        MM_TO_PIXEL_RATIO = 5 / W_PIXELS_NO_CROP # assuming ~ 2-3 mm in our field of view when scanning
         
         print("reading image from pipeline...")
         temp_file = "./temp_image.tiff"
@@ -767,15 +767,15 @@ class App(Gtk.Window):
             if img_array[right_ptr] < IMG_THRESHOLD:
                 right_count += 1
             right_ptr -= 1
-            
+                    
         print("-------------Image Data-------------")
+        print(f"Length of img_array: {len(img_array)}")
         print(" ".join(str(x) for x in img_array))
-        print(f"Left Count under Threshold {left_count} | Right Count Under Threshold {right_count}")
         
         # motor movements required logic: 
         # have to move left by the amount to even out
-        dX = left_count - right_count
-        if dX > 0:
+        dX = left_count + right_count
+        if left_count < right_count:
             # move LEFT
             pixels_move = tile_w_avg * dX
             self.jog_distance = pixels_move * MM_TO_PIXEL_RATIO
@@ -783,7 +783,7 @@ class App(Gtk.Window):
             
             # self.controller.jog_relative_x(-1 * self.jog_distance)
 
-        elif dX < 0:
+        elif left_count > right_count:
             # move RIGHT
             dX = abs(dX)
             pixels_move = tile_w_avg * dX
