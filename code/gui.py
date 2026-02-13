@@ -717,123 +717,132 @@ class App(Gtk.Window):
         # TEMP
         IMG_THRESHOLD = 200 # add to config probs 
         W_PIXELS_NO_CROP = 3840
-        MM_TO_PIXEL_RATIO = 5 / W_PIXELS_NO_CROP # assuming ~ 2-3 mm in our field of view when scanning
+        IMG_WIDTH_MM = 5
+        MM_TO_PIXEL_RATIO = IMG_WIDTH_MM / W_PIXELS_NO_CROP # assuming ~ 2-3 mm in our field of view when scanning
+        counter = 0
+        MAX_ITER = 5
         
-        print("reading image from pipeline...")
-        temp_file = "./temp_image.tiff"
-        img_array = []
-        self.controller.camera.save_frame(temp_file)    #CHANGE THIS
-        print("successfully saved frame from pipeline...")
-    
+        while(1):
+            if (counter == MAX_ITER):
+                break
+            
+            print("reading image from pipeline...")
+            temp_file = "./temp_image.tiff"
+            img_array = []
+            self.controller.camera.save_frame(temp_file)    #CHANGE THIS
+            print("successfully saved frame from pipeline...")
         
-        time.sleep(0.15)
-        image = cv2.imread(temp_file, cv2.IMREAD_GRAYSCALE)
-        os.remove(temp_file)
-        
-        # based on the image, create grid
-        tiles, (y_start, y_end), x_breaks = self.center_band_grid(
-            image, n_col=10, band_height_frac=0.2
-        )
-        
-        tile_w = 0 # store into a function global
-        tile_w_avg = 0
-        tile_values = []
+            
+            time.sleep(0.15)
+            image = cv2.imread(temp_file, cv2.IMREAD_GRAYSCALE)
+            os.remove(temp_file)
+            
+            # based on the image, create grid
+            tiles, (y_start, y_end), x_breaks = self.center_band_grid(
+                image, n_col=10, band_height_frac=0.2
+            )
+            
+            tile_w = 0 # store into a function global
+            tile_w_px = 0
+            tile_values = []
 
-        # calculate the laplacian, save to an array
-        for c, tile in enumerate(tiles):
-            fm = self.variance_of_laplacian(tile)
-            img_array.append(fm)
-            print(f"Appending {fm} to array")
+            # calculate the laplacian, save to an array
+            for c, tile in enumerate(tiles):
+                fm = self.variance_of_laplacian(tile)
+                img_array.append(fm)
+                print(f"Appending {fm} to array")
 
-            # Store the average? tile_w into a function global
-            x0, x1 = x_breaks[c], x_breaks[c+1]
-            tile_w = x1 - x0
-            tile_values.append(tile_w)
-        
-        
-        tile_w_avg = sum(tile_values) / len(tile_values) # shouldn't they all be the same?...
-        print(f"Tile average: {tile_w_avg}")
-
-        # interpret array: control logic 
-        # control logic: there has to be an even amount of low thresholds on each side of the image? lets use 2 pointer logic
-
-        left_count = 0
-        right_count = 0
-        right_ptr = len(img_array) - 1
-
-        # for left_ptr in range(len(img_array) // 2):
-        #     if img_array[left_ptr] < IMG_THRESHOLD:
-        #         left_count += 1
-        #     if img_array[right_ptr] < IMG_THRESHOLD:
-        #         right_count += 1
-        #     right_ptr -= 1
+                # Store the average? tile_w into a function global
+                x0, x1 = x_breaks[c], x_breaks[c+1]
+                tile_w = x1 - x0
+                tile_values.append(tile_w)
             
             
-        #iterate through the array from the left and right, stop immediately once you hit a good resolution, that is your length\
+            tile_w_px = sum(tile_values) / len(tile_values) # shouldn't they all be the same?...
+            print(f"Tile average: {tile_w_px}")
 
-        #left one
-        for i in range(len(img_array)):
-            if img_array[i] < IMG_THRESHOLD:
-                #keep going 
-                left_count += 1
+            # interpret array: control logic 
+            # control logic: there has to be an even amount of low thresholds on each side of the image? lets use 2 pointer logic
+
+            left_count = 0
+            right_count = 0
+            
+            #left one
+            for i in range(len(img_array)):
+                if img_array[i] < IMG_THRESHOLD:
+                    #keep going 
+                    left_count += 1
+                else: 
+                    break
+            
+            #right side
+            for i in range(len(img_array), 0, -1):
+                if img_array[i] < IMG_THRESHOLD:
+                    right_count +=1
+                else:
+                    break
+            
+                        
+            print("-------------Image Data-------------")
+            print(f"Length of img_array: {len(img_array)}")
+            print(" ".join(str(x) for x in img_array))
+            
+            # motor movements required logic: 
+            # have to move left by the amount to even out
+            dX = 0
+            
+            # Case 1: Blurs on both sides
+            if (left_count != 0) and (right_count != 0):
+                dX = (left_count - right_count) / 2 # move by half if non zero on the sides 
+                pixels_move = tile_w_px * dX
+                self.jog_distance = pixels_move * MM_TO_PIXEL_RATIO
+                print(f"Move by {self.jog_distance} mm")
+                self.controller.jog_relative_x(self.jog_distance)
+                self.controller._gantry.block_for_jog()
+                break
+                
+            # Case 2: Blurs only on 1 side, want to determine how much distance we want to move     
             else: 
-                break
-        
-        #right side
-        for i in range(len(img_array), 0, -1):
-            if img_array[i] < IMG_THRESHOLD:
-                right_count +=1
-            else:
-                break
-        
-                    
-        print("-------------Image Data-------------")
-        print(f"Length of img_array: {len(img_array)}")
-        print(" ".join(str(x) for x in img_array))
-        
-        # motor movements required logic: 
-        # have to move left by the amount to even out
-        dX = 0
-        
-        
-        # Case 1: Blurs on both sides
-        if (left_count != 0) and (right_count != 0):
-            dX = (left_count - right_count) / 2 # move by half if non zero on the sides 
-            pixels_move = tile_w_avg * dX
-            self.jog_distance = pixels_move * MM_TO_PIXEL_RATIO
-            print(f"Move by {self.jog_distance} mm")
-            # self.controller.jog_relative_x(self.jog_distance)
-            
-        # Case 2: Blurs only on 1 side     
-        else: 
-            dX = left_count - right_count # move by half if non zero on the sides 
-            pixels_move = tile_w_avg * dX
-            self.jog_distance = pixels_move * MM_TO_PIXEL_RATIO
-            print(f"Move by {self.jog_distance} mm")    
-            # self.controller.jog_relative_x(self.jog_distance)
-            
-        
-        
-        
-        # if left_count < right_count:
-        #     # move LEFT
-        #     pixels_move = tile_w_avg * dX
-        #     self.jog_distance = pixels_move * MM_TO_PIXEL_RATIO
-        #     print(f"Move LEFT by {self.jog_distance} mm")
-            
-        #     # self.controller.jog_relative_x(-1 * self.jog_distance)
+                
+                pixels_move = tile_w_px * dX
+                jog_distance = pixels_move * MM_TO_PIXEL_RATIO
+                
+                # Big jump > 50%
+                if abs(jog_distance * 0.5) > IMG_WIDTH_MM:
+                    print(f"Move a large distance.. {jog_distance} mm")    
+                    self.controller.jog_relative_x(jog_distance)
+                    self.controller._gantry.block_for_jog()
+                
+                # Medium jump, 30%
+                elif  abs(jog_distance) * 0.3 > IMG_WIDTH_MM:
+                    print(f"Move a medium distance.. {jog_distance * 0.75} mm")  
+                    self.controller.jog_relative_x(jog_distance * 0.75)
+                    self.controller._gantry.block_for_jog()
+                
+                # At the target, can exit loop
+                else: 
+                    print("We are close enough, no movement needed...")
+                    break
+            counter += 1
 
-        # elif left_count > right_count:
-        #     # move RIGHT
-        #     dX = abs(dX)
-        #     pixels_move = tile_w_avg * dX
-        #     self.jog_distance = pixels_move * MM_TO_PIXEL_RATIO
-        #     print(f"Move RIGHT by {self.jog_distance} mm")
+        
             
-        #     # self.controller.jog_relative_x(self.jog_distance)
-
-        # else:
-        #     print("Already centered")
+                
+        
+    # while(1):
+        #take a first iteration of laplacian
+        
+        # if big: (more than half of len(tiles))
+            # go big jog the entire distance (might overshoot?)
+        # if medium: (3/10 of the way)
+            # go 0.75 of the distance
+        # if small: 
+            # don't do anything (10% of tiles)
+            # get out
+            
+        # watchdog
+        
+        
                 
 if __name__ == "__main__":
     #Gst.init(None)
