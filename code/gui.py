@@ -768,15 +768,14 @@ class App(Gtk.Window):
             right_count = 0
             
             #left one
-            for i in range(len(img_array)):
+            for i in range(len(img_array) -1):
                 if img_array[i] < IMG_THRESHOLD:
-                    #keep going 
                     left_count += 1
                 else: 
                     break
             
             #right side
-            for i in range(len(img_array), 0, -1):
+            for i in range(len(img_array) - 1, 0, -1):
                 if img_array[i] < IMG_THRESHOLD:
                     right_count +=1
                 else:
@@ -788,16 +787,16 @@ class App(Gtk.Window):
             print(" ".join(str(x) for x in img_array))
             
             # motor movements required logic: 
-            # have to move left by the amount to even out
-            dX = 0
+            # have to move left by the amount to even out 
+            dX = left_count - right_count
             
             # Case 1: Blurs on both sides
             if (left_count != 0) and (right_count != 0):
-                dX = (left_count - right_count) / 2 # move by half if non zero on the sides 
+                dX = dX / 2 # move by half if non zero on the sides 
                 pixels_move = tile_w_px * dX
-                self.jog_distance = pixels_move * MM_TO_PIXEL_RATIO
-                print(f"Move by {self.jog_distance} mm")
-                self.controller.jog_relative_x(self.jog_distance)
+                jog_distance = pixels_move * MM_TO_PIXEL_RATIO
+                print(f"Move by {jog_distance} mm")
+                self.controller.jog_relative_x(jog_distance)
                 self.controller._gantry.block_for_jog()
                 break
                 
@@ -808,13 +807,13 @@ class App(Gtk.Window):
                 jog_distance = pixels_move * MM_TO_PIXEL_RATIO
                 
                 # Big jump > 50%
-                if abs(jog_distance * 0.5) > IMG_WIDTH_MM:
-                    print(f"Move a large distance.. {jog_distance} mm")    
-                    self.controller.jog_relative_x(jog_distance)
+                if abs(jog_distance) > IMG_WIDTH_MM  * 0.5:
+                    print(f"Move a large distance.. {jog_distance* 0.75} mm")    
+                    self.controller.jog_relative_x(jog_distance * 0.75)
                     self.controller._gantry.block_for_jog()
                 
                 # Medium jump, 30%
-                elif  abs(jog_distance) * 0.3 > IMG_WIDTH_MM:
+                elif  abs(jog_distance) > IMG_WIDTH_MM * 0.1:
                     print(f"Move a medium distance.. {jog_distance * 0.75} mm")  
                     self.controller.jog_relative_x(jog_distance * 0.75)
                     self.controller._gantry.block_for_jog()
