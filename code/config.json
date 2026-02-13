@@ -5,7 +5,7 @@
       "CROP_W": 0,
       "W_PIXELS_NO_CROP": 3840,
       "H_PIXELS_NO_CROP": 2160,
-      "MAX_DPI": 21500
+      "MAX_DPI": 21150
     },
     "controller": {
       "N_IMAGES_MULTIPLE_DISTANCES": 11,
