@@ -715,8 +715,8 @@ class App(Gtk.Window):
         # take the current cv2 feed
         
         # TEMP
-        IMG_THRESHOLD= 200 # add to config probs 
-        W_PIXELS_NO_CROP=3840
+        IMG_THRESHOLD = 200 # add to config probs 
+        W_PIXELS_NO_CROP = 3840
         MM_TO_PIXEL_RATIO = 5 / W_PIXELS_NO_CROP # assuming ~ 2-3 mm in our field of view when scanning
         
         print("reading image from pipeline...")
@@ -761,12 +761,31 @@ class App(Gtk.Window):
         right_count = 0
         right_ptr = len(img_array) - 1
 
-        for left_ptr in range(len(img_array) // 2):
-            if img_array[left_ptr] < IMG_THRESHOLD:
+        # for left_ptr in range(len(img_array) // 2):
+        #     if img_array[left_ptr] < IMG_THRESHOLD:
+        #         left_count += 1
+        #     if img_array[right_ptr] < IMG_THRESHOLD:
+        #         right_count += 1
+        #     right_ptr -= 1
+            
+            
+        #iterate through the array from the left and right, stop immediately once you hit a good resolution, that is your length\
+
+        #left one
+        for i in range(len(img_array)):
+            if img_array[i] < IMG_THRESHOLD:
+                #keep going 
                 left_count += 1
-            if img_array[right_ptr] < IMG_THRESHOLD:
-                right_count += 1
-            right_ptr -= 1
+            else: 
+                break
+        
+        #right side
+        for i in range(len(img_array), 0, -1):
+            if img_array[i] < IMG_THRESHOLD:
+                right_count +=1
+            else:
+                break
+        
                     
         print("-------------Image Data-------------")
         print(f"Length of img_array: {len(img_array)}")
@@ -774,26 +793,47 @@ class App(Gtk.Window):
         
         # motor movements required logic: 
         # have to move left by the amount to even out
-        dX = left_count + right_count
-        if left_count < right_count:
-            # move LEFT
+        dX = 0
+        
+        
+        # Case 1: Blurs on both sides
+        if (left_count != 0) and (right_count != 0):
+            dX = (left_count - right_count) / 2 # move by half if non zero on the sides 
             pixels_move = tile_w_avg * dX
             self.jog_distance = pixels_move * MM_TO_PIXEL_RATIO
-            print(f"Move LEFT by {self.jog_distance} mm")
-            
-            # self.controller.jog_relative_x(-1 * self.jog_distance)
-
-        elif left_count > right_count:
-            # move RIGHT
-            dX = abs(dX)
-            pixels_move = tile_w_avg * dX
-            self.jog_distance = pixels_move * MM_TO_PIXEL_RATIO
-            print(f"Move RIGHT by {self.jog_distance} mm")
-            
+            print(f"Move by {self.jog_distance} mm")
             # self.controller.jog_relative_x(self.jog_distance)
+            
+        # Case 2: Blurs only on 1 side     
+        else: 
+            dX = left_count - right_count # move by half if non zero on the sides 
+            pixels_move = tile_w_avg * dX
+            self.jog_distance = pixels_move * MM_TO_PIXEL_RATIO
+            print(f"Move by {self.jog_distance} mm")    
+            # self.controller.jog_relative_x(self.jog_distance)
+            
+        
+        
+        
+        # if left_count < right_count:
+        #     # move LEFT
+        #     pixels_move = tile_w_avg * dX
+        #     self.jog_distance = pixels_move * MM_TO_PIXEL_RATIO
+        #     print(f"Move LEFT by {self.jog_distance} mm")
+            
+        #     # self.controller.jog_relative_x(-1 * self.jog_distance)
 
-        else:
-            print("Already centered")
+        # elif left_count > right_count:
+        #     # move RIGHT
+        #     dX = abs(dX)
+        #     pixels_move = tile_w_avg * dX
+        #     self.jog_distance = pixels_move * MM_TO_PIXEL_RATIO
+        #     print(f"Move RIGHT by {self.jog_distance} mm")
+            
+        #     # self.controller.jog_relative_x(self.jog_distance)
+
+        # else:
+        #     print("Already centered")
                 
 if __name__ == "__main__":
     #Gst.init(None)
