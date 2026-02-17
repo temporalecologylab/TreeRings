@@ -232,8 +232,3 @@ if __name__ == "__main__":
     sizes = [0.3]
     tile_path = "C:\\Users\\honey\\OneDrive\\Desktop\\TOSTITCH"
     stitch_multiple_sizes(tile_path, sizes)
-    # tile_path = "C:\\Users\\honey\\Downloads\\BETPOP_WM8_P16_22_55_11_good"
-
-
-
-    # stitch.run("C:\\Users\\chloe\\wolkovich_s24\\TreeRings\\code\\image_stitch_testing\\ashlar\\20per_zoomout_correctdims", "frame_{row:01}_{col:01}_1.jpg", 0.20, 0.78)
