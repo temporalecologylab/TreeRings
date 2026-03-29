@@ -299,17 +299,17 @@ class App(Gtk.Window):
         
         box = dialog.get_content_area()
         
-        self.sample_counter = Gtk.Label(label="Capturing Core: ")
+        self.sample_watchdog_counter = Gtk.Label(label="Capturing Core: ")
         self.progressbar = Gtk.ProgressBar()
         self.images_left_label = Gtk.Label(label="Image 1 of ")
         self.time_remaining_label = Gtk.Label(label="Estimated time remaining: calculating...")
         
-        box.add(self.sample_counter)
+        box.add(self.sample_watchdog_counter)
         box.add(self.progressbar)
         box.add(self.images_left_label)
         box.add(self.time_remaining_label)
         
-        self.sample_counter.show()
+        self.sample_watchdog_counter.show()
         self.progressbar.show()
         self.images_left_label.show()
         self.time_remaining_label.show()
@@ -477,17 +477,17 @@ class App(Gtk.Window):
         
         box = dialog.get_content_area()
         
-        self.sample_counter = Gtk.Label(label="Capturing Sample: ")
+        self.sample_watchdog_counter = Gtk.Label(label="Capturing Sample: ")
         self.progressbar = Gtk.ProgressBar()
         self.images_left_label = Gtk.Label(label="Image 1 of ")
         self.time_remaining_label = Gtk.Label(label="Estimated time remaining: calculating...")
         
-        box.add(self.sample_counter)
+        box.add(self.sample_watchdog_counter)
         box.add(self.progressbar)
         box.add(self.images_left_label)
         box.add(self.time_remaining_label)
         
-        self.sample_counter.show()
+        self.sample_watchdog_counter.show()
         self.progressbar.show()
         self.images_left_label.show()
         self.time_remaining_label.show()
@@ -525,7 +525,7 @@ class App(Gtk.Window):
     def update_progress(self, value):
         if value[0] == True:
             sample_name = value[2]
-            GLib.idle_add(self.sample_counter.set_text, "Capturing Sample: {}".format(sample_name))
+            GLib.idle_add(self.sample_watchdog_counter.set_text, "Capturing Sample: {}".format(sample_name))
             GLib.idle_add(self.images_left_label.set_text, "Image 1 of ")
             GLib.idle_add(self.time_remaining_label.set_text, "Estimated time remaining: calculating...")
             GLib.idle_add(self.progressbar.set_fraction, 0)
@@ -719,11 +719,11 @@ class App(Gtk.Window):
         W_PIXELS_NO_CROP = 3840
         IMG_WIDTH_MM = 5
         MM_TO_PIXEL_RATIO = IMG_WIDTH_MM / W_PIXELS_NO_CROP # assuming ~ 2-3 mm in our field of view when scanning
-        counter = 0
+        watchdog_counter = 0
         MAX_ITER = 5
         
         while(1):
-            if (counter == MAX_ITER):
+            if (watchdog_counter == MAX_ITER):
                 break
             
             print("reading image from pipeline...")
@@ -822,24 +822,9 @@ class App(Gtk.Window):
                 else: 
                     print("We are close enough, no movement needed...")
                     break
-            counter += 1
+            watchdog_counter += 1
 
         
-            
-                
-        
-    # while(1):
-        #take a first iteration of laplacian
-        
-        # if big: (more than half of len(tiles))
-            # go big jog the entire distance (might overshoot?)
-        # if medium: (3/10 of the way)
-            # go 0.75 of the distance
-        # if small: 
-            # don't do anything (10% of tiles)
-            # get out
-            
-        # watchdog
         
         
                 
