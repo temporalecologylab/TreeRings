@@ -31,12 +31,12 @@ $^{2}$Department of Computer Science and Engineering, University of California S
 
 \begin{abstract}  
 
-1.  Studies of tree rings from climatology to ecology have become increasingly important with anthropogenic climate change, with a need for more research across more locations and species. Meeting the increasing demand requires methods to image wood samples rapidly and efficiently, while also producing high quality high resolution images. % Getting rid of open-source as CaptuRING is cheap but GigaPixel is expensive and not open source
+1.  Studies of tree rings from climatology to ecology have become increasingly important with anthropogenic climate change, with a need for research across more locations and species. Meeting the increasing demand requires methods to image samples rapidly and efficiently, while also producing high quality images. % Getting rid of open-source as CaptuRING is cheap but GigaPixel is expensive and not open source
 
-2.  Here we present the Tree Imaging Machine (TIM)---a do-it-yourself fully open scanning tool to digitize tree cookies and cores. TIM takes partially overlapping microscopic images of samples and stitches the individual images together to form a mosaic, which can be zoomed in to visualize features on the scale of 0.01 mm. 
+2.  Here we present the Tree Imaging Machine (TIM)---a do-it-yourself fully open scanning tool to digitize tree cookies and cores. TIM takes partially overlapping microscopic images of samples and stitches them together to form a mosaic, which can be zoomed in to visualize features on the scale of 0.01 mm. 
 We provide all instructions for the open-source hardware, using readily available parts, alongside the related software. % emwAug10 -- check my addition: correct? You could add the links here if you want 
 
-3. With scans of up to 21 140 DPI (0.83 pixels per micron), TIM produces one of the highest resolution images among similar tools for less than \$3 000 USD. Operators can prepare multiple samples to be scanned in a batch, letting the machine work until the queue is finished. Given this batch approach and automatic stitching, TIM provides a major speed advance for high-resolution image capture of tree rings, and can rapidly digitize cores of over 50 cm and complete cookies. % amfJan25 -- Does this speed need to be quantified? Maybe even just an average time per scan from the metadata that was already collected.
+3. With scans of up to 21 140 DPI (0.83 pixels per micron), TIM produces one of the highest resolution images among similar tools for less than \$3 000 USD. Operators can prepare multiple samples and let the machine work until the queue is finished. Given this batch approach and automatic stitching, TIM provides a major speed advance for high-resolution image capture of tree rings, and can rapidly digitize cores of over 50 cm and complete cookies. % amfJan25 -- Does this speed need to be quantified? Maybe even just an average time per scan from the metadata that was already collected. emwREPLY: I think it's fine to just say it's a speed-up 
 
 4. TIM provides a new method to gather high quality tree ring images at larger sizes and dimensions, integrating higher scanning resolution, tree cookie sampling, and batch digitization in a single low-cost package. 
 Designed as completely open-source, we hope TIM will facilitate the widespread sampling of tree rings across diverse ecosystems and reduce barriers for researchers with smaller budgets. 
@@ -95,7 +95,7 @@ To fit on the end-effector plates of the ACRO system, we made an adapter to conn
 The size of the work plane is ultimately up to the size of the ACRO kit that is purchased---allowing for more flexibility.
 Building on top of kits allowed for quick assembly with sound instructions and saved development time. 
 For the camera, we chose a 12MP Raspberry Pi HQ Camera equipped with a SEEED studio microscope lens with adjustable focal length resulting in up to 150x zoom. The focal length was adjusted to make the field of view approximately 3 mm by 5 mm height and width. The camera was connected to the gantry machine using custom, 3D printed, adapters.
-For the computer, we implemented all of the software control, image stitching, and graphical user interface (GUI) to run on an NVIDIA Jetson Orin Nano 8GB (Jetson edge computer), which also connects to the camera via a MIPI cable. % amf28jan2026 The Jetson Orin Nano 8GB is it's complete product name
+For the computer, we implemented all of the software control, image stitching, and graphical user interface (GUI) to run on an NVIDIA Jetson Orin Nano 8GB (Jetson edge computer), which also connects to the camera via a MIPI cable. % amf28jan2026 The Jetson Orin Nano 8GB is it's complete product name emwREPLY: okay, that's fine then!
 
 By choosing this combination, we were able to reduce the weight and cost of the camera significantly. This minimized the design challenges of stabilizing the movement of a heavier DSLR and allowed us to invest more in a powerful computer that can handle intensive image processing. 
 The Jetson is an edge computer which drives a monitor for a GUI, sends commands to the motor controller to move the machine, runs image processing calculations for machine control, and performs calculations to stitch individual images into one mosaic. 
@@ -284,8 +284,8 @@ With the same images, multiple final stitched resolutions can be made.
 \subsection{Scanning Hard-to-Stitch Samples} 
 
 We found some samples were impossible to scan without additional preparation. The most common scenario leading to an incomplete scan was due to regions of the core having few distinguishable SIFT features. 
-Samples often begin to lack features when focusing on lightly-colored sapwood. SIFT features may also lack where there are sanding blemishes or other imperfections on the scanning surface. 
-In such cases, we developed a particle smearing method which add features to the sample, aiding the stitching process. 
+Samples often begin to lack features when focusing on lightly-colored sapwood, but this problem may also occur where there are sanding blemishes or other imperfections on the scanning surface. 
+In such cases, we developed a particle smearing method which adds features to the sample, thus aiding the stitching process. 
 
 \subsubsection{Particle Smearing}
 
@@ -293,11 +293,9 @@ The ideal method for adding features to the sample is to smear small particles w
 Our powder of choice was 600 mesh silicon carbide powder as it is inexpensive, available at pottery supply stores, has reliable grain sizes smaller than the finest sand paper we used, and provides good color contrast with most wood. 
 Additionally, silicon carbide is very hard so it will not be broken into smaller grains when smearing into the surface of the sample. 
 
-%amf28jan2026 -- FLAGGING flagging
-%emw17Jan2026 -- something missing here ... can you check this whole paragraph is as clear as possible and send back to me for a quick review? (Flag this section somehow.)
-No extra tools are needed for this method--a fingertip dipped in the powder is sufficient. T powder shehould be smeared across the sample's sanded surface, smoothing any clumps of powder in the process. 
-When applied correctly, trace amounts of silicon carbide will be embedded in the surface roughness of the sample which can not be seen without microscope magnification. Images of a core before and after powder smearing can be seen in Figure \ref{fig:core_smearing} 
-Most of the silicon carbide can be removed after scanning is complete by blowing compressed air on the sample. 
+No extra tools are needed for this method---a fingertip dipped in the powder is sufficient. The powder should be smeared across the sanded surface of the sample, smoothing any clumps of powder in the process. 
+When applied correctly, trace amounts of silicon carbide will be embedded in the surface roughness of the sample which cannot be seen without microscope magnification. Most of the silicon carbide can be removed after scanning is complete by blowing compressed air on the sample. Images of a core before and after powder smearing can be seen in Figure \ref{fig:core_smearing}. 
+ 
 
 
 
@@ -326,12 +324,12 @@ Most of the silicon carbide can be removed after scanning is complete by blowing
 TIM is capable of producing extremely high resolution scans. We calculated the maximum dots per inch (DPI) at 21 500 of individual images captured from the system using a microscopy slide scale (with 0.01 mm graduations, Figure \ref{fig:dpi_measurements}), and developed a Python tool to replicate this for varied lens focal lengths. When downscaling the final stitch, 
 DPI scales linearly with the downscale percentage defined in the machine parameters. 
 
-Digitizing samples takes significantly longer for cookies than it does for cores (Figure \ref{fig:digitization_time}). This is due to the surface area of cookies requiring more images, as it has a square relationship to sample radius.
-For large cookies, the operator can choose to selectively scan a radius of the cookie instead of the whole surface. A single radius contains a portion of each ring. Scanning complete cookies at maximum DPI is unrealistic as file size limits are quickly encountered with small diameter cookies. 
+Digitizing samples takes significantly longer for cookies than it does for cores (Figure \ref{fig:digitization_time}). This is due to the surface area of cookies requiring more images, as it has a squared relationship to sample radius.
+For large cookies, the operator can choose to selectively scan a radius of the cookie instead of the whole surface (as a single radius contains a portion of each ring) and/or scan at a lower DPI. Scanning complete cookies at maximum DPI is unrealistic as file size limits are quickly encountered with small diameter cookies. 
 
 To fit into the maximum 2.5 GB limits of a TIFF file, the maximum diameter of a cookie scanned at 30\% of maximum resolution is limited to approximately 130 mm. This maximum cookie diameter is significantly smaller than the maximum core sample length. At maximum resolution, the file size limit 
 constrains core samples to approximately 1 500 mm in length (though a larger ACRO frame than shown here would be needed to support this sample length). 
-Samples larger than this limit can still be scanned, but TIM saves them as an uncompressed binary NumPy memory-mapped array file. Currently, NumPy files are not supported by standard image viewers like ImageJ and require custom tools to work with. %emw17Jan2026 -- any chance we can give an (e.g., THIS tool) to the end here? %amf28Jan2026 -- This would be some GUI wrapping NumPy functions which are made to edit the NumPy files. I'm certain this could be done but it doesn't really seem worth it. I imagine in order for it to actually be useful, it would need to offer complete annotation functionality for marking and be user friendly in a way that I wouldn't be able to churn out quickly.
+Samples larger than this limit can still be scanned, but TIM saves them as an uncompressed binary NumPy memory-mapped array file. Currently, NumPy files are not supported by standard image viewers like ImageJ and require custom tools to work with. %emw17Jan2026 -- any chance we can give an (e.g., THIS tool) to the end here? %amf28Jan2026 -- This would be some GUI wrapping NumPy functions which are made to edit the NumPy files. I'm certain this could be done but it doesn't really seem worth it. I imagine in order for it to actually be useful, it would need to offer complete annotation functionality for marking and be user friendly in a way that I wouldn't be able to churn out quickly. emwREPLY: Okay, we skip it then.
 
 \begin{figure}
     \centering
@@ -342,13 +340,13 @@ Samples larger than this limit can still be scanned, but TIM saves them as an un
 \end{figure}
 
 \subsection{Strengths and Opportunities} 
-TIM's design minimizes the barriers to build an affordable, efficient and high-resolution image capture system. TIM does not compromise scan quality and can scan both cookies and cores. We have measured tree ring widths using the digitized samples from TIM using CooRecorder as well as ImageJ \citep{schneider_nih_2012}, but the utility of these images could be extended through new open-data approaches. 
-For example, while most tree ring repositories \citep[e.g.,the International Tree-Ring Data Bank or TreeSource's Tree-Rings Database for Canadian sites][]{grissino-mayer_international_1997,girardin_national_2021} do not store the source images of samples currently, they provide rich metadata, which could be used to link to images stored on other more flexible repositories. 
-Eventually extending these databases to include source images of cores and cookies (and annotating them in bulk), however, would be beneficial to field and potentially provide training data for deep learning models for vessel counting and tree ring boundary identification. 
-Examples of such models exist and have the potential to significantly decrease the time invested in manually identifying tree anatomy \citep{resente_mask_2021,polacek_automation_2023}.
-With more robust identification models, TIM could be extended to run these models while scanning.
-%amf28Jan2026 -- FLAGGING quick review
-%emw17Jan2026 -- check my edits above and I will give this section another quick read before submission. 
+TIM's design minimizes the barriers to build an affordable, efficient and high-resolution image capture system. TIM does not compromise scan quality and can scan both cookies and cores. We have measured tree ring widths using the digitized samples from TIM using CooRecorder as well as ImageJ \citep{schneider_nih_2012}.
+
+The utility of digitized samples produced by TIM could be extended through new open-data approaches. 
+While most tree ring repositories \citep[e.g.,the International Tree-Ring Data Bank or TreeSource's Tree-Rings Database for Canadian sites][]{grissino-mayer_international_1997,girardin_national_2021} do not store the source images of samples currently, they provide rich metadata, which could be used to link to images stored on other more flexible repositories. 
+Eventually extending current tree ring databases to include source images of cores and cookies (and annotating them in bulk), however, would be beneficial to the field. Finding a consistent way to archive images has the added benefit of possibly providing training data for deep learning models for vessel counting and tree ring boundary identification. 
+Examples of such models exist and have the potential to significantly decrease the time invested in manually identifying tree anatomy \citep{resente_mask_2021,polacek_automation_2023}, and TIM could be extended to run these models while scanning (given more robust identification models).
+
 
 In its current state, TIM only provides scanned images and requires users to import them into other tools for additional visual analyses, such as measuring tree-ring widths or counting vessels.
 A useful addition to TIM would be to automatically detect tree-ring widths or other metrics while capturing images using computer vision models. We expect this may be possible as these methods improve in computational efficiency and accuracy. Currently, we found that tree-ring detection by a recent machine learning algorithm  \citep[R-CNN presented by][]{polacek_automation_2023} for a scanned core (23294 x 897 pixels) took 15 minutes on a high-performance cluster (UBC ARC Sockeye) and 3.5 hours on a smaller server (RTX A6000 GPU server). 
