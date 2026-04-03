@@ -572,12 +572,20 @@ class Controller:
 
         # Navigate to the sample's origin
         self._gantry.jog_absolute_xyz(sample.x, sample.y, sample.z)        
-    
+        self._gantry.block_for_jog()
+        
+        # Recenter core
+        self.core_alignment()
+    	
         # Capture top half of the core
         self.capture_top_section(sample, progress_callback, stop_capture)
 
         # Navigate back to the sample's origin'
-        self._gantry.jog_absolute_xyz(sample.x, sample.y, sample.z)        
+        self._gantry.jog_absolute_xyz(sample.x, sample.y, sample.z)
+        self._gantry.block_for_jog()        
+        
+        # Recenter core
+        self.core_alignment()
 
         # Capture the bottom half of the core
         self.capture_bottom_section(sample, progress_callback, stop_capture)
