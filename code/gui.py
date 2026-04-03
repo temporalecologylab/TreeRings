@@ -14,6 +14,12 @@ import focus
 import math
 import serial as ser
 
+# temp
+import numpy as np
+import cv2
+import os
+import time
+
 log.basicConfig(format='%(process)d-%(levelname)s-%(message)s', level=log.INFO)
 
 class App(Gtk.Window):
@@ -183,6 +189,7 @@ class App(Gtk.Window):
         self.create_add_sample_dialog_button(box_buttons1)
         self.create_capture_all_samples_button(box_buttons1)
         self.create_view_added_sample_button(box_buttons1)
+        self.create_core_alignment_button(box_buttons1)
 
     def create_jogging_controls(self, grid):
         frame_jogging = Gtk.Frame(label="Jogging Controls")
@@ -292,17 +299,17 @@ class App(Gtk.Window):
         
         box = dialog.get_content_area()
         
-        self.sample_counter = Gtk.Label(label="Capturing Core: ")
+        self.sample_watchdog_counter = Gtk.Label(label="Capturing Core: ")
         self.progressbar = Gtk.ProgressBar()
         self.images_left_label = Gtk.Label(label="Image 1 of ")
         self.time_remaining_label = Gtk.Label(label="Estimated time remaining: calculating...")
         
-        box.add(self.sample_counter)
+        box.add(self.sample_watchdog_counter)
         box.add(self.progressbar)
         box.add(self.images_left_label)
         box.add(self.time_remaining_label)
         
-        self.sample_counter.show()
+        self.sample_watchdog_counter.show()
         self.progressbar.show()
         self.images_left_label.show()
         self.time_remaining_label.show()
@@ -402,6 +409,12 @@ class App(Gtk.Window):
         radio_button_fast = Gtk.RadioButton.new_with_label_from_widget(self.jog_speed, "Fast [f]")
         radio_button_fast.connect("toggled", self.cb_speed_switch, 2)
         arrow_grid.attach(radio_button_fast, 0, 2, 1, 1)
+
+    def create_core_alignment_button(self, box):
+       button_core_alignment = Gtk.Button(label="Core Alignment Focus")
+       # button_capture_all_samples.connect("clicked", self.capture_all_samples)
+       button_core_alignment.connect("clicked", self.cb_core_alignment)
+       box.pack_start(button_core_alignment, True, True, 0)
         
     def cb_speed_switch(self, button, speed):
         if button.get_active():
@@ -464,17 +477,17 @@ class App(Gtk.Window):
         
         box = dialog.get_content_area()
         
-        self.sample_counter = Gtk.Label(label="Capturing Sample: ")
+        self.sample_watchdog_counter = Gtk.Label(label="Capturing Sample: ")
         self.progressbar = Gtk.ProgressBar()
         self.images_left_label = Gtk.Label(label="Image 1 of ")
         self.time_remaining_label = Gtk.Label(label="Estimated time remaining: calculating...")
         
-        box.add(self.sample_counter)
+        box.add(self.sample_watchdog_counter)
         box.add(self.progressbar)
         box.add(self.images_left_label)
         box.add(self.time_remaining_label)
         
-        self.sample_counter.show()
+        self.sample_watchdog_counter.show()
         self.progressbar.show()
         self.images_left_label.show()
         self.time_remaining_label.show()
@@ -512,7 +525,7 @@ class App(Gtk.Window):
     def update_progress(self, value):
         if value[0] == True:
             sample_name = value[2]
-            GLib.idle_add(self.sample_counter.set_text, "Capturing Sample: {}".format(sample_name))
+            GLib.idle_add(self.sample_watchdog_counter.set_text, "Capturing Sample: {}".format(sample_name))
             GLib.idle_add(self.images_left_label.set_text, "Image 1 of ")
             GLib.idle_add(self.time_remaining_label.set_text, "Estimated time remaining: calculating...")
             GLib.idle_add(self.progressbar.set_fraction, 0)
@@ -668,6 +681,153 @@ class App(Gtk.Window):
         self.zoom_combo.set_active(0)
         log.info("Update Image Width: {} mm".format(width))        
         
+        
+    # Core Alignment Methods Testing
+    
+    
+    def variance_of_laplacian(self, image):
+        """Compute the Laplacian of the image and return the focus measure."""
+        return cv2.Laplacian(image, cv2.CV_64F).var()
+
+    def center_band_grid(self, image, n_col, band_height_frac=0.2):
+        """
+        Create tiles that intersect the horizontal midpoint of the image.
+        Each tile spans a portion of the width (n_col divisions)
+        and covers a horizontal band centered vertically.
+        """
+        h, w = image.shape[:2]
+        band_half = int((h * band_height_frac) / 2)
+        cy = h // 2
+
+        y_start = max(cy - band_half, 0)
+        y_end   = min(cy + band_half, h)
+
+        x_breaks = np.linspace(0, w, n_col + 1, dtype=int)
+        tiles = []
+        for c in range(n_col):
+            x0, x1 = x_breaks[c], x_breaks[c+1]
+            tile = image[y_start:y_end, x0:x1]
+            tiles.append(tile)
+
+        return tiles, (y_start, y_end), x_breaks
+
+    def cb_core_alignment(self, widget):
+        # take the current cv2 feed
+        
+        # TEMP
+        IMG_THRESHOLD = 200 # add to config probs 
+        W_PIXELS_NO_CROP = 3840
+        IMG_WIDTH_MM = 5
+        MM_TO_PIXEL_RATIO = IMG_WIDTH_MM / W_PIXELS_NO_CROP # assuming ~ 2-3 mm in our field of view when scanning
+        watchdog_counter = 0
+        MAX_ITER = 5
+        
+        while(1):
+            if (watchdog_counter == MAX_ITER):
+                break
+            
+            print("reading image from pipeline...")
+            temp_file = "./temp_image.tiff"
+            img_array = []
+            self.controller.camera.save_frame(temp_file)    #CHANGE THIS
+            print("successfully saved frame from pipeline...")
+        
+            
+            time.sleep(0.15)
+            image = cv2.imread(temp_file, cv2.IMREAD_GRAYSCALE)
+            os.remove(temp_file)
+            
+            # based on the image, create grid
+            tiles, (y_start, y_end), x_breaks = self.center_band_grid(
+                image, n_col=10, band_height_frac=0.2
+            )
+            
+            tile_w = 0 # store into a function global
+            tile_w_px = 0
+            tile_values = []
+
+            # calculate the laplacian, save to an array
+            for c, tile in enumerate(tiles):
+                fm = self.variance_of_laplacian(tile)
+                img_array.append(fm)
+                print(f"Appending {fm} to array")
+
+                # Store the average? tile_w into a function global
+                x0, x1 = x_breaks[c], x_breaks[c+1]
+                tile_w = x1 - x0
+                tile_values.append(tile_w)
+            
+            
+            tile_w_px = sum(tile_values) / len(tile_values) # shouldn't they all be the same?...
+            print(f"Tile average: {tile_w_px}")
+
+            # interpret array: control logic 
+            # control logic: there has to be an even amount of low thresholds on each side of the image? lets use 2 pointer logic
+
+            left_count = 0
+            right_count = 0
+            
+            #left one
+            for i in range(len(img_array) -1):
+                if img_array[i] < IMG_THRESHOLD:
+                    left_count += 1
+                else: 
+                    break
+            
+            #right side
+            for i in range(len(img_array) - 1, 0, -1):
+                if img_array[i] < IMG_THRESHOLD:
+                    right_count +=1
+                else:
+                    break
+            
+                        
+            print("-------------Image Data-------------")
+            print(f"Length of img_array: {len(img_array)}")
+            print(" ".join(str(x) for x in img_array))
+            
+            # motor movements required logic: 
+            # have to move left by the amount to even out 
+            dX = left_count - right_count
+            
+            # Case 1: Blurs on both sides
+            if (left_count != 0) and (right_count != 0):
+                dX = dX / 2 # move by half if non zero on the sides 
+                pixels_move = tile_w_px * dX
+                jog_distance = pixels_move * MM_TO_PIXEL_RATIO
+                print(f"Move by {jog_distance} mm")
+                self.controller.jog_relative_x(jog_distance)
+                self.controller._gantry.block_for_jog()
+                break
+                
+            # Case 2: Blurs only on 1 side, want to determine how much distance we want to move     
+            else: 
+                
+                pixels_move = tile_w_px * dX
+                jog_distance = pixels_move * MM_TO_PIXEL_RATIO
+                
+                # Big jump > 50%
+                if abs(jog_distance) > IMG_WIDTH_MM  * 0.5:
+                    print(f"Move a large distance.. {jog_distance* 0.75} mm")    
+                    self.controller.jog_relative_x(jog_distance * 0.75)
+                    self.controller._gantry.block_for_jog()
+                
+                # Medium jump, 30%
+                elif  abs(jog_distance) > IMG_WIDTH_MM * 0.1:
+                    print(f"Move a medium distance.. {jog_distance * 0.75} mm")  
+                    self.controller.jog_relative_x(jog_distance * 0.75)
+                    self.controller._gantry.block_for_jog()
+                
+                # At the target, can exit loop
+                else: 
+                    print("We are close enough, no movement needed...")
+                    break
+            watchdog_counter += 1
+
+        
+        
+        
+                
 if __name__ == "__main__":
     #Gst.init(None)
     app = App()

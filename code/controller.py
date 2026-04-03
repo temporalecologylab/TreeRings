@@ -26,6 +26,7 @@ class Controller:
             g (gantry.Gantry): Gantry instance to interface with the GRBL controller.
             c (camera.Camera): Camera instance to interface with the GStreamer pipeline and camera.
             f (focus.Focus): Focus instance to capture in focus images.
+            a (alignment.Alignment): Alignment instance to ensure core alignmennt 
         """
         #Settings for capturing images from multiple distances
         self.config = utils.load_config()
@@ -216,6 +217,108 @@ class Controller:
         print(f"\nBest focus at z={best_z:.3f} mm, score={best_score:.2f}")
         return best_z, best_score
 
+    def core_alignment(self, max_iter=5):
+        """
+        Core Alignment method to offset the camera drift during sampling process, aligning camera back with sample. 
+        
+        """        
+        watchdog_counter = 0
+        self.mm_to_pixel_ratio = self.config["camera"]["IMG_WIDTH_MM"] / self.config["camera"]["W_PIXELS_NO_CROP"]
+
+        while(watchdog_counter != max_iter):
+            print("reading image from pipeline...")
+            temp_file = "./temp_image.tiff"
+            img_array = []
+            self.camera.save_frame(temp_file) 
+            print("successfully saved frame from pipeline...")
+        
+            
+            time.sleep(0.15)
+            image = cv2.imread(temp_file, cv2.IMREAD_GRAYSCALE)
+            os.remove(temp_file)
+            
+            # based on the image, create grid
+            tiles, (y_start, y_end), x_breaks = self.center_band_grid(
+                image, n_col=10, band_height_frac=0.2
+            )
+            
+            tile_w = 0
+            tile_w_px = 0
+            tile_values = []
+
+            # calculate the laplacian, save to an array
+            for c, tile in enumerate(tiles):
+                fm = self.variance_of_laplacian(tile)
+                img_array.append(fm)
+                print(f"Appending {fm} to array")
+
+                x0, x1 = x_breaks[c], x_breaks[c+1]
+                tile_w = x1 - x0
+                tile_values.append(tile_w)
+            
+            
+            tile_w_px = sum(tile_values) / len(tile_values) # shouldn't they all be the same?...
+            print(f"Tile average: {tile_w_px}")
+
+            # interpret array: control logic 
+            left_count = 0
+            right_count = 0
+            
+            for i in range(len(img_array) -1):
+                if img_array[i] < self.config["camera"]["CORE_ALIGNMENT_THRESHOLD"]:
+                    left_count += 1
+                else: 
+                    break
+            
+            for i in range(len(img_array) - 1, 0, -1):
+                if img_array[i] < self.config["camera"]["CORE_ALIGNMENT_THRESHOLD"]:
+                    right_count +=1
+                else:
+                    break
+            
+                        
+            print("-------------Image Data-------------")
+            print(f"Length of img_array: {len(img_array)}")
+            print(" ".join(str(x) for x in img_array))
+            
+            # motor movements required logic: 
+            dX = left_count - right_count
+            
+            # Case 1: Blurs on both sides
+            if (left_count != 0) and (right_count != 0):
+                dX = dX / 2 # move by half if non zero on the sides 
+                pixels_move = tile_w_px * dX
+                jog_distance = pixels_move * self.mm_to_pixel_ratio
+                print(f"Move by {jog_distance} mm")
+                self.jog_relative_x(jog_distance)
+                self._gantry.block_for_jog()
+                break
+                
+            # Case 2: Blurs only on 1 side, want to determine how much distance we want to move     
+            else: 
+                
+                pixels_move = tile_w_px * dX
+                jog_distance = pixels_move * self.mm_to_pixel_ratio
+                
+                # Big jump > 50%
+                if abs(jog_distance) > self.config["camera"]["IMG_WIDTH_MM"]  * 0.5:
+                    print(f"Move a large distance.. {jog_distance* 0.75} mm")    
+                    self.jog_relative_x(jog_distance * 0.75)
+                    self._gantry.block_for_jog()
+                
+                # Medium jump, 30%
+                elif  abs(jog_distance) > self.config["camera"]["IMG_WIDTH_MM"] * 0.1:
+                    print(f"Move a medium distance.. {jog_distance * 0.75} mm")  
+                    self.jog_relative_x(jog_distance * 0.75)
+                    self._gantry.block_for_jog()
+                
+                # At the target, can exit loop
+                else: 
+                    print("We are close enough, no movement needed...")
+                    break
+            watchdog_counter += 1
+        return 0
+    
     def capture_core_bottom(self, sample: sample.Sample, progress_callback:Callable, stop_capture: Event):
         self.set_directory(sample.directory)
         start_time = time.time()
@@ -469,12 +572,20 @@ class Controller:
 
         # Navigate to the sample's origin
         self._gantry.jog_absolute_xyz(sample.x, sample.y, sample.z)        
-    
+        self._gantry.block_for_jog()
+        
+        # Recenter core
+        self.core_alignment()
+    	
         # Capture top half of the core
         self.capture_top_section(sample, progress_callback, stop_capture)
 
         # Navigate back to the sample's origin'
-        self._gantry.jog_absolute_xyz(sample.x, sample.y, sample.z)        
+        self._gantry.jog_absolute_xyz(sample.x, sample.y, sample.z)
+        self._gantry.block_for_jog()        
+        
+        # Recenter core
+        self.core_alignment()
 
         # Capture the bottom half of the core
         self.capture_bottom_section(sample, progress_callback, stop_capture)
@@ -962,6 +1073,34 @@ class Controller:
         self.camera.save_frame(name)
         log.info("Saving {}".format(name))
         return name
+
+    #### ALIGNMENT UTILITY FUNCTIONS #### 
+    
+    def variance_of_laplacian(self, image):
+        """Compute the Laplacian of the image and return the focus measure."""
+        return cv2.Laplacian(image, cv2.CV_64F).var()
+
+    def center_band_grid(self, image, n_col, band_height_frac=0.2):
+        """
+        Create tiles that intersect the horizontal midpoint of the image.
+        Each tile spans a portion of the width (n_col divisions)
+        and covers a horizontal band centered vertically.
+        """
+        h, w = image.shape[:2]
+        band_half = int((h * band_height_frac) / 2)
+        cy = h // 2
+
+        y_start = max(cy - band_half, 0)
+        y_end   = min(cy + band_half, h)
+
+        x_breaks = np.linspace(0, w, n_col + 1, dtype=int)
+        tiles = []
+        for c in range(n_col):
+            x0, x1 = x_breaks[c], x_breaks[c+1]
+            tile = image[y_start:y_end, x0:x1]
+            tiles.append(tile)
+
+        return tiles, (y_start, y_end), x_breaks
     
     #### SAMPLE METHODS ####
 
