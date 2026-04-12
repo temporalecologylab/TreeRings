@@ -1,3 +1,6 @@
+# controller.py is supposed to act as a machine 'controller' to interact with the machine
+# This stores the majority of the logic to capture scans, move the gantry, etc.
+
 import gantry
 import focus
 import sample
@@ -89,6 +92,7 @@ class Controller:
         """Compute Laplacian variance (higher = sharper)."""
         return cv2.Laplacian(image, cv2.CV_64F).var()
 
+    # generated with ChatGPT-4.0
     def roi_center(self, image, frac=0.2):
         """Extract central region of image."""
         h, w = image.shape[:2]
@@ -96,7 +100,7 @@ class Controller:
         cx, cy = w // 2, h // 2
         return image[cy - dh: cy + dh, cx - dw: cx + dw]
 
-
+    # generated with ChatGPT-4.0
     def roi_top(self, image, frac=0.2):
         """Extract top central region of the image."""
         h, w = image.shape[:2]
@@ -105,7 +109,7 @@ class Controller:
         cx = w // 2
         return image[0:dh, cx - dw: cx + dw]
 
-
+    # generated with ChatGPT-4.0
     def roi_bottom(self, image, frac=0.2):
         """Extract bottom central region of the image."""
         h, w = image.shape[:2]
@@ -299,17 +303,17 @@ class Controller:
                 
                 pixels_move = tile_w_px * dX
                 jog_distance = pixels_move * self.mm_to_pixel_ratio
-                
+                distance_damping = 0.75
                 # Big jump > 50%
                 if abs(jog_distance) > self.config["camera"]["IMG_WIDTH_MM"]  * 0.5:
-                    print(f"Move a large distance.. {jog_distance* 0.75} mm")    
-                    self.jog_relative_x(jog_distance * 0.75)
+                    print(f"Move a large distance.. {jog_distance* distance_damping} mm")    
+                    self.jog_relative_x(jog_distance * distance_damping)
                     self._gantry.block_for_jog()
                 
                 # Medium jump, 30%
                 elif  abs(jog_distance) > self.config["camera"]["IMG_WIDTH_MM"] * 0.1:
-                    print(f"Move a medium distance.. {jog_distance * 0.75} mm")  
-                    self.jog_relative_x(jog_distance * 0.75)
+                    print(f"Move a medium distance.. {jog_distance * distance_damping} mm")  
+                    self.jog_relative_x(jog_distance * distance_damping)
                     self._gantry.block_for_jog()
                 
                 # At the target, can exit loop
@@ -363,115 +367,6 @@ class Controller:
         ##
         ## Make this a method
         sample.rows = img_num
-        sample.cols = 1
-        end_time = time.time()
-        sample.set_end_time_imaging(end_time)
-        sample.to_json()
-
-    def capture_core_middle(self, sample: sample.Sample, progress_callback:Callable, stop_capture: Event):
-        self.set_directory(sample.directory)
-        self._gantry.set_acceleration(fast=False)
-        start_time = time.time()
-        fake_image_count = 100
-
-        sample.set_start_time_imaging(start_time)
-
-        self.set_feed_rate(1)
-        img_num_top = 0
-        img_num_bot = 0
-        
-        # jogging to the sample origin between the two edges of the core
-        self._gantry.jog_absolute_xyz(sample.x, sample.y, sample.z)
-        self._gantry.block_for_jog()
-        
-        coordinates_top = []
-        coordinates_bot = []
-        stop = False
-        # Capture images starting in the middle of the core and move upwards
-        while True and not stop_capture.is_set() and not stop:
-            
-            if img_num_top != 0:
-                self._gantry.jog_relative_y(sample.y_step_size)
-                self._gantry.block_for_jog()
-                time.sleep(0.25) # allow vibrations to settle
-
-            # Autofocus every other image. Test autofocusing every three images for the heck of it
-            if img_num_top % 2 == 0:
-                start_stack = time.time()
-                self.autofocus()
-
-            # Targets are XYZ coordinates to jog to to capture an image.
-            coordinates_top.append(self._gantry.get_xyz())
-
-            file_location = f"{sample.directory}/frame_{img_num_top}_{0}.tiff"
-            self.camera.save_frame(file_location)
-
-            img_num_top += 1
-
-            elapsed_time = time.time() - start_stack
-
-            if img_num_top % 2 == 0:
-                progress_callback((elapsed_time, img_num_top, fake_image_count))
-
-            if self.get_focus_metric("bot") < self.focus_threshold:
-                log.info("Focus metric low, attempting to refocus with larger searching range.")
-                self.autofocus(2) # increase the range if we didn't find a good focus. But stop if we never find a good focus 
-                
-                if self.get_focus_metric("bot") < self.focus_threshold:
-                    log.info("Top of core detected. Moving to middle position to capture bottom half of core.")
-                    stop = True
-                else:
-                    file_location = f"{sample.directory}/frame_{img_num_bot}_{0}.tiff"
-                    self.camera.save_frame(file_location)
-
-        # Repeat the above procedure starting from the middle of the core but going in the opposite direction
-        # jogging to the sample origin between the two edges of the core
-        self._gantry.jog_absolute_xyz(sample.x, sample.y, sample.z)
-        self._gantry.block_for_jog()
-
-        stop = False
-        while True and not stop_capture.is_set() and not stop:
-            # Autofocus every other image. Test autofocusing every three images for the heck of it
-            if img_num_bot % 2 == 0:
-                start_stack = time.time()
-                self.autofocus()
-            
-            # Don't retake an image of the first position
-            self._gantry.jog_relative_y(-1 * sample.y_step_size)
-            self._gantry.block_for_jog()
-            time.sleep(0.25) # allow vibrations to settle
-            
-            # Targets are XYZ coordinates to jog to to capture an image.
-            coordinates_bot.append(self._gantry.get_xyz())
-
-            file_location = f"{sample.directory}/frame_{img_num_bot}_{0}.tiff"
-            self.camera.save_frame(file_location)
-
-            # Not sure if this is going to be good enough to get the columns correct
-            img_num_bot -= 1
-
-            elapsed_time = time.time() - start_stack
-
-            if img_num_bot % 2 == 0:
-                progress_callback((elapsed_time, img_num_top + abs(img_num_bot), fake_image_count))
-
-            if self.get_focus_metric("top") < self.focus_threshold:
-                log.info("Focus metric low, attempting to refocus with larger searching range.")
-                self.autofocus(2) # increase the range if we didn't find a good focus. But stop if we never find a good focus 
-
-                # If you somehow get a good focus score, save it and continue
-                if self.get_focus_metric("top") < self.focus_threshold:
-                    log.info("Bottom of core detected due to low focus metric. Capture complete.")
-                    stop = True
-                else:
-                    file_location = f"{sample.directory}/frame_{img_num_bot}_{0}.tiff"
-                    self.camera.save_frame(file_location)
-
-        coordinates_top.extend(coordinates_bot)
-        sample.coordinates.append(coordinates_top)
-
-        ## Make this a method
-        sample.rows = img_num_top + abs(img_num_bot)
         sample.cols = 1
         end_time = time.time()
         sample.set_end_time_imaging(end_time)
@@ -722,6 +617,7 @@ class Controller:
     def capture_grid_photos(self, sample: sample.Sample, focus_queue: queue.Queue, pid_queue: queue.Queue, pid_lock, progress_callback: Callable, stop_capture: Event):
         """Command to traverse the sample and capture an image at each location. 
 
+        Not updated to use new autofocus method... 
         Args:
             sample(sample.Sample): Sample object which contains all the relevant sample information.
             focus_queue (queue.Queue): Queue to have images added to for the focus thread to parse which is the most in focus.
@@ -1080,6 +976,7 @@ class Controller:
         """Compute the Laplacian of the image and return the focus measure."""
         return cv2.Laplacian(image, cv2.CV_64F).var()
 
+    # Generated with ChatGPT-4.0
     def center_band_grid(self, image, n_col, band_height_frac=0.2):
         """
         Create tiles that intersect the horizontal midpoint of the image.

@@ -1,3 +1,5 @@
+# Edits were made to an open source package, Stitch2D, for memory efficiency
+
 """Reads and helps place a single image from a 2D grid"""
 import logging
 import os

@@ -1,3 +1,6 @@
+# Scale bar to overlay on stitched images, generated from the DPI of the image 
+# Generated primarily with ChatGPT-4.0 
+
 import cv2
 import numpy as np
 import os 

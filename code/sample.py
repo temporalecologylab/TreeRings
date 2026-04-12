@@ -1,3 +1,5 @@
+# class description to abstract the storage of sample information necessary for running the robot 
+
 import cv2
 import time
 import numpy as np

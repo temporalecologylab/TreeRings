@@ -1,3 +1,8 @@
+# GUI was originally written in TK but was converted to Gtk using ChatGPT-4.0
+# Similar coding patterns were followed when adding new buttons, changing layouts, etc.
+# This is the one file that is commonly ran to interact with the robot 
+# Often ran using in terminal `python gui.py`
+
 import gi
 gi.require_version('Gtk', '3.0')
 gi.require_version('Gst', '1.0')

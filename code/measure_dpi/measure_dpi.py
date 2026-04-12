@@ -1,3 +1,6 @@
+# Tool used to calculate DPI from a precision microscope slide ruler and clicking graduations 
+# Generated primarily with ChatGPT-4.0
+
 import matplotlib.pyplot as plt
 import cv2
 import math

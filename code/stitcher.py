@@ -1,3 +1,5 @@
+# Abstraction of the function which interact with the edited Stitch2D package
+
 import tile as tile_memmap
 import mosaic as mosaic_memmap
 import rasterio
