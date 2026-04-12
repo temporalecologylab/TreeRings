@@ -295,9 +295,6 @@ Additionally, silicon carbide is very hard so it will not be broken into smaller
 
 No extra tools are needed for this method---a fingertip dipped in the powder is sufficient. The powder should be smeared across the sanded surface of the sample, smoothing any clumps of powder in the process. 
 When applied correctly, trace amounts of silicon carbide will be embedded in the surface roughness of the sample which cannot be seen without microscope magnification. Most of the silicon carbide can be removed after scanning is complete by blowing compressed air on the sample. Images of a core before and after powder smearing can be seen in Figure \ref{fig:core_smearing}. 
- 
-
-
 
 \begin{figure}
   \centering
@@ -317,6 +314,12 @@ When applied correctly, trace amounts of silicon carbide will be embedded in the
   \label{fig:core_smearing}
 \end{figure}
  
+\subsubsection{LLM Statement}
+We wrote all the initial code for our first fully functioning prototype version of TIM, but used ChatGPT-4.0 to generate some
+code in improving several aspects. Code was generated to convert code to a new GUI package when we faced package compatibility constraints. 
+Additionally, ChatGPT-4.0 helped quickly iterate on the tools used to manually calculate DPI using a microscope slide ruler and annotate images with guiding lines when defining ring boundaries. 
+Other small snippets of code were generated to select pixels in specific regions of images. All code that was generated was reviewed for functionality and correctness before codebase integration and is noted in the code with comments.
+
 \section{Results \& Discussion} 
 %emw9Mar: I wondered about this being Results & Discussion ... would MEE be okay with that? It would work better for the paper I think. What do the guidelines say on formatting for articles? 
 % MEE's guidelines have a distinct Results section from Discussion although maybe they're flexible on this? Conclusion is optional for MEE
