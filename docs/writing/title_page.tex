@@ -1,0 +1,39 @@
+% !TeX root = ./title_page.tex
+\documentclass[a4paper,12pt]{article}
+
+% Packages
+\usepackage[utf8]{inputenc}     
+\usepackage{amsmath, amssymb} 
+\usepackage{graphicx}          
+\usepackage{geometry}           
+\usepackage{natbib}   
+\bibliographystyle{besjournals}
+
+\usepackage{hyperref}          
+\usepackage{subcaption}     
+\usepackage{multirow}
+\usepackage{float}
+
+% Page layout
+\geometry{margin=1in}          
+
+% Title section
+\title{TIM: Tree Imaging Machine for high resolution rapid digital images of tree cores and cookies}
+\author{Adam Fong,$^{1}$ Chloe Curry,$^{1}$ Walden Chan,$^{1}$ Yue Zhang$^{1, 2}$ and E.M. Wolkovich$^{1}$} %emw14Apr2025: You should ask Chloe and Sandy who they want their names displayed (middle initial etc.)
+\date{\today}
+
+\begin{document}
+
+\maketitle
+
+\noindent $^{1}$Forest and Conservation Sciences, University of British Columbia, Vancouver, BC, Canada\\
+$^{2}$Department of Computer Science and Engineering, University of California San Diego, La Jolla, CA, USA\\ 
+
+%vvdm24Apr: More general comment: I think it would be helpful to further justify (from an ecological perspective) why high-resolution scans are necessary? Not only to better distinguish the rings, but also for example to differentiate early wood and late wood... or something else (I'm not an expert)? 
+\section{Acknowledgments} %emwAug10 -- also thank Victor added 
+The authors thank Deirdre Loughnan, Hoai Huong Nguyen Phan, Frederik Baumgarten and Victor Van der Meersch for conversations, ideas and review to help bring this project to fruition. Additionally, we thank Xiaomao Wang and Christophe Rouleau-Desrochers for their help and patience in operating TIM during development. 
+
+\section{Author Contributions}
+EMW and AF conceived the ideas. AF, CC, WC wrote the software. AF reviewed LLM generated code. AF designed and assembled the hardware. YZ applied the deep learning models to the images. EMW and AF led the writing of the manuscript. All authors contributed critically to the drafts and gave final approval for publication.
+
+\end{document}

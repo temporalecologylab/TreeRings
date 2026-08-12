@@ -1,4 +1,4 @@
-\begin{thebibliography}{25}
+\begin{thebibliography}{27}
 \providecommand{\natexlab}[1]{#1}
 
 \bibitem[{Buechling \emph{et~al.}(2017)Buechling, Martin \&
@@ -23,7 +23,7 @@ Fritts, H.C. (1971) Dendroclimatology and dendroecology. \emph{Quaternary
   Colón, Sangüesa-Barreda, García-Cervigón, López-Molina,
   Hernández-Alonso, Rozas, Olano \&
   Alonso-Gómez}]{garcia-hidalgo_capturing_2022}
-García-Hidalgo, M., García-Pedrero, A., Colón, D., Sangüesa-Barreda, G.,
+García-Hidalgo, M., García-Pedrero, �., Colón, D., Sangüesa-Barreda, G.,
   García-Cervigón, A.I., López-Molina, J., Hernández-Alonso, H., Rozas, V.,
   Olano, J.M. \& Alonso-Gómez, V. (2022) {CaptuRING}: {A} do-it-yourself tool
   for wood sample digitization. \emph{Methods in Ecology and Evolution}
@@ -52,6 +52,12 @@ Grissino-Mayer, H.D. \& Fritts, H.C. (1997) The {International} {Tree}-{Ring}
   community. \emph{The Holocene} \textbf{7}, 235--238, publisher: SAGE
   Publications Ltd.
 
+\bibitem[{Gu \emph{et~al.}(2015)Gu, Wu, Hu, Hao \& Guan}]{gu_region_2015}
+Gu, C.C., Wu, K.J., Hu, J., Hao, C. \& Guan, X.P. (2015) Region sampling for
+  robust and rapid autofocus in microscope. \emph{Microscopy Research and
+  Technique} \textbf{78}, 382--390, \_eprint:
+  https://analyticalsciencejournals.onlinelibrary.wiley.com/doi/pdf/10.1002/jemt.22484.
+
 \bibitem[{Guay \emph{et~al.}(1992)Guay, Gagnon \& Morin}]{guay_new_1992}
 Guay, R., Gagnon, R. \& Morin, H. (1992) A new automatic and interactive tree
   ring measurement system based on a line scan camera. \emph{The Forestry
@@ -78,20 +84,19 @@ Mann, M.E., Bradley, R.S. \& Hughes, M.K. (1999) Northern hemisphere
   limitations. \emph{Geophysical Research Letters} \textbf{26}, 759--762,
   \_eprint: https://onlinelibrary.wiley.com/doi/pdf/10.1029/1999GL900070.
 
+\bibitem[{Mansur(2022)}]{mansur_stitch2d_2022}
+Mansur, A. (2022) {Stitch2D}.
+
 \bibitem[{McMillin(1982)}]{mcmillin_application_1982}
 McMillin, C.W. (1982) Application of {Automatic} {Image} {Analysis} to
   {WoodScience}. \emph{Wood Science} \textbf{14}, 97--105.
 
-\bibitem[{Mir \emph{et~al.}(2014)Mir, Xu \& Van~Beek}]{sampat_extensive_2014}
-Mir, H., Xu, P. \& Van~Beek, P. (2014) An extensive empirical evaluation of
-  focus measures for digital photography. p. 90230I, San Francisco, California,
-  USA.
-
-\bibitem[{Mohammadi \emph{et~al.}(2024)Mohammadi, Shabani \&
-  Zarei}]{mohammadi_fast_2024}
-Mohammadi, F.S., Shabani, H. \& Zarei, M. (2024) Fast and robust feature-based
-  stitching algorithm for microscopic images. \emph{Scientific Reports}
-  \textbf{14}, 13304, publisher: Nature Publishing Group.
+\bibitem[{Mohammadi \emph{et~al.}(2024)Mohammadi, Mohammadi, Mojarad~Adi,
+  Mirkarimi \& Shabani}]{mohammadi_comparative_2024}
+Mohammadi, F.S., Mohammadi, S.E., Mojarad~Adi, P., Mirkarimi, S.M.A. \&
+  Shabani, H. (2024) A comparative analysis of pairwise image stitching
+  techniques for microscopy images. \emph{Scientific Reports} \textbf{14},
+  9215, publisher: Nature Publishing Group.
 
 \bibitem[{Muhlich \emph{et~al.}(2022)Muhlich, Chen, Yapp, Russell, Santagata \&
   Sorger}]{muhlich_stitching_2022}
@@ -100,10 +105,12 @@ Muhlich, J.L., Chen, Y.A., Yapp, C., Russell, D., Santagata, S. \& Sorger, P.K.
   tissues and tumors using {ASHLAR}. \emph{Bioinformatics (Oxford, England)}
   \textbf{38}, 4613--4621.
 
-\bibitem[{O'Dwyer(2000)}]{odwyer_summary_2000}
-O'Dwyer, A. (2000) A {Summary} of {PI} and {PID} {Controller} {Tuning} {Rules}
-  for {Processes} with {Time} {Delay}. {Part} 1: {PI} {Controller} {Tuning}
-  {Rules}. \emph{IFAC Proceedings Volumes} \textbf{33}, 159--164.
+\bibitem[{Pech-Pacheco \emph{et~al.}(2000)Pech-Pacheco, Cristobal,
+  Chamorro-Martinez \& Fernandez-Valdivia}]{pech-pacheco_diatom_2000}
+Pech-Pacheco, J., Cristobal, G., Chamorro-Martinez, J. \& Fernandez-Valdivia,
+  J. (2000) Diatom autofocusing in brightfield microscopy: a comparative study.
+  \emph{Proceedings 15th {International} {Conference} on {Pattern}
+  {Recognition}. {ICPR}-2000}, vol.~3, pp. 314--317 vol.3, iSSN: 1051-4651.
 
 \bibitem[{Poláček \emph{et~al.}(2023)Poláček, Arizpe, Hüther, Weidlich,
   Steindl \& Swarts}]{polacek_automation_2023}
@@ -111,11 +118,6 @@ Poláček, M., Arizpe, A., Hüther, P., Weidlich, L., Steindl, S. \& Swarts, K.
   (2023) Automation of tree-ring detection and measurements using deep
   learning. \emph{Methods in Ecology and Evolution} \textbf{14}, 2233--2242,
   \_eprint: https://onlinelibrary.wiley.com/doi/pdf/10.1111/2041-210X.14183.
-
-\bibitem[{Propst \& Mueller(2025)}]{propst_time_2025}
-Propst, S. \& Mueller, J. (2025) Time {Code} for multifunctional {3D} printhead
-  controls. \emph{Nature Communications} \textbf{16}, 1035, publisher: Nature
-  Publishing Group.
 
 \bibitem[{Resente \emph{et~al.}(2021)Resente, Gillert, Trouillier,
   Anadon-Rosell, Peters, von Arx, von Lukas \& Wilmking}]{resente_mask_2021}
@@ -132,6 +134,12 @@ Ro, S.H. \& Kim, S.H. (2021) An image stitching algorithm for the mineralogical
 Robinson, W.J. \& Evans, R. (1980) A {MICROCOMPUTER} -{BASED} {TREE} -{RING}
   {MEASURING} {SYSTEM}. \emph{Tree-Ring Bulletin} \textbf{40}.
 
+\bibitem[{Schneider \emph{et~al.}(2012)Schneider, Rasband \&
+  Eliceiri}]{schneider_nih_2012}
+Schneider, C.A., Rasband, W.S. \& Eliceiri, K.W. (2012) {NIH} {Image} to
+  {ImageJ}: 25 years of image analysis. \emph{Nature Methods} \textbf{9},
+  671--675, publisher: Nature Publishing Group.
+
 \bibitem[{Sheppard(2010)}]{sheppard_dendroclimatology_2010}
 Sheppard, P.R. (2010) Dendroclimatology: extracting climate from trees.
   \emph{WIREs Climate Change} \textbf{1}, 343--352, \_eprint:
@@ -140,6 +148,14 @@ Sheppard, P.R. (2010) Dendroclimatology: extracting climate from trees.
 \bibitem[{Speer(2010)}]{speer_fundamentals_2010}
 Speer, J.H. (2010) \emph{Fundamentals of {Tree} {Ring} {Research}}. University
   of Arizona Press.
+
+\bibitem[{Williams \emph{et~al.}(2020)Williams, Cook, Smerdon, Cook,
+  Abatzoglou, Bolles, Baek, Badger \& Livneh}]{williams_large_2020}
+Williams, A.P., Cook, E.R., Smerdon, J.E., Cook, B.I., Abatzoglou, J.T.,
+  Bolles, K., Baek, S.H., Badger, A.M. \& Livneh, B. (2020) Large contribution
+  from anthropogenic warming to an emerging {North} {American} megadrought.
+  \emph{Science} \textbf{368}, 314--318, publisher: American Association for
+  the Advancement of Science.
 
 \bibitem[{Williams \emph{et~al.}(2010)Williams, Michaelsen, Leavitt \&
   Still}]{williams_using_2010}

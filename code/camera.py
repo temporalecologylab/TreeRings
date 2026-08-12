@@ -1,3 +1,5 @@
+# camera.py code was written from boilerplate code and past experience with GStreamer
+
 from threading import Thread
 import time
 import logging as log

@@ -1,3 +1,5 @@
+# Edits were made to an open source package Stitch2D for memory efficiency
+
 """Reads and stitches images from a 2D grid into a mosaic"""
 from collections import defaultdict
 from itertools import chain

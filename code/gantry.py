@@ -22,6 +22,15 @@ class Gantry:
         self.feed_rate_z = self.config["gantry"]["FEED_RATE_DEFAULT_Z"]
         self.feed_rate_xy = self.config["gantry"]["FEED_RATE_DEFAULT_XY"] 
 
+        # Set gantry acceleration limits
+        self.acceleration_slow_x = self.config["gantry"]["ACCELERATION_SLOW_X"]
+        self.acceleration_slow_y = self.config["gantry"]["ACCELERATION_SLOW_Y"]
+        self.acceleration_slow_z = self.config["gantry"]["ACCELERATION_SLOW_Z"]
+        self.acceleration_fast_x = self.config["gantry"]["ACCELERATION_FAST_X"]
+        self.acceleration_fast_y = self.config["gantry"]["ACCELERATION_FAST_Y"]
+        self.acceleration_fast_z = self.config["gantry"]["ACCELERATION_FAST_Z"]
+
+        
         self.s = None
         self.stop_threads = False
 
@@ -42,6 +51,7 @@ class Gantry:
         cmd = "?"
         # Set WPos status reports
         self._send_command("$10=2")
+        
         while not self.stop_threads:
             grbl_out_list = self._send_command(cmd)
         
@@ -339,9 +349,10 @@ class Gantry:
         Command is ignored, if not in a JOG state or if jog cancel is already
         invoked and in-process.
         """
-        cmd = "\x85"
-        _ = self._send_command(cmd)
-    
+        #  cmd = "\x85"
+        #  _ = self._send_command(cmd)
+        self.s.write(bytes([0x85]))
+
     def pause(self) -> None:
         cmd = "M0"
         _ = self._send_command(cmd)
@@ -364,12 +375,29 @@ class Gantry:
         if not self.quiet:
             log.info(' : ' + str(s_out.strip()))
 
-    def set_acceleration(self, acc=50):
+    def set_acceleration(self, fast: bool = False) -> None:
         # mm / sec^2
         # set xyz feed acceleration
-        _ = self._send_command("$120={}".format(acc))
-        _ = self._send_command("$121={}".format(acc))
-        _ = self._send_command("$122={}".format(acc))
+        if fast:
+            _ = self._send_command("$120={}".format(self.acceleration_fast_x))
+            _ = self._send_command("$121={}".format(self.acceleration_fast_y))
+            _ = self._send_command("$122={}".format(self.acceleration_fast_z))
+        else:
+            _ = self._send_command("$120={}".format(self.acceleration_slow_x))
+            _ = self._send_command("$121={}".format(self.acceleration_slow_y))
+            _ = self._send_command("$122={}".format(self.acceleration_slow_z))
+
+    def set_soft_limits(self) -> None:
+        x_soft_limit_mm = 900 # mm
+        y_soft_limit_mm = 900
+        z_soft_limit_mm = 300
+        _ = self._send_command("$131={}".format(x_soft_limit_mm))
+        _ = self._send_command("$132={}".format(y_soft_limit_mm))
+        _ =self._send_command("$133={}".format(z_soft_limit_mm))
+
+
+        
+        
 
     def serial_connect_port(self) -> None:
         """Connect via serial to GRBL as done in the given example. https://github.com/gnea/grbl/blob/master/doc/script/simple_stream.py 
@@ -392,10 +420,12 @@ class Gantry:
             self.log_serial_out(grbl_out)
             log.info("Input flushed")
             log.info("Starting Position Monitor")
+            log.info("Connected to GRBL via serial. Ready to control.")
        
             self.thread.start() 
-            self.set_acceleration(50)        
-
+            self.set_acceleration(fast=True)        
+            # self .set_soft_limits() # causing errors i think
+            
 
     def serial_disconnect_port(self):
     	#TODO: somehow make it so we dont have to reset blackbox?

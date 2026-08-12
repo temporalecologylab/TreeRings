@@ -1,7 +1,12 @@
+# GUI was originally written in TK but was converted to Gtk using ChatGPT-4.0
+# Similar coding patterns were followed when adding new buttons, changing layouts, etc.
+# This is the one file that is commonly ran to interact with the robot 
+# Often ran using in terminal `python gui.py`
+
 import gi
 gi.require_version('Gtk', '3.0')
 gi.require_version('Gst', '1.0')
-from gi.repository import Gtk, Gst, GObject, GLib
+from gi.repository import Gtk, Gst, GObject, GLib, Gdk
 from threading import Thread, Event
 import logging as log
 import controller
@@ -12,6 +17,13 @@ import gantry
 import camera
 import focus
 import math
+import serial as ser
+
+# temp
+import numpy as np
+import cv2
+import os
+import time
 
 log.basicConfig(format='%(process)d-%(levelname)s-%(message)s', level=log.INFO)
 
@@ -24,6 +36,10 @@ class App(Gtk.Window):
         self.set_size_request(self.config["gui"]["DEFAULT_WINDOW_SIZE"][0], self.config["gui"]["DEFAULT_WINDOW_SIZE"][1])
         n_images = self.config["controller"]["N_IMAGES_MULTIPLE_DISTANCES"]
         self.connect("destroy", self.quit_program)
+        
+        self.connect("key-press-event", self.on_key_press)
+        self.connect("key-release-event", self.on_key_release)
+        self.speed_toggle = True # start fast
         
         self.controller = controller.Controller(gantry.Gantry(), camera.Camera(), focus.Focus(delete_flag=True, setpoint = math.floor(n_images / 2)))
 
@@ -41,6 +57,74 @@ class App(Gtk.Window):
         self.controller.quit()
         log.info("Destroy GTK window")
         Gtk.main_quit()
+    
+        
+    def on_key_press(self, widget, event):
+        key = Gdk.keyval_name(event.keyval)
+        state = event.state
+
+        # Check if a text entry has focus — if yes, ignore key handling
+        focus_widget = self.get_focus()
+        if isinstance(focus_widget, Gtk.Entry) or isinstance(focus_widget, Gtk.TextView):
+            return False  # let the widget handle typing
+
+        state = event.get_state()
+        self.jog_distance = 1.0 
+        base_feedrate_xy = self.config["gantry"]["KEYBOARD_FEEDRATE_XY"]
+
+        feedrate_xy = base_feedrate_xy * (1.5 if self.speed_toggle else 0.67)
+        feedrate_z = self.config["gantry"]["KEYBOARD_FEEDRATE_Z"]
+
+        self.jog_distance = self.jog_distance * (1 if self.speed_toggle else 0.1)
+
+        match key:
+            case "w":
+                self.controller.jog_relative_y(self.jog_distance, feedrate_xy)
+            case "a":
+                self.controller.jog_relative_x(-self.jog_distance, feedrate_xy)
+            case "s":
+                self.controller.jog_relative_y(-self.jog_distance, feedrate_xy)
+            case "d":
+                self.controller.jog_relative_x(self.jog_distance, feedrate_xy)
+            case "q":
+                self.controller.jog_relative_z(self.jog_distance, feedrate_z)
+            case "z":
+                self.controller.jog_relative_z(-self.jog_distance, feedrate_z)
+            case "f": # current toggle to go faster  
+                self.speed_toggle = not self.speed_toggle          
+
+                if self.speed_toggle:
+                    self.controller._gantry.set_acceleration(fast=True)      
+                    
+            case "p":
+                self.controller.cb_capture_image()
+                # print(f"Creating sample....")
+            case "e":
+                width = int(self.entry_width_sample.get_text())
+                height = int(self.entry_height_sample.get_text())
+                overlap, species, id1, id2, notes, is_core = self.show_metadata_dialog()
+                if species == False:
+                    return
+                if overlap == '':
+                    overlap = 50
+                else:
+                    overlap = float(overlap)
+                    species = species.replace(" ", "_").replace("/","_").replace(".","_")
+                    id1 = id1.replace(" ", "_").replace("/","_").replace(".","_")
+                    id2 = id2.replace(" ", "_").replace("/","_").replace(".","_")
+                self.controller.add_sample(width, height, overlap, species, id1, id2, notes, is_core)
+                log.info("Adding Sample \nW: {}\nH: {}\nO: {}\nS:  {}\nID1:  {}\nID2:  {}\nNotes:  {}\n".format(width, height, overlap, species, id1, id2, notes))
+
+            case _:
+                return False  # not a gantry control key
+
+        return True  # only return True when a control key was handled
+
+
+    def on_key_release(self, widget, event):
+        key = Gdk.keyval_name(event.keyval)
+        self.controller.jog_cancel()
+        return key in {"w", "a", "s", "d", "q", "z", "f", "p", "e"}
 
     def create_entries(self, grid):
         ## Sample
@@ -92,6 +176,7 @@ class App(Gtk.Window):
         self.create_serial_connect_button(box_buttons0)
         self.create_g_code_homing_button(box_buttons0)
         self.create_capture_button(box_buttons0)
+        self.create_autofocus_button(box_buttons0)
         
         frame_buttons1 = Gtk.Frame()
         frame_buttons1.set_size_request(-1,-1)
@@ -105,10 +190,11 @@ class App(Gtk.Window):
         frame_buttons1.add(box_buttons1)
 
         
-        self.create_capture_all_samples_button(box_buttons1)
-        self.create_add_sample_dialog_button(box_buttons1)
         self.create_test_boundaries_button(box_buttons1)
+        self.create_add_sample_dialog_button(box_buttons1)
+        self.create_capture_all_samples_button(box_buttons1)
         self.create_view_added_sample_button(box_buttons1)
+        self.create_core_alignment_button(box_buttons1)
 
     def create_jogging_controls(self, grid):
         frame_jogging = Gtk.Frame(label="Jogging Controls")
@@ -178,7 +264,7 @@ class App(Gtk.Window):
         self.entry_width_img.connect('focus-out-event', self.print_img_width_entry)
 
     def create_add_sample_dialog_button(self, box):
-        button_add_dialog = Gtk.Button(label="Add Sample")
+        button_add_dialog = Gtk.Button(label="Add Sample [e]")
         button_add_dialog.connect("clicked", self.cb_add_sample_dialog)
         box.pack_start(button_add_dialog, True, True, 0)
 
@@ -197,10 +283,70 @@ class App(Gtk.Window):
         button_serial_connect.connect("clicked", lambda w: self.controller.serial_connect())
         box.pack_start(button_serial_connect, True, True, 0)
 
+    #def create_capture_all_samples_button(self, box):
+    #    button_capture_all_samples = Gtk.Button(label="Golden Section Search Focus")
+    #    # button_capture_all_samples.connect("clicked", self.capture_all_samples)
+    #    button_capture_all_samples.connect("clicked", self.cb_golden_section_search)
+    #    box.pack_start(button_capture_all_samples, True, True, 0)
+
     def create_capture_all_samples_button(self, box):
         button_capture_all_samples = Gtk.Button(label="Capture All Samples")
         button_capture_all_samples.connect("clicked", self.capture_all_samples)
+        # button_capture_all_samples.connect("clicked", self.cb_golden_section_search)
+        # button_capture_all_samples.connect("clicked", self.capture_all_cores)
         box.pack_start(button_capture_all_samples, True, True, 0)
+
+    def capture_all_cores(self, widget):
+        dialog = Gtk.Dialog(title="Capturing Cores", parent=self, flags=0)
+        dialog.add_buttons(
+            Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL
+        )
+        
+        box = dialog.get_content_area()
+        
+        self.sample_watchdog_counter = Gtk.Label(label="Capturing Core: ")
+        self.progressbar = Gtk.ProgressBar()
+        self.images_left_label = Gtk.Label(label="Image 1 of ")
+        self.time_remaining_label = Gtk.Label(label="Estimated time remaining: calculating...")
+        
+        box.add(self.sample_watchdog_counter)
+        box.add(self.progressbar)
+        box.add(self.images_left_label)
+        box.add(self.time_remaining_label)
+        
+        self.sample_watchdog_counter.show()
+        self.progressbar.show()
+        self.images_left_label.show()
+        self.time_remaining_label.show()
+	
+        self.continue_running = True
+
+        stop_capture = Event()
+        
+        def on_response(dialog, response_id):
+            if response_id == Gtk.ResponseType.CANCEL:
+                self.continue_running = False
+                stop_capture.set()
+            dialog.destroy()
+            
+        dialog.connect("response", on_response)
+        dialog.show_all()
+
+        capture_thread = Thread(target=self.controller.capture_all_cores, args = (self.update_progress, stop_capture))
+        capture_thread.start()
+   	
+        def update_progress_bar():
+            if self.continue_running:
+                return True
+            else:
+                capture_thread.join()
+                return False
+        
+        GLib.timeout_add(100, update_progress_bar)
+
+        dialog.run()
+        capture_thread.join()
+        GLib.idle_add(dialog.destroy)
 
     def create_g_code_homing_button(self, box):
         button_g_code_homing = Gtk.Button(label="SET HOME")
@@ -208,7 +354,7 @@ class App(Gtk.Window):
         box.pack_start(button_g_code_homing, True, True, 0)
 
     def create_capture_button(self, box):
-        button_capture = Gtk.Button(label="Capture Single Image")
+        button_capture = Gtk.Button(label="Capture Single Image [p]")
         button_capture.connect("clicked", lambda w: self.controller.cb_capture_image())
         box.pack_start(button_capture, True, True, 0)
 
@@ -216,6 +362,11 @@ class App(Gtk.Window):
         button_view_samples = Gtk.Button(label="View Samples Added")
         button_view_samples.connect("clicked", self.view_added_samples)
         box.pack_start(button_view_samples, True, True, 0)
+
+    def create_autofocus_button(self, box):
+        button_autofocus = Gtk.Button(label="Autofocus")
+        button_autofocus.connect("clicked", lambda w: self.controller.autofocus())
+        box.pack_start(button_autofocus, True, True, 0)
 
     def create_jog_buttons(self, box):
         label_jogging = Gtk.Label(label="Jogging Controls")
@@ -232,37 +383,43 @@ class App(Gtk.Window):
         arrow_grid = Gtk.Grid()
         box.pack_start(arrow_grid, True, True, 0)
 
-        button_y_plus = Gtk.Button(label="Y+")
+        button_y_plus = Gtk.Button(label="Y+ [w]")
         button_y_plus.connect("clicked", lambda w: self.controller.jog_relative_y(self.jog_distance))
         arrow_grid.attach(button_y_plus, 2, 0, 1, 1)
 
-        button_y_minus = Gtk.Button(label="Y-")
+        button_y_minus = Gtk.Button(label="Y- [s]")
         button_y_minus.connect("clicked", lambda w: self.controller.jog_relative_y(-1 * self.jog_distance))
         arrow_grid.attach(button_y_minus, 2, 2, 1, 1)
 
-        button_x_plus = Gtk.Button(label="X+")
+        button_x_plus = Gtk.Button(label="X+ [d]")
         button_x_plus.connect("clicked", lambda w: self.controller.jog_relative_x(self.jog_distance))
         arrow_grid.attach(button_x_plus, 3, 1, 1, 1)
 
-        button_x_minus = Gtk.Button(label="X-")
+        button_x_minus = Gtk.Button(label="X- [a]")
         button_x_minus.connect("clicked", lambda w: self.controller.jog_relative_x(-1 * self.jog_distance))
         arrow_grid.attach(button_x_minus, 1, 1, 1, 1)
 
-        button_z_plus = Gtk.Button(label="Z+")
+        button_z_plus = Gtk.Button(label="Z+ [q]")
         button_z_plus.connect("clicked", lambda w: self.controller.jog_relative_z(self.jog_distance))
         arrow_grid.attach(button_z_plus, 4, 0, 1, 1)
 
-        button_z_minus = Gtk.Button(label="Z-")
+        button_z_minus = Gtk.Button(label="Z- [z]")
         button_z_minus.connect("clicked", lambda w: self.controller.jog_relative_z(-1 * self.jog_distance))
         arrow_grid.attach(button_z_minus, 4, 2, 1, 1)
         
-        self.jog_speed = Gtk.RadioButton.new_with_label_from_widget(None, "Slow")
+        self.jog_speed = Gtk.RadioButton.new_with_label_from_widget(None, "Slow [f]")
         self.jog_speed.connect("toggled", self.cb_speed_switch, 1)
         arrow_grid.attach(self.jog_speed, 0, 0, 1, 1)
 
-        radio_button_fast = Gtk.RadioButton.new_with_label_from_widget(self.jog_speed, "Fast")
+        radio_button_fast = Gtk.RadioButton.new_with_label_from_widget(self.jog_speed, "Fast [f]")
         radio_button_fast.connect("toggled", self.cb_speed_switch, 2)
         arrow_grid.attach(radio_button_fast, 0, 2, 1, 1)
+
+    def create_core_alignment_button(self, box):
+       button_core_alignment = Gtk.Button(label="Core Alignment Focus")
+       # button_capture_all_samples.connect("clicked", self.capture_all_samples)
+       button_core_alignment.connect("clicked", self.cb_core_alignment)
+       box.pack_start(button_core_alignment, True, True, 0)
         
     def cb_speed_switch(self, button, speed):
         if button.get_active():
@@ -325,17 +482,17 @@ class App(Gtk.Window):
         
         box = dialog.get_content_area()
         
-        self.sample_counter = Gtk.Label(label="Capturing Sample: ")
+        self.sample_watchdog_counter = Gtk.Label(label="Capturing Sample: ")
         self.progressbar = Gtk.ProgressBar()
         self.images_left_label = Gtk.Label(label="Image 1 of ")
         self.time_remaining_label = Gtk.Label(label="Estimated time remaining: calculating...")
         
-        box.add(self.sample_counter)
+        box.add(self.sample_watchdog_counter)
         box.add(self.progressbar)
         box.add(self.images_left_label)
         box.add(self.time_remaining_label)
         
-        self.sample_counter.show()
+        self.sample_watchdog_counter.show()
         self.progressbar.show()
         self.images_left_label.show()
         self.time_remaining_label.show()
@@ -373,7 +530,7 @@ class App(Gtk.Window):
     def update_progress(self, value):
         if value[0] == True:
             sample_name = value[2]
-            GLib.idle_add(self.sample_counter.set_text, "Capturing Sample: {}".format(sample_name))
+            GLib.idle_add(self.sample_watchdog_counter.set_text, "Capturing Sample: {}".format(sample_name))
             GLib.idle_add(self.images_left_label.set_text, "Image 1 of ")
             GLib.idle_add(self.time_remaining_label.set_text, "Estimated time remaining: calculating...")
             GLib.idle_add(self.progressbar.set_fraction, 0)
@@ -529,6 +686,153 @@ class App(Gtk.Window):
         self.zoom_combo.set_active(0)
         log.info("Update Image Width: {} mm".format(width))        
         
+        
+    # Core Alignment Methods Testing
+    
+    
+    def variance_of_laplacian(self, image):
+        """Compute the Laplacian of the image and return the focus measure."""
+        return cv2.Laplacian(image, cv2.CV_64F).var()
+
+    def center_band_grid(self, image, n_col, band_height_frac=0.2):
+        """
+        Create tiles that intersect the horizontal midpoint of the image.
+        Each tile spans a portion of the width (n_col divisions)
+        and covers a horizontal band centered vertically.
+        """
+        h, w = image.shape[:2]
+        band_half = int((h * band_height_frac) / 2)
+        cy = h // 2
+
+        y_start = max(cy - band_half, 0)
+        y_end   = min(cy + band_half, h)
+
+        x_breaks = np.linspace(0, w, n_col + 1, dtype=int)
+        tiles = []
+        for c in range(n_col):
+            x0, x1 = x_breaks[c], x_breaks[c+1]
+            tile = image[y_start:y_end, x0:x1]
+            tiles.append(tile)
+
+        return tiles, (y_start, y_end), x_breaks
+
+    def cb_core_alignment(self, widget):
+        # take the current cv2 feed
+        
+        # TEMP
+        IMG_THRESHOLD = 200 # add to config probs 
+        W_PIXELS_NO_CROP = 3840
+        IMG_WIDTH_MM = 5
+        MM_TO_PIXEL_RATIO = IMG_WIDTH_MM / W_PIXELS_NO_CROP # assuming ~ 2-3 mm in our field of view when scanning
+        watchdog_counter = 0
+        MAX_ITER = 5
+        
+        while(1):
+            if (watchdog_counter == MAX_ITER):
+                break
+            
+            print("reading image from pipeline...")
+            temp_file = "./temp_image.tiff"
+            img_array = []
+            self.controller.camera.save_frame(temp_file)    #CHANGE THIS
+            print("successfully saved frame from pipeline...")
+        
+            
+            time.sleep(0.15)
+            image = cv2.imread(temp_file, cv2.IMREAD_GRAYSCALE)
+            os.remove(temp_file)
+            
+            # based on the image, create grid
+            tiles, (y_start, y_end), x_breaks = self.center_band_grid(
+                image, n_col=10, band_height_frac=0.2
+            )
+            
+            tile_w = 0 # store into a function global
+            tile_w_px = 0
+            tile_values = []
+
+            # calculate the laplacian, save to an array
+            for c, tile in enumerate(tiles):
+                fm = self.variance_of_laplacian(tile)
+                img_array.append(fm)
+                print(f"Appending {fm} to array")
+
+                # Store the average? tile_w into a function global
+                x0, x1 = x_breaks[c], x_breaks[c+1]
+                tile_w = x1 - x0
+                tile_values.append(tile_w)
+            
+            
+            tile_w_px = sum(tile_values) / len(tile_values) # shouldn't they all be the same?...
+            print(f"Tile average: {tile_w_px}")
+
+            # interpret array: control logic 
+            # control logic: there has to be an even amount of low thresholds on each side of the image? lets use 2 pointer logic
+
+            left_count = 0
+            right_count = 0
+            
+            #left one
+            for i in range(len(img_array) -1):
+                if img_array[i] < IMG_THRESHOLD:
+                    left_count += 1
+                else: 
+                    break
+            
+            #right side
+            for i in range(len(img_array) - 1, 0, -1):
+                if img_array[i] < IMG_THRESHOLD:
+                    right_count +=1
+                else:
+                    break
+            
+                        
+            print("-------------Image Data-------------")
+            print(f"Length of img_array: {len(img_array)}")
+            print(" ".join(str(x) for x in img_array))
+            
+            # motor movements required logic: 
+            # have to move left by the amount to even out 
+            dX = left_count - right_count
+            
+            # Case 1: Blurs on both sides
+            if (left_count != 0) and (right_count != 0):
+                dX = dX / 2 # move by half if non zero on the sides 
+                pixels_move = tile_w_px * dX
+                jog_distance = pixels_move * MM_TO_PIXEL_RATIO
+                print(f"Move by {jog_distance} mm")
+                self.controller.jog_relative_x(jog_distance)
+                self.controller._gantry.block_for_jog()
+                break
+                
+            # Case 2: Blurs only on 1 side, want to determine how much distance we want to move     
+            else: 
+                
+                pixels_move = tile_w_px * dX
+                jog_distance = pixels_move * MM_TO_PIXEL_RATIO
+                
+                # Big jump > 50%
+                if abs(jog_distance) > IMG_WIDTH_MM  * 0.5:
+                    print(f"Move a large distance.. {jog_distance* 0.75} mm")    
+                    self.controller.jog_relative_x(jog_distance * 0.75)
+                    self.controller._gantry.block_for_jog()
+                
+                # Medium jump, 30%
+                elif  abs(jog_distance) > IMG_WIDTH_MM * 0.1:
+                    print(f"Move a medium distance.. {jog_distance * 0.75} mm")  
+                    self.controller.jog_relative_x(jog_distance * 0.75)
+                    self.controller._gantry.block_for_jog()
+                
+                # At the target, can exit loop
+                else: 
+                    print("We are close enough, no movement needed...")
+                    break
+            watchdog_counter += 1
+
+        
+        
+        
+                
 if __name__ == "__main__":
     #Gst.init(None)
     app = App()
