@@ -1,7 +1,6 @@
-# TreeRings
-![Cookie Zoom](./docs/content/cookie_zoom.gif)
+# Tree Imaging Machine
 
-The TreeRings project is under development by students in the Temporal Ecology Lab at UBC. The project aims to create an open source and reproducible system to digitize ultra high resolution images of tree cookies. This is accomplished with a robot having control of a microscope camera that can navigate the X, Y, and Z directions. By systematically capturing images across the surface of the cookie, it is possible to stitch subframes of the cookie together into one large mosaic with the help of feature matching techniques.
+The project aims to create an open source and reproducible system to digitize ultra high resolution images of tree cookies. This is accomplished with a robot having control of a microscope camera that can navigate the X, Y, and Z directions. By systematically capturing images across the surface of the cookie, it is possible to stitch subframes of the cookie together into one large mosaic with the help of feature matching techniques.
 
 While this was designed to capture tree cookies, in theory this should also be able to be used to scan other planar objects such as planed mineral samples or pencil drawings.
 
@@ -175,8 +174,7 @@ Roughly:
 4. Open your terminal and navigate to the directory you want to save the repo in. Then, enter the following commands.
 
   ``` bash
-    git clone git@github.com:temporalecologylab/TreeRings.git
-    cd ./TreeRings/code
+  ANONYMIZED
   ```
 
 5. Build the Dockerfile.
@@ -210,7 +208,3 @@ Roughly:
 - Open Machine > Setup Wizard and connect to the machine
 - Follow the prompts to manually do the main system setup or load our settings file. Make sure to save at the end of the prompt.
 - NOTE: we have been having problems with the settings file loading, please write us if you can load it effectively. It is hard to debug with a motor controller that is already setup.
-
-## Issues
-
-If you have any issues building, please feel free to reach out in the [Issues](https://github.com/temporalecologylab/TreeRings/issues) page.
