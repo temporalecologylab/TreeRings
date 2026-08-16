@@ -236,11 +236,12 @@ If the new image has at least a sharpness metric of 95\% of its previously image
 When TIM encounters a new image that has a focus metric lower than it's previous neighbor, it will run the autofocusing procedure.
 %% Addressing reviewer comments 1 
 This ensures that all neighboring images have functionally the same sharpness, while minimizing the time spent on autofocusing. 
-In the case that the sample is not aligned well to the camera, the autofocusing procedure will be run more frequently.
-This time saving feature can also be turned off, forcing the scanning procedure to include a Golden Section Search autofocusing procedure for every image. 
-With the samples we prepared, there usually needed to be an autofocusing procedure for every 5-10 images while maintaining high image sharpness throughout the entire sample. 
+In the case that the sample is not aligned well to the camera, the autofocusing procedure will be run more frequently. 
+While scanning well prepared samples, we generally saw an autofocusing routine for every 5-10 images. All of the images captured with this method maintained high image sharpness throughout the sample and were well suited for stitching. 
+This time saving feature can be tuned in the configuration file to have a more stringent or lenient sharpness threshold. 
+Samples that have visible scoring marks from sanding, non planar surfaces, or other major surface irregularities have difficulties scanning with or without adaptive autofocusing. These samples simply require more attentive sanding to ensure a blemish free, planar surface for scanning.    
 %% End reviewer comments 1
- 
+
 \subsubsection{Accounting for Translation Error Between Core Samples}
 
 Movement accuracy issues arise when more than one core is added to the digitization queue.
@@ -331,6 +332,12 @@ Other small snippets of code were generated to select pixels in specific regions
 %emw9Mar: I wondered about this being Results & Discussion ... would MEE be okay with that? It would work better for the paper I think. What do the guidelines say on formatting for articles? 
 % MEE's guidelines have a distinct Results section from Discussion although maybe they're flexible on this? Conclusion is optional for MEE
 
+%% Addressing reviewer comments 2
+TIM has been a useful tool for scanning tree ring samples for our lab. We have scanned approximately 1,250 cores and 100 cookies with TIM. These samples included six different conifer species namely \emph{Pseudotsuga menziesii}, \emph{Tsuga heterophylla}, \emph{Tsuga mertensiana}, \emph{Abies amabilis}, \emph{Chamaecyparis nootkatensis} and \emph{Thuja plicata}. 
+For our core samples, we prepared between one and three batches of 24 cores to be scanned a day over the course of three months. Many of the batches were scanned overnight. We found that the Jetson computer would occasionally crash due to unexpected memory limits if not restarted once a day. This issue was resolved by restarting the computer before starting a large batch of samples. 
+
+%% End reviewer comments 2
+
 TIM is capable of producing extremely high resolution scans. We calculated the maximum dots per inch (DPI) at 21 500 of individual images captured from the system using a microscopy slide scale (with 0.01 mm graduations, Figure \ref{fig:dpi_measurements}), and developed a Python tool to replicate this for varied lens focal lengths. When downscaling the final stitch, 
 DPI scales linearly with the downscale percentage defined in the machine parameters. 
 
@@ -340,26 +347,6 @@ For large cookies, the operator can choose to selectively scan a radius of the c
 To fit into the maximum 2.5 GB limits of a TIFF file, the maximum diameter of a cookie scanned at 30\% of maximum resolution is limited to approximately 130 mm. This maximum cookie diameter is significantly smaller than the maximum core sample length. At maximum resolution, the file size limit 
 constrains core samples to approximately 1 500 mm in length (though a larger ACRO frame than shown here would be needed to support this sample length). 
 Samples larger than this limit can still be scanned, but TIM saves them as an uncompressed binary NumPy memory-mapped array file. Currently, NumPy files are not supported by standard image viewers like ImageJ and require custom tools to work with. %emw17Jan2026 -- any chance we can give an (e.g., THIS tool) to the end here? %amf28Jan2026 -- This would be some GUI wrapping NumPy functions which are made to edit the NumPy files. I'm certain this could be done but it doesn't really seem worth it. I imagine in order for it to actually be useful, it would need to offer complete annotation functionality for marking and be user friendly in a way that I wouldn't be able to churn out quickly. emwREPLY: Okay, we skip it then.
-
-
-\begin{figure}[htbp] 
-  \centering 
-  \begin{subfigure}{0.49\textwidth} 
-  \centering 
-  \includegraphics[width=\linewidth]{../graphs/core_scanning_time.png} 
-  \caption{Core Scanning Time} 
-  \label{fig:graph_time_core} 
-\end{subfigure} 
-  \hfill 
-  \begin{subfigure}{0.49\textwidth} 
-  \centering 
-  \includegraphics[width=\linewidth]{../graphs/cookie_scanning_time.png} 
-  \caption{Cookie Scanning Time} 
-  \label{fig:graph_time_cookie} 
-\end{subfigure} 
-  \caption{Time to digitize a sample is dependent on the sample's surface area and the desired final resolution. Cores benefit from linear surface area to sample length. The range of samples included span from a 3 mm $\times$ 220 mm core to a 75 mm $\times$ 56 mm cookie. The theoretical maximum sample dimensions are limited by the working plane of the machine, approximately 500 mm $\times$ 500 mm in our configuration. True sampling times are drastically influenced by configurable machine parameters such as percentage image overlap.} 
-  \label{fig:digitization_time} 
-\end{figure}
 
 \begin{figure}[htbp]
   \centering
@@ -378,16 +365,6 @@ Samples larger than this limit can still be scanned, but TIM saves them as an un
   \caption{Time to digitize a sample is dependent on the sample's surface area and the desired final resolution.
     Cores benefit from linear surface area to sample length. The range of samples included span from a 3 mm x 220 mm core to a 75 mm x 56 mm cookie. The theoretical maximum sample dimensions are limited by the working plane of the machine, approximately 500 mm x 500 mm in our configuration. True sampling times are drastically influenced by configurable machine parameters such as percentage image overlap.}
   \label{fig:digitization_time}
-\end{figure}
- 
-
-
-\begin{figure}
-    \centering
-    \includegraphics[height=0.5\linewidth]{../../code/plots/time_and_area.png}
-    \caption{Time to digitize a sample is dependent on the sample's surface area and the desired final resolution.
-    Cores benefit from linear surface area to sample length. The range of samples included span from a 3 mm x 220 mm core to a 75 mm x 56 mm cookie. The theoretical maximum sample dimensions are limited by the working plane of the machine, approximately 500 mm x 500 mm in our configuration. True sampling times are drastically influenced by configurable machine parameters such as percentage image overlap.}  
-    \label{fig:digitization_time}
 \end{figure}
 
 \subsection{Strengths and Opportunities} 
