@@ -1,12 +1,20 @@
-\documentclass[11pt,a4paper]{article}
+% !TeX root = ./revletter_2.tex
+\documentclass[12pt,a4paper]{article}
+
 \usepackage[top=1.00in, bottom=1.0in, left=1.1in, right=1.1in]{geometry}
+\usepackage{lineno}
 \usepackage{graphicx}
 \usepackage{natbib}
 \usepackage{amsmath}
-\usepackage{hyperref}
-\usepackage{todonotes}
+\usepackage{xr-hyper}
+\externaldocument{paper_anon}
+% \usepackage{hyperref}
 \usepackage{gensymb}
+\usepackage{todonotes}
 
+% Cross referencing items
+\newcommand{\R}[1]{\label{#1}\linelabel{#1}}
+\newcommand{\lr}[1]{line~\ref{#1}}
 
 \setlength\parindent{0pt}
 \setlength {\marginparwidth }{2cm}
@@ -17,7 +25,7 @@
 
 % DISCUSS!
 
-\emph{Reviewer and editor comments are in italics.} Our replies are in plain font.\\
+\emph{Reviewer and editor comments are in italics.} Our replies are in plain font.\\ 
 
 % Senior editor comments start
 {\bf Editor -- comments:} \\
@@ -37,11 +45,11 @@ We agree that stitched images are necessary to evaluate the image quality. Full 
 
 \emph{Two practical points need clarification: whether autofocusing only every 5 to 10 frames affects sharpness or stitching on uneven samples, and the generality of the particle-smearing step.}\\
 
-Autofocusing every 5 to 10 frames is the result of the sample maintaining a nearly constant distance from the camera sensor. While it is possible for us to autofocus every frame, we have chosen to only refocus the lens if adjacent frames have significantly different focus scores. Capturing sequential frames without autofocusing is a indicates that the focus metric has not deviated from the past frame by more than 5-10\%, depending on configurable parameters. Therefore, the sharpness of the images are functionally identical when multiple frames are captured without refocusing the camera. We have clarified this in the manuscript in lines \todo{change in manuscript} \todo{add line x-ref}\\
+Autofocusing every 5 to 10 frames is the result of the sample maintaining a nearly constant distance from the camera sensor. While it is possible for us to autofocus every frame, we have chosen to only refocus the lens if adjacent frames have significantly different focus scores. Capturing sequential frames without autofocusing is a indicates that the focus metric has not deviated from the past frame by more than 5\%, depending on configurable parameters. Therefore, the sharpness of the images are functionally identical when multiple frames are captured without refocusing the camera. We have clarified this in the manuscript between \lr{autofocusing_1} and \lr{autofocusing_2}.\\
 
 \emph{Finally, please clarify how long and how intensively TIM has been in routine use, including approximate numbers of samples, species and operators, the period of use, and any failure modes. This would reassure the resource-limited labs you are targeting. Please also address the suggestion both reviewers list, and add scale references to the sample images throughout.} \\
 
-We thank the associate editor for highlighting the need to provide more information about our usage of TIM. We have processed approximately 1,262 cores, 6 species, and 4 operators. Most of the scanning was done in a three month period where batches of 25 cores were scanned one to three times a day. Batches were often left scanning throughout the night without supervision. Additionally, we have provided the design files to another lab and they have built their own TIM. We have updated the manuscript to include these changes in lines \todo{update and x-ref}. \\
+We appreciate the associate editor for highlighting the need to provide more information about our usage of TIM. We have processed approximately 1,262 cores, 6 species, and 4 operators. Most of the scanning was done in a three month period where batches of 25 cores were scanned one to three times a day. Batches were often left scanning throughout the night without supervision. Additionally, we have provided the design files to another lab and they have built their own TIM. We have updated the manuscript to include these changes between \lr{usage_1} and \lr{usage_2}. \\
 
 % Associate editor comments end
 
@@ -60,26 +68,24 @@ We thank the reviewer for their insight to improve the legibility of the figure.
 
 \emph{The particle smearing approach is imaginative but raises some concern. In my experience with similar systems, additional surface treatment has never been necessary for successful stitching. The example shown in Figure 5 corresponds to a gymnosperm with highly distinctive tracheid structures, I am shocked that stitching has problems with such an easy sample. It would be informative to know how TIM performs with diffuse-porous angiosperms such as Betula or Populus, where informative tracheid pattern is absent and wood is very white. Additionally, silicon carbide is a very hard material. In TIM configuration the machine is over the samples, so it should not be a problem, but I would be worried if a lab with optical material close to TIM is smearing sand in a routine fashion. I have lived in the coast for many years and there is nothing so disturbing than the way sand gets into every crack.}\\
 
-\todo{}
-We appreciate the reviewers comment and understand the concern that an easy sample would need additional surface treatment to be successfully stitched. We have changed the sample used in Figure 5 to be a harder to scan sample. Additionally, we have added specificity into the use case of the particle smearing method.\\
+We appreciate the reviewers comment and understand the concern that an easy sample would need additional surface treatment to be successfully stitched. We have changed the sample used in Figure 5 to be a harder to scan sample, more representative of a sample which would need surface treatment. Additionally, we have added specificity into the use case of the particle smearing method between \lr{particle_smearing_1} and \lr{particle_smearing_2}.\\
 
 \emph{Regarding autofocusing, the authors indicate that autofocusing occurs approximately every 5-10 frames. Existing systems typically autofocus every frame. The authors should clarify whether this trade-off affects final image sharpness, particularly in samples with surface irregularities and how it affects to sharpness and stitching.}\\
 
-\todo{Add line update to manuscript}
-We appreciate the concern of Reviewer 1 and have clarified how autofocusing every few frames affects the final image sharpness.\\
+We appreciate the concern of Reviewer 1 and have clarified how autofocusing every few frames affects the final image sharpness between \lr{autofocusing_1} and \lr{autofocusing_2}.\\
 
 \emph{A minor but important point concerns the scale of measurement. The authors invest considerably (given the cost of TIM) in a precision micrometric scale for calibration, yet no scale reference appears in any of the sample images presented. For a measurement tool, every sample should include a scale reference. A simple millimetric reference would suffice (you can improve accuracy by measuring more milimeters in the scale) and that would allow readers to verify the reported DPI values independently.}\\
 
-\todo{}
-We agree with the reviewer that a scale reference on the scan is necessary. .\\
+\todo{Scan ruler, add scale bars.}
+We agree with the reviewer that a scale reference on the scan is necessary. Digital scale bars have been added to all samples. Additionally, a millimetric scale overlaid with a digital scale bar. Scanning a sample with a physical scale bar in the image is non-trivial due to the camera's narrow focal depth.\\
 
 \emph{The statement in line 300 indicating a maximum core length of 1500 mm at full resolution warrants clarification, as this exceeds the practical dimensions of any standard increment core and it is complicated to work with a “cookie” that size.}\\
 
-We thank the reviewer for pointing out that the maximum core length exceeds practical dimensions of increment borers. We have updated the text to clarify this. See line \todo{max length update}\\
+We thank the reviewer for pointing out that the maximum core length exceeds practical dimensions of increment borers. We have updated the text to clarify this on \lr{max_length}.\\
 
 \emph{A final point, more philosophical in nature but worth raising. There is an important difference between a tool that works and a tool that is ready for others to use. In my experience, that difference only becomes apparent after months of routine use in a real lab setting: different samples, different operators, unexpected failures. The question for the authors is simple: is TIM currently part of their day-to-day data collection, or was this manuscript written closer to the assembly stage? This matters because the dendrochronology community has seen promising methods published before they were truly mature, and the labs that tried to adopt them paid the price in time and frustration. TIM is explicitly aimed at labs with limited economic capacity, which makes this question even more important, those labs have less margin to troubleshoot. The authors should provide an account of how long and how intensively the tool has been in us. This point is relevant to build confidence in the method.}\\
 
-The reviewer raises valuable points when assessing the readiness for others to adopt TIM. While TIM does not have the polish of a commercial product, TIM has scanned over 1000 samples from 4 different operators over the past two years. Additionally, we shared our design files with another lab who have since recreated TIM and have been able to use it for their research. While TIM is not perfect, we have done our best to provide labs who want to replicate the design with the resources they need to reproduce TIM. All of TIM's design is open-source and we are willing to assist with reasonable inquiries regarding the replication process. \\
+The reviewer raises valuable points when assessing the readiness for others to adopt TIM. While TIM does not have the polish of a commercial product, TIM has scanned over 1000 samples from 4 different operators over the past two years. Additionally, we shared our design files with another lab who have since recreated TIM and have been able to use it for their research. While TIM is not perfect, we have done our best to provide labs who want to replicate the design with the resources they need to reproduce TIM. All of TIM's design is open-source and we are willing to assist with reasonable inquiries regarding the replication process. These changes were made between \lr{usage_1} and \lr{usage_2}. \\
 
 % Reviewer 1 comments end
 
@@ -88,7 +94,7 @@ The reviewer raises valuable points when assessing the readiness for others to a
 
 \emph{The system describes is very practical and I like that there are manual alternatives to the automated queuing approach. Likewise for cookies/disk material, specific radii can be manually selected to save time and file storage space/size. It would be useful to note what happens when a storage limit is hit -what does the system do in such a case? OK, I see that uncompressed array files are saved – but does this allow stitching?}\\
 
-We thank the reviewer for highlighting the need for clarification regarding file size limits. When the file size limit is reached, the system still stitches the sample in the same method but it is saved as a memory mapped NumPy array instead of a tiff image. The manuscript has been updated with this clarification on line \todo{Update the manuscript to include this} \\
+We thank the reviewer for highlighting the need for clarification regarding file size limits. When the file size limit is reached, the system still stitches the sample in the same method but it is saved as a memory mapped NumPy array instead of a tiff image. The manuscript has been updated with this clarification on \lr{large_stitch}.\\
 
 \emph{Its great that the study even tests the use of a grain enhancer like silicon carbide. I presume that more dramatic stains would not affect imaging and stitching contrast settings?}\\
 
@@ -96,23 +102,35 @@ More dramatic stains would not affect the imaging and stitching contrast setting
 
 \emph{It’s a little unclear with the current notation what “21 140 DPI” means – should it be 21,140 DPI? Also, one version of your abstract indicates 0.83 pixels per micron and the other 1.2 microns per pixel. Similarly for Point 3, is the value \$3,000 USD? The problem seems to be a space has been introduced to replace the thousand separators: L54 – 6 400 DPI rather than 6,400 DPI. See L67, L69, L88, L89… etc. throughout the manuscript.}\\
 
-We changed the notation to use commas in our number notation. Additionally the abstract was revised to only display microns per pixel. \todo{Update the manuscript to include this} \\
+We changed the notation to use commas in our number notation. Additionally the abstract was revised to only display microns per pixel. \todo{Update the submission abstract to include this} \\
 
-\emph{L96: Change “current” to currently \newline
-L129: Should read “…and have a planar surface fo r…”\newline
-L137: Small point admittedly, but conventionally the reference to a figure should appear before the figure itself occurs. Same for Figure 3 which appears before the reference to it.\newline
-L160: Gu et al. should not be within parenthesis given the current structure, only the publication date (2015).\newline
-L185: Clarification needed. “…same threshold was used across all cores for 5 species…” Is the point that the sequence worked for variation caused by having different species, or that the transition from one species to another was handled?}\\
+\emph{
+    \begin{itemize}
+        \item L96: Change “current” to currently 
+        \item L129: Should read “…and have a planar surface for…”
+        \item L137: Small point admittedly, but conventionally the reference to a figure should appear before the figure itself occurs. Same for Figure 3 which appears before the reference to it.
+        \item L160: Gu et al. should not be within parenthesis given the current structure, only the publication date (2015).
+        \item L185: Clarification needed. “…same threshold was used across all cores for 5 species…” Is the point that the sequence worked for variation caused by having different species, or that the transition from one species to another was handled?
+    \end{itemize}}
 
-The manuscript has been updated to address these line items. \todo{Update the manuscript to include this} \\
+The manuscript has been updated to address these line items. \\
+    
+\begin{itemize}
+        \item \lr{line_change_1}: Changed to "currently"
+        \item \lr{line_change_2}: Changed to "...have a planar surface..."
+        \item Moved figure reference above figure \todo{figure out how to do this}
+        \item \lr{line_change_3}: Changed citation.
+        \item \lr{line_change_4}: Added clarification that the sequence works when transition between species in the same batch.
+    \end{itemize}
+
 
 \emph{Section 2.4.2: This description needs a little rephrasing for better clarity. Quite a number of sentences repeat words (code was generated to convert code, package similarly. Again final sentence -code was generated for codebase integration and was noted in code… etc. I think I understand in general what you mean, but I’m not sure. Please rephrase more carefully.}\\
 
-We thank the reviewer for addressing the repetition of words in the manuscript. We have rephrased the section to improve clarity. \todo{Update manuscript to reduce repeated words}
+We thank the reviewer for addressing the repetition of words in the manuscript. We have rephrased the section to improve clarity between \lr{llm_rewording_1} and \lr{llm_rewording_2}.
 
 \emph{Figure S1: The scales in the two images are very difficult to read for the ordinary human, slightly larger font would be a help. The scale in the (b) image currently seems to be out of sync with the image.} \\
 
-We have updated the scale size to make it more readable. \todo{Update figure with scale bar}\\
+We have updated the figures to make font larger and resync the images. \todo{Update figure with scale bar, increase font, etc.}\\
 
 
 \newpage
