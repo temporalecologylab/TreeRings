@@ -115,13 +115,13 @@ By choosing this combination, we were able to reduce the weight and cost of the 
 The Jetson is an edge computer which drives a monitor for a GUI, sends commands to the motor controller to move the machine, runs image processing calculations for machine control, and performs calculations to stitch individual images into one mosaic. 
 
 \subsection{Preparing Cookies and Cores}
-TIM can scan both tree cookies and tree cores but they need to be well prepared before scanning. Samples that are not well sanded may not have enough detail when stitching images together into the complete mosaic.
-The general guidelines used for preparing cookies and cores applies---requiring samples to be sanded with incrementally increasing sand paper grit. Samples must be uniformly sanded and have a planar surface for scanning \citep{speer_fundamentals_2010} \R{line_change_2}.
-We sanded samples using a 4 inch belt sander with lower grits between 120 and 240 for the bulk of the material removal.
-An orbital sander was used to sand the finer grits between 240 and 400. We then used a microscope to visually inspect the quality of the sanding. Samples were considered to be sufficiently prepared when vessels were easily recognizable.
+TIM can scan both tree cookies and cores but they need to be well prepared before scanning. Samples that are not well sanded may not have enough detail when stitching images together into the complete mosaic. Thus, users of TIM should follow general guidelines for preparing cookies and cores---sanding samples with incrementally increasing sand paper grit. Samples must be uniformly sanded and have a planar surface for scanning \citep{speer_fundamentals_2010} \R{line_change_2}.
+We sanded samples using a 4 inch belt sander with lower grits between 120 and 240 for the bulk of the material removal, followed by sanding using an orbital sander with progressively finer grits between 240 and 400. We then used a microscope to visually inspect the quality of the sanding. Samples were considered to be sufficiently prepared when vessels were easily recognizable.
 
-% emwAug18 - why did we edit this so much? I am fine with it, just trying to understand the issue so I can make sure we addressed it....
 TIM requires additional sanding considerations for each sample type.  For cookies, it is important to have the top and bottom surfaces nearly parallel. Small differences in plane angle can be corrected using the 3D printed leveling table we designed (Figure \ref{fig:ideal_levelling}). \todo{Make figure appear after reference.}
+For cores, care should be taken to maximize the scanning surface. This means removing material to be coincident to the center of the cross section of the core. 
+Similarly to cookies, the scanning surface should be as close to parallel to the XY-plane as possible, but generally does not need to be leveled using the leveling tables.
+
 \begin{figure}
   \centering
   \begin{subfigure}{.5\textwidth}
@@ -140,8 +140,7 @@ TIM requires additional sanding considerations for each sample type.  For cookie
   \label{fig:sample_levelling}
 \end{figure}
 
-For cores, care should be taken to maximize the scanning surface. This means removing material to be coincident to the center of the cross section of the core. 
-Similarly to cookies, the scanning surface should be as close to parallel to the XY-plane as possible, but generally does not need to be leveled using the leveling tables.
+
 
 \subsection{Scanning Samples} % Methods
 
@@ -241,7 +240,7 @@ When the camera moves past either edge of a core, there is no subject in the foc
 If the Golden Section Search algorithm cannot find an image with a higher sharpness metric than this threshold, it is safe to assume the sample is no longer in the frame. This technique reduces scanning setup time as the operator does not need to measure the length of each core when adding the sample into scanning queue.
 % Clarification comments 6
 % emwAug18 - I made some edits based on what CRD told me he will send ... 
-\R{line_change_4} Among the over two dozen species (gynosperms and angiosperms) that we have scanned, we found the sharpness metric did not vary significantly when in-focus, allowing multiple similar species to be scanned in the same batch. % emwAug18 - can I comment out the end here? I am not sure what we mean and it does not seem critical to include % with only one core-edge threshold.
+\R{line_change_4} Among the over two dozen species (gynosperms and angiosperms) that we have scanned, we found the sharpness metric did not vary significantly when in-focus, allowing multiple similar species to be scanned in the same batch.
 
 Golden Section Search autofocusing is robust, but takes up to 10 seconds to obtain the most in-focus image (in our implementation). When capturing tens or hundreds of images per sample, autofocusing time thus becomes significant.
 In the interest of minimizing scanning time per sample, we chose to only autofocus when necessary. Autofocusing occurs on the very first image to get a baseline sharpness metric. The machine then moves to capture the neighboring image.
