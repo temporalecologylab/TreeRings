@@ -95,7 +95,7 @@ Additionally, the design is open-source and open-hardware allowing for contribut
 \begin{figure}
   \centering
   \includegraphics[height=0.5\linewidth]{../content/tina.jpg} % There are a few limits which don't sound correct to me in this part (file size, machine design, quality sanding, etc.)
-  \caption{Complete assembly of TIM, shown with a few smaller cookies ready to be scanned.  All of the 3D printed parts are available for download on the \href{https://doi.org/10.60705/3DPX/21561.3}{NIH 3D printing repository} and the software is  open source, with instructions to recreate this tool available on \href{https://github.com/temporalecologylab/TreeRings}{GitHub}. } % emwAug10 -- In addition to putting the links here, I would make sure each is sprinkled in around where most of the info related to it is introduced in the main text. 
+  \caption{Complete assembly of TIM, shown with a few smaller cookies ready to be scanned.  All of the 3D printed parts are available for download on the NIH 3D printing repository (HYPERLINK REMOVED) and the software is  open source, with instructions to recreate this tool available on GitHub (HYPERLINK REMOVED). } % emwAug10 -- In addition to putting the links here, I would make sure each is sprinkled in around where most of the info related to it is introduced in the main text. 
 % emwAug18 -- at the end you could add: Example images produced by TIM are provided in the SI. 
 % emwAug18 -- In the supp I might make a TABLE of the images (3 cols: file name, species and description) and you could just link to that table here... 
   \label{fig:tim_assembled}
@@ -118,7 +118,7 @@ The Jetson is an edge computer which drives a monitor for a GUI, sends commands 
 TIM can scan both tree cookies and cores but they need to be well prepared before scanning. Samples that are not well sanded may not have enough detail when stitching images together into the complete mosaic. Thus, users of TIM should follow general guidelines for preparing cookies and cores---sanding samples with incrementally increasing sand paper grit. Samples must be uniformly sanded and have a planar surface for scanning \citep{speer_fundamentals_2010} \R{line_change_2}.
 We sanded samples using a 4 inch belt sander with lower grits between 120 and 240 for the bulk of the material removal, followed by sanding using an orbital sander with progressively finer grits between 240 and 400. We then used a microscope to visually inspect the quality of the sanding. Samples were considered to be sufficiently prepared when vessels were easily recognizable.
 
-TIM requires additional sanding considerations for each sample type.  For cookies, it is important to have the top and bottom surfaces nearly parallel. Small differences in plane angle can be corrected using the 3D printed leveling table we designed (Figure \ref{fig:ideal_levelling}). \todo{Make figure appear after reference.}
+TIM requires additional sanding considerations for each sample type.  For cookies, it is important to have the top and bottom surfaces nearly parallel. Small differences in plane angle can be corrected using the 3D printed leveling table we designed (Figure \ref{fig:ideal_levelling}). %\todo{Make figure appear after reference.}
 For cores, care should be taken to maximize the scanning surface. This means removing material to be coincident to the center of the cross section of the core. 
 Similarly to cookies, the scanning surface should be as close to parallel to the XY-plane as possible, but generally does not need to be leveled using the leveling tables.
 
@@ -357,7 +357,7 @@ Other small snippets of code were generated to select pixels in specific regions
 % MEE's guidelines have a distinct Results section from Discussion although maybe they're flexible on this? Conclusion is optional for MEE
 
 % emwAug18 - I moved around the usage to two places, see what you think...
-TIM is capable of producing extremely high resolution scans across diverse species. \R{usage_1}To date, we have used TIM to scan over 1,200 cores and a 100 cookies spanning XX species (REF TABLE in supp)  \R{usage_2}
+TIM is capable of producing extremely high resolution scans across diverse species. \R{usage_1}To date, we have used TIM to scan over 1,300 cores and 80 cookies spanning 20 species (Table \ref{tab:species})  \R{usage_2}
 We calculated the maximum dots per inch (DPI) at 21,140 of individual images captured from the system using a microscopy slide scale (with 0.01 mm graduations, Figure \ref{fig:dpi_measurements}), and developed a Python tool to replicate this for varied lens focal lengths. When downscaling the final stitch, 
 DPI scales linearly with the downscale percentage defined in the machine parameters. % emwAug18 - make sure the \ref{fig:dpi_measurements} is correct, showing up as ??
 
@@ -365,16 +365,14 @@ Digitizing samples takes significantly longer for cookies than it does for cores
 For large cookies, the operator can choose to selectively scan a radius of the cookie instead of the whole surface (as a single radius contains a portion of each ring) and/or scan at a lower DPI. Scanning complete cookies at maximum DPI is unrealistic as file size limits are quickly encountered with small diameter cookies. 
 
 To fit within the current maximum 2.5 GB limits of a TIFF file, the maximum diameter of a cookie scanned at 30\% of maximum resolution is limited to approximately 130 mm. 
-This maximum cookie diameter is significantly smaller than the maximum core sample length. 
-% emwAug18 - I would change the below to; TIM can scan cores up to 1.5 m in length, which is 50\% larger than the longest increment borer available on the market (though a larger ACRO frame than shown here would be needed to support such longer sample lengths). 
-\R{max_length}Cores can be scanned at maximum resolution up to 1 meter which can be collected from the longest increment borer available on the market (though a larger ACRO frame than shown here would be needed to support this sample length). % emwAug18 - be sure your \ref{}are against the text on one side, otherwise you add white space
+This maximum cookie diameter is significantly smaller than the maximum core sample length. \R{max_length}TIM can scan cores up to 1.5 m in length, which is 50\% larger than the longest increment borer available on the market (though a larger ACRO frame than shown here would be needed to support such longer sample lengths).  % emwAug18 - be sure your \ref{}are against the text on one side, otherwise you add white space
 %% End reviewer comments 3
 
 %% Addressing reviewer comments 4 
-\R{large_stitch} Samples larger than this limit can still be scanned and stitched but TIM saves the final mosaic as an uncompressed binary NumPy memory-mapped array file. NumPy files are not supported by standard image viewers like ImageJ and require custom Python scripts to open subsections of the image to view. %emw17Jan2026 -- any chance we can give an (e.g., THIS tool) to the end here? %amf28Jan2026 -- This would be some GUI wrapping NumPy functions which are made to edit the NumPy files. I'm certain this could be done but it doesn't really seem worth it. I imagine in order for it to actually be useful, it would need to offer complete annotation functionality for marking and be user friendly in a way that I wouldn't be able to churn out quickly. emwREPLY: Okay, we skip it then.
+\R{large_stitch}Samples larger than this limit can still be scanned and stitched but TIM saves the final mosaic as an uncompressed binary NumPy memory-mapped array file. NumPy files are not supported by standard image viewers like ImageJ and require custom Python scripts to open subsections of the image to view. %emw17Jan2026 -- any chance we can give an (e.g., THIS tool) to the end here? %amf28Jan2026 -- This would be some GUI wrapping NumPy functions which are made to edit the NumPy files. I'm certain this could be done but it doesn't really seem worth it. I imagine in order for it to actually be useful, it would need to offer complete annotation functionality for marking and be user friendly in a way that I wouldn't be able to churn out quickly. emwREPLY: Okay, we skip it then.
 %% End addressing reviewer comments 4
 
-\begin{figure}[htbp]
+\begin{figure}[H]
   \todo{Make this figure fit better and fill with real data.}
   \centering
   \begin{subfigure}{.5\textwidth}
@@ -427,11 +425,13 @@ Our design significantly increases the maximum sample length and maximum resolut
 In addition, TIM is intended to be readily replicated by labs without significant engineering capacity and equipment. 
 We hope that such an open-source device will facilitate the widespread sampling of tree rings across diverse ecosystems and reduce barriers for researchers with smaller budgets. 
 
+\clearpage
 \section{Supplemental Information}
 
-{
+
 \renewcommand{\thefigure}{S\arabic{figure}}
 \setcounter{figure}{0}  % Start supplemental figures from S1
+
 
 \begin{figure}[htbp]
   \centering
@@ -450,10 +450,14 @@ We hope that such an open-source device will facilitate the widespread sampling 
   \caption{Example of a single DPI measurement using a 0.01 mm slide scale. We found the DPI measured at multiple locations in the field of view vertically and horizontally converged on the same value.}
   \label{fig:dpi_measurements}
 \end{figure}
-}
+
 
 \renewcommand{\thetable}{S\arabic{table}}
+\setcounter{table}{0}
+% \renewcommand{\thetable}{S\arabic{table}}
+\include{scanned_species_table}
 \include{notation_glossary_table}
+
 
 \bibliography{references}
 
