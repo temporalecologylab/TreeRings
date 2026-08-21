@@ -61,15 +61,12 @@ The first computer-based method to measure tree ring widths used a microcomputer
 This method has high precision, but depends heavily on specific technicians and maintains no image record, preventing later measurement reproducibility and uncertainty quantification \citep{levanic_atrics_2007}.
 
 Image analysis of tree rings was later implemented to reduce both errors in sampling and sampling bias across individual technicians, with major methods developed in the 1980s and 1990s to digitize tree ring samples using optical scanning \citep{mcmillin_application_1982,guay_new_1992}. Optical scanners are still readily available for purchase; using a top of the line scanner (e.g., Epson Perfection V850 Pro) produces a maximum resolutions of 6,400 dpi and scan area of up to 21.6 cm x 29.7 cm.
-More recent techniques have aimed to achieve higher resolutions and/or larger samples through a different digitization approach---using an image-capturing system. These systems rely on a 
-% emwAug18 - BELOW: is it really a microscrope camera? Maybe just say 'digital camera' ... or even be more general if needed and define DSLR while you're at it: camera (e.g., using a microscope camera or digital single-lens reflex---DSLR---camera)
-microscope camera to take images, motors to move the sample or camera, a computer to manage the capturing, and a second, more powerful, computer to stitch images into a larger composite image.
+More recent techniques have aimed to achieve higher resolutions and/or larger samples through a different digitization approach---using an image-capturing system. These systems rely on a digital camera to take images, motors to move the sample or camera, a computer to manage the capturing, and a second, more powerful, computer to stitch images into a larger composite image.
 Decreasing the field of view of each captured image increases the resolution of the final stitched image without restricting the size of the sample \citep{muhlich_stitching_2022}.
 Stitching multiple images into one mosaic is a common technique used in other fields such as mineralogy and cellular biology \citep{ro_image_2021}, which was
 first implemented for tree rings through the Advanced Tree-Ring Image Capturing System (ATRICS) \citep{levanic_atrics_2007}. % Adding ATRICS after introducing the image and stitch method
 
 
-% emwAug18 - I added in some commas for you below ... though see here which backs up my use of spaces! https://www.themathdoctors.org/decimals-commas-thousands-and-lakhs/
 Since ATRICS was introduced in 2007, image capture and stitching of tree rings have become more common. Today CaptuRING offers a more modern do-it-yourself alternative to ATRICS, creating scans up to 5,339 dpi using a DSLR camera and motorized stage \citep{garcia-hidalgo_capturing_2022}. 
 Another alternative, Gigapixel, achieves an impressive 19,812 dpi with the same DSLR image capture and composite stitch method \citep{griffin_gigapixel_2021}. 
 While CaptuRING and Gigapixel both use DSLR cameras and motorized movement, they differ on two fronts. 
@@ -84,20 +81,17 @@ We added support to digitize both cookies and cores, increased the maximum sampl
 Our design requires the use of 3D printed components and common hand tools such as hex keys and wrenches. No specialized equipment or power tools are required beyond this. 
 Excluding 3D printed parts, the total cost of the machine is approximately \$2,200 USD \citep[compared to the \$70,000 USD of the Gigapixel,][]{griffin_gigapixel_2021}.
 We chose to use a Raspberry Pi HQ camera with a microscope lens to save on purchasing a professional camera with a macro lens. Professional camera setups are comparable in price to the entire cost of TIM.
-These savings combined with not needing to purchase a professional stitching software license (such as PTGui from New House Internet Services BV, Rotterdam, NL, which is the suggested software to use with CaptuRING) makes TIM a more economical option than most products currently available. \R{line_change_1}
+These savings combined with not needing to purchase a professional stitching software license (such as PTGui from New House Internet Services BV, Rotterdam, NL, which is the suggested software to use with CaptuRING) makes TIM a more economical option than most products currently available.\R{line_change_1}
 Additionally, the design is open-source and open-hardware allowing for contributors to add new sensors or alter the control methods. 
 
 \section{Methods}
 
 \subsection{TIM System Overview} % this is so dry fix later. The engineer in me loves a dry title
 
-% emwAug18 - maybe this figure caption is the best place to cite the one of the hi-res images in the main text and provide a complete list of them in the supp PDF. 
 \begin{figure}
   \centering
   \includegraphics[height=0.5\linewidth]{../content/tina.jpg} % There are a few limits which don't sound correct to me in this part (file size, machine design, quality sanding, etc.)
-  \caption{Complete assembly of TIM, shown with a few smaller cookies ready to be scanned.  All of the 3D printed parts are available for download on the NIH 3D printing repository (HYPERLINK REMOVED) and the software is  open source, with instructions to recreate this tool available on GitHub (HYPERLINK REMOVED). } % emwAug10 -- In addition to putting the links here, I would make sure each is sprinkled in around where most of the info related to it is introduced in the main text. 
-% emwAug18 -- at the end you could add: Example images produced by TIM are provided in the SI. 
-% emwAug18 -- In the supp I might make a TABLE of the images (3 cols: file name, species and description) and you could just link to that table here... 
+  \caption{Complete assembly of TIM, shown with a few smaller cookies ready to be scanned.  All of the 3D printed parts are available for download on the NIH 3D printing repository (HYPERLINK REMOVED) and the software is  open source, with instructions to recreate this tool available on GitHub (HYPERLINK REMOVED). Links to images produced by TIM are provided in Table \ref{tab:scans}.} 
   \label{fig:tim_assembled}
 \end{figure}
 
@@ -115,7 +109,7 @@ By choosing this combination, we were able to reduce the weight and cost of the 
 The Jetson is an edge computer which drives a monitor for a GUI, sends commands to the motor controller to move the machine, runs image processing calculations for machine control, and performs calculations to stitch individual images into one mosaic. 
 
 \subsection{Preparing Cookies and Cores}
-TIM can scan both tree cookies and cores but they need to be well prepared before scanning. Samples that are not well sanded may not have enough detail when stitching images together into the complete mosaic. Thus, users of TIM should follow general guidelines for preparing cookies and cores---sanding samples with incrementally increasing sand paper grit. Samples must be uniformly sanded and have a planar surface for scanning \citep{speer_fundamentals_2010} \R{line_change_2}.
+TIM can scan both tree cookies and cores but they need to be well prepared before scanning. Samples that are not well sanded may not have enough detail when stitching images together into the complete mosaic. Thus, users of TIM should follow general guidelines for preparing cookies and cores---sanding samples with incrementally increasing sand paper grit. Samples must be uniformly sanded and have a planar surface for scanning \citep{speer_fundamentals_2010}.\R{line_change_2}
 We sanded samples using a 4 inch belt sander with lower grits between 120 and 240 for the bulk of the material removal, followed by sanding using an orbital sander with progressively finer grits between 240 and 400. We then used a microscope to visually inspect the quality of the sanding. Samples were considered to be sufficiently prepared when vessels were easily recognizable.
 
 TIM requires additional sanding considerations for each sample type.  For cookies, it is important to have the top and bottom surfaces nearly parallel. Small differences in plane angle can be corrected using the 3D printed leveling table we designed (Figure \ref{fig:ideal_levelling}). %\todo{Make figure appear after reference.}
@@ -198,10 +192,11 @@ By default TIM is set to have a 33\% overlap with its neighbor but this can be a
 
 Most microscope lenses are a fixed focal length, requiring the subject to be moved in relation to the lens for focusing. Additionally, inexpensive microscope lenses often have a very small depth of field. 
 Variations of height across the length of a sanded sample result in images losing focus during a scan (Figure \ref{fig:realistic_levelling}). 
-An autofocusing algorithm was implemented using a Golden Section Search method as described by \citet{gu_region_2015} to capture in-focus images \R{line_change_3}. In short, the camera's position is moved in the $Z$ axis and stops when it maximizes the sharpness metric of the image. 
+An autofocusing algorithm was implemented using a Golden Section Search method as described by \citet{gu_region_2015} to capture in-focus images.\R{line_change_3} In short, the camera's position is moved in the $Z$ axis and stops when it maximizes the sharpness metric of the image. 
 We found the variance of Laplacian sharpness metric to be easy to implement in Python and robust across samples \citep{pech-pacheco_diatom_2000}. 
 
 \subsubsection{Core Scanning Procedure}
+\label{sec:scanning}
 
 Scanning a core starts with aligning the length of the sample to the $Y$-axis of the machine at any $X$ position. We 3D printed a tray to hold multiple cores next to each other to make the alignment process faster.
 From there, the operator needs to navigate the camera to an in-focus position anywhere along the core and enter basic metadata such as sample ID.
@@ -239,21 +234,18 @@ The top and bottom edges of the core are detected by comparing the sharpness met
 When the camera moves past either edge of a core, there is no subject in the focused plane of the lens. These images are very blurry and the sharpness metric is at least an order of magnitude less than the images that are focused on the core. 
 If the Golden Section Search algorithm cannot find an image with a higher sharpness metric than this threshold, it is safe to assume the sample is no longer in the frame. This technique reduces scanning setup time as the operator does not need to measure the length of each core when adding the sample into scanning queue.
 % Clarification comments 6
-% emwAug18 - I made some edits based on what CRD told me he will send ... 
-\R{line_change_4} Among the over two dozen species (gynosperms and angiosperms) that we have scanned, we found the sharpness metric did not vary significantly when in-focus, allowing multiple similar species to be scanned in the same batch.
+\R{line_change_4}Among the over two dozen species (gynosperms and angiosperms) that we have scanned, we found the sharpness metric did not vary significantly when in-focus, allowing multiple similar species to be scanned in the same batch.
 
 Golden Section Search autofocusing is robust, but takes up to 10 seconds to obtain the most in-focus image (in our implementation). When capturing tens or hundreds of images per sample, autofocusing time thus becomes significant.
 In the interest of minimizing scanning time per sample, we chose to only autofocus when necessary. Autofocusing occurs on the very first image to get a baseline sharpness metric. The machine then moves to capture the neighboring image.
-If the new image has at least a sharpness metric of 95\% of its previously imaged neighbor, we choose not to run the autofocusing procedure. If the prepared surface of the core is perfectly planar to the table that TIM is installed on, we have found that it is possible to only autofocus once for tens of images while maintaining high image sharpness (REF SUPP TABLE). % emwAug18 - perfect place to ref that table of images in the supp that we'll add! I would mention it here and in the caption....
+If the new image has at least a sharpness metric of 95\% of its previously imaged neighbor, we choose not to run the autofocusing procedure. If the prepared surface of the core is perfectly planar to the table that TIM is installed on, we have found that it is possible to only autofocus once for tens of images while maintaining high image sharpness (See Table \ref{tab:scans}).
 When TIM encounters a new image that has a focus metric lower than its previous neighbor, it runs the autofocusing procedure.
 %% Addressing reviewer comments 1 
-\R{autofocusing_1} This approach of auto-focusing only when deviations from the previous sharpness are found ensures that all neighboring images have functionally the same sharpness, while minimizing the time spent on autofocusing. 
-% emwAug18 - moved down, see what you think and make sure my edits are correct ... 
+\R{autofocusing_1}This approach of auto-focusing only when deviations from the previous sharpness are found ensures that all neighboring images have functionally the same sharpness, while minimizing the time spent on autofocusing. 
 % In the case that the sample is not aligned well to the camera, the autofocusing procedure runs more frequently. 
 While scanning well prepared samples, we generally saw an autofocusing routine for every 5-10 images. All of the images captured with this method maintained high image sharpness throughout the sample and were well suited for stitching. 
 This time saving feature can be tuned in the configuration file to have a more stringent or lenient sharpness threshold. 
-The autofocusing procedure will run more frequently when the sample is not aligned well to the camera and in cases where the sample is less even. However, samples that have visible scoring marks from sanding, noticeable non-planar surfaces, or other major surface irregularities will likely have difficulties scanning with or without adaptive autofocusing. We have found that such samples simply require more attentive sanding to ensure a blemish free, planar surface for successful and rapid scanning.    
-\R{autofocusing_2} %% End reviewer comments 1
+The autofocusing procedure will run more frequently when the sample is not aligned well to the camera and in cases where the sample is less even. However, samples that have visible scoring marks from sanding, noticeable non-planar surfaces, or other major surface irregularities will likely have difficulties scanning with or without adaptive autofocusing. We have found that such samples simply require more attentive sanding to ensure a blemish free, planar surface for successful and rapid scanning.\R{autofocusing_2} %% End reviewer comments 1
 
 \subsubsection{Accounting for Translation Error Between Core Samples}
 
@@ -305,13 +297,12 @@ With the same images, multiple final stitched resolutions can be made.
 \subsection{Scanning Hard-to-Stitch Samples} 
 
 % Addressing reviewer comments 5
-\R{particle_smearing_1}
 % emwAug18 - I am bit lost on what we're trying to say below ... I will paste to github and hopefully we can fix it there.
-Sanding samples in bulk inherently led to a few outlier samples having blemishes or imperfections on the scanning surface, thus we developed a bench-top method to circumvent the need to resand these samples. %  for logistical convenience. 
+\R{particle_smearing_1}Sanding samples in bulk inherently led to a few outlier samples having blemishes or imperfections on the scanning surface, thus we developed a bench-top method to circumvent the need to resand these samples. %  for logistical convenience. 
 Additionally, this method aids stitching images in regions of few distinguishable features despite effective sanding, primarily in regions of lightly-colored sapwood. % Betula / Populus?  
 For such cases, we developed a particle smearing method which embeds particles in the prepared surface of the sample, thus aiding the stitching process.
-Particle smearing does not need to be done to every sample and is best reserved for samples that have proven to be difficult to stitch. We found this method did not interfere with the measurements of annual growth rings. Measurement of other anatomical measurements such as vessel counting will likely be affected. 
-\R{particle_smearing_2}
+Particle smearing does not need to be done to every sample and is best reserved for samples that have proven to be difficult to stitch. We found this method did not interfere with the measurements of annual growth rings. Measurement of other anatomical measurements such as vessel counting will likely be affected.\R{particle_smearing_2}
+
 % End reviewer comments 5
 
 \subsubsection{Particle Smearing}
@@ -344,28 +335,27 @@ When applied correctly, trace amounts of silicon carbide will be embedded in the
 \end{figure}
  
 \subsubsection{LLM Statement} %Reviewer comments 7 
-\R{llm_rewording_1}
-We wrote all the initial code for our first fully functioning prototype version of TIM, % emwAug18 -- maybe give the years: We wrote all the initial code for our first fully functioning prototype version of TIM (in 2021-2022) or whatever they were... 
+
+\R{llm_rewording_1}We wrote all the initial code for our first fully functioning prototype version of TIM, % emwAug18 -- maybe give the years: We wrote all the initial code for our first fully functioning prototype version of TIM (in 2021-2022) or whatever they were...
 but used ChatGPT-4.0 to aid in implementing several improvements.
 Code was generated to convert our first GUI implementation to an alternative package when we faced compatibility constraints. 
 Additionally, ChatGPT-4.0 helped quickly iterate on the tools used to manually calculate DPI using a microscope slide ruler and annotate images with guiding lines when defining ring boundaries. 
-Other small snippets of code were generated to select pixels in specific regions of images. We carefully reviewed all generated code for functionality, and note each use of it clearly with comments in the source files. 
-\R{llm_rewording_2}
+Other small snippets of code were generated to select pixels in specific regions of images. We carefully reviewed all generated code for functionality, and note each use of it clearly with comments in the source files.\R{llm_rewording_2}
+
 
 \section{Results \& Discussion} 
 %emw9Mar: I wondered about this being Results & Discussion ... would MEE be okay with that? It would work better for the paper I think. What do the guidelines say on formatting for articles? 
 % MEE's guidelines have a distinct Results section from Discussion although maybe they're flexible on this? Conclusion is optional for MEE
 
-% emwAug18 - I moved around the usage to two places, see what you think...
-TIM is capable of producing extremely high resolution scans across diverse species. \R{usage_1}To date, we have used TIM to scan over 1,300 cores and 80 cookies spanning 20 species (Table \ref{tab:species})  \R{usage_2}
+TIM is capable of producing extremely high resolution scans across diverse species. \R{usage_1}To date, we have used TIM to scan over 1,300 cores and 80 cookies spanning 20 species (Table \ref{tab:species}).\R{usage_2}
 We calculated the maximum dots per inch (DPI) at 21,140 of individual images captured from the system using a microscopy slide scale (with 0.01 mm graduations, Figure \ref{fig:dpi_measurements}), and developed a Python tool to replicate this for varied lens focal lengths. When downscaling the final stitch, 
-DPI scales linearly with the downscale percentage defined in the machine parameters. % emwAug18 - make sure the \ref{fig:dpi_measurements} is correct, showing up as ??
+DPI scales linearly with the downscale percentage defined in the machine parameters.
 
 Digitizing samples takes significantly longer for cookies than it does for cores (Figure \ref{fig:digitization_time}). This is due to the surface area of cookies requiring more images, as it has a squared relationship to sample radius.
 For large cookies, the operator can choose to selectively scan a radius of the cookie instead of the whole surface (as a single radius contains a portion of each ring) and/or scan at a lower DPI. Scanning complete cookies at maximum DPI is unrealistic as file size limits are quickly encountered with small diameter cookies. 
 
 To fit within the current maximum 2.5 GB limits of a TIFF file, the maximum diameter of a cookie scanned at 30\% of maximum resolution is limited to approximately 130 mm. 
-This maximum cookie diameter is significantly smaller than the maximum core sample length. \R{max_length}TIM can scan cores up to 1.5 m in length, which is 50\% larger than the longest increment borer available on the market (though a larger ACRO frame than shown here would be needed to support such longer sample lengths).  % emwAug18 - be sure your \ref{}are against the text on one side, otherwise you add white space
+This maximum cookie diameter is significantly smaller than the maximum core sample length. \R{max_length}TIM can scan cores up to 1.5 m in length, which is 50\% larger than the longest increment borer available on the market (though a larger ACRO frame than shown here would be needed to support such longer sample lengths).
 %% End reviewer comments 3
 
 %% Addressing reviewer comments 4 
@@ -393,7 +383,7 @@ This maximum cookie diameter is significantly smaller than the maximum core samp
 \end{figure}
 
 \subsection{Strengths and Opportunities} 
-TIM's design minimizes the barriers to build an affordable, efficient and high-resolution image capture system. \R{usage_2start}We have used TIM across different operators for over two years and found it works well with intermittent or intensive. For example, we have used TIM to scan batches of 24 cores to be scanned a day over the course of three months, with many batches scanned overnight. \R{usage_2end}
+TIM's design minimizes the barriers to build an affordable, efficient and high-resolution image capture system. \R{usage_2start}We have used TIM across different operators for over two years and found it works well with intermittent or intensive. For example, we have used TIM to scan batches of 24 cores to be scanned a day over the course of three months, with many batches scanned overnight.\R{usage_2end}
 We have found that TIM does not compromise scan quality and can scan both cookies and cores. We have measured tree ring widths using the digitized samples from TIM using CooRecorder as well as ImageJ \citep{schneider_nih_2012}.
 %% Addressing reviewer comments 2
 % emwAug18 - I would move the species list to the supp and just ref it above as suggested. 
@@ -457,7 +447,7 @@ We hope that such an open-source device will facilitate the widespread sampling 
 % \renewcommand{\thetable}{S\arabic{table}}
 \include{scanned_species_table}
 \include{notation_glossary_table}
-
+\include{example_scans_table}
 
 \bibliography{references}
 

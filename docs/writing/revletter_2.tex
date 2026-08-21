@@ -27,17 +27,8 @@
 
 \emph{Reviewer and editor comments are in italics.} Our replies are in plain font.\\ 
 
-% Senior editor comments start
-{\bf Editor -- comments:} \\
-
-\emph{Thank you for submitting your manuscript to Methods in Ecology and Evolution. I have now received the reviewers' reports and a recommendation from the Associate Editor who handled the review process. Copies of their reports are included below. This manuscript has the potential to make a valuable contribution to the area, but there are a number of significant concerns that need to be addressed. I have considered your paper in light of the comments received and I would like to invite you to prepare a major revision.}\\
-
-We thank the editor for the opportunity to address the reviewer's concerns. Our point-by-point responses are below.\\
-% Senior editor comments end
-
 % Associate editor comments start
 {\bf Associate Editor -- comments:} \\
-% emwAug18 - you do not need to include the editor's comments (above, they are probably boilerplate), but I think it fine to have it. But you MUST include ALL the comments from the associate editor and reviewer. ALL of them (otherwise it looks like we are hiding something). I added in the associate's editors and some of the missing ones from R1 and R2, but you need to work on the others fully. (I might just start a new file copy-and-pasting the comments and then you can grab the responses and add them, but up to you.) 
 
 \emph{TIM is a promising open-source tool that could make high-resolution imaging of tree cores and cookies more
 accessible. The manuscript is generally clear, and the combination of low-cost hardware, automated batch
@@ -48,26 +39,24 @@ We thank the editor for their positive thoughts on TIM and were excited to hear 
 
 \emph{The most important point is that the central claim of very high resolution can't currently be judged. Because no full-resolution stitched images are provided and the figures are low-resolution thumbnails without scale bars. Please include representative full-resolution examples for both a core and a cookie. Please also distinguish pixel sampling from effective optical resolution and reconcile the inconsistent values in the text.} \\
 
-\todo{scan full resolution samples} % emwAug18 - more active voice! Also, I would cite one of the images in the main text and provide a complete list of them in the supp PDF. I will try to flag a spot in the main text to do this... 
-We agree that stitched images are necessary to evaluate the image quality. Thus, we have added full-resolution scans for multiple species in the supplementary material.\\
+\todo{scan full resolution samples} 
+We agree that stitched images are necessary to evaluate the image quality. Thus, we have added full-resolution scans for multiple species in the supplementary material see Table \ref{tab:scans}.\\
 
 \emph{Two practical points need clarification: whether autofocusing only every 5 to 10 frames affects sharpness or stitching on uneven samples, and the generality of the particle-smearing step.}\\
 
-% emwAug18 - here's a good spot to not bury the changes, see my edits below: 
 This is a great point as this is something we ourselves added and found to work, so we can fully understand that others would be surprised as well. To address this we have provided extended text about this in the manuscript between \lr{autofocusing_1} and \lr{autofocusing_2}, which we quote below in response to Reviewer \#2. 
 
 To explain briefly here as well, autofocusing every 5 to 10 frames is the result of the sample maintaining a nearly constant distance from the camera sensor, but we test that the autofocus on each image appears sharp. While it is possible for TIM to autofocus every frame, we have found this approach works well and chosen to only refocus the lens more often than every 5-10 frames only when adjacent frames have significantly different focus scores. 
-% emwAug18 - I think you can explain the below better, I don't even know what you're saying. Or you could cut it; I think maybe it is explained well enough above? 
-Capturing sequential frames without autofocusing indicates that the focus metric has not deviated from the past frame by more than 5\%, depending on configurable parameters. Therefore, the sharpness of the images are functionally identical when multiple frames are captured without refocusing the camera. \\
 
 \emph{Finally, please clarify how long and how intensively TIM has been in routine use, including approximate numbers of samples, species and operators, the period of use, and any failure modes. This would reassure the resource-limited labs you are targeting. Please also address the suggestion both reviewers list, and add scale references to the sample images throughout.} \\
 
-We appreciate the editor and reviewers highlighting the need to provide more information about our usage of TIM. We finished a working version of TIM in XX month XX year and have used it near continuously since then. Over this time, we have processed approximately 1,262 cores, 6 species, and 4 operators. This includes an intensive period where many cores were scanned in a three month period with batches of 25 cores were scanned one to three times a day (showing it works well even when heavily used). Batches were often left scanning throughout the night without supervision. Additionally, we have provided the design files to another lab and they have built their own TIM so it is now used across two labs (in two different countries). \\
+We appreciate the editor and reviewers highlighting the need to provide more information about our usage of TIM. We finished a working version of TIM in XX month XX year and have used it near continuously since then. Over this time, we have processed approximately 1,300 cores, 80 cookies, and 20 species by 3 operators. This includes an intensive period where many cores were scanned in a three month period with batches of 25 cores were scanned one to three times a day (showing it works well even when heavily used). Batches were often left scanning throughout the night without supervision. Additionally, we have provided the design files to another lab and they have built their own TIM so it is now used across two labs (in two different countries). \\
 
 We have updated the manuscript to outline this, see \lr{usage_1} and \lr{usage_2}. \\
 
 \emph{These are all addressable, and I look forward to seeing the revised version.}
 
+We thank the editor for the hopeful comment and are excited to share the updated manuscript.
 
 % Associate editor comments end
 
@@ -77,14 +66,14 @@ We have updated the manuscript to outline this, see \lr{usage_1} and \lr{usage_2
 \emph{The authors present an interesting open-source contribution to dendrochronological imaging. The use of low-
 cost optics is genuinely innovative, and the sub-micron resolution potential could open new possibilities
 for wood anatomical analysis. However, several aspects require clarification to assess the potential of
-these low cost cameras.} % emwAug18 - again, I am adding in part of what you did not ... but check!
+these low cost cameras.} 
 
 We thank the reviewer for their positive comments and were happy to hear they see promise in the design. We appreciate that we should have provided more images and details in and with the manuscript as we now do. We detail these changes further below.\\ 
 
 \emph{The most pressing concern is image quality. The pixel size of the Raspberry Pi HQ sensor (1.55 µm × 1.55 µm) is substantially smaller than sensors used in prosumer cameras currently used by existing systems. While the authors claim high resolution, no final stitched images are provided for evaluation to assess image quality. The low-resolution thumbnails in Figures 4 and 5, which also lack scale bars, make it impossible to assess whether the resolution gain includes reasonable image quality. This is particularly important given that the key innovation of such an advance in resolution is enabling anatomical measurements (moving forward current 4 microns from existing platforms is not necessary for annual rings or earlywood/latewood). I encourage the authors to include representative final images at full resolution.}\\
 
 % emwAug18 - I can edit this more on the next draft ... 
-We thank the reviewer for highlighting that representative without full-resolution images, it is not possible to assess if the resolution gain improves the image quality appreciably. We have included multiple scans from different species in the supplementary material. \todo{Add scale bars to thumbnails} \todo{Add thumbnails with crop to indicate full resolution} Additional thumbnail images for the figures have been included to better showcase the resolution. \\ 
+We thank the reviewer for highlighting that without representative full-resolution images, it is not possible to assess if the resolution gain improves the image quality appreciably. We have included multiple scans from different species in the supplementary material. \todo{Add scale bars to thumbnails} \todo{Add thumbnails with crop to indicate full resolution} Additional thumbnail images for the figures have been included to better showcase the resolution. \\ 
 \todo{Scan full resolution samples}
 
 \emph{Regarding Figure 6, the authors would benefit from revising the axes so that time appears as a function of sample size, separating cores from cookies, and increasing the number of samples to allow for variability assessment. In its current form the figure is difficult to interpret and I cannot get a good idea of the time necessary to run a core (still the most common way of dendrochronological sampling). Does a typical core 350 mm with 5 mm width(1750 mm2)  requires 150 minutes? I do not believe that if this were true you were presenting this article. So please, revise this table.} \\
@@ -108,7 +97,7 @@ We agree with the reviewer that a scale reference on the scan is necessary to ve
 
 \emph{The statement in line 300 indicating a maximum core length of 1500 mm at full resolution warrants clarification, as this exceeds the practical dimensions of any standard increment core and it is complicated to work with a “cookie” that size.}\\
 
-We thank the reviewer for pointing out that the maximum core length exceeds practical dimensions of increment borers. We have updated the text to clarify this on \lr{max_length}.\\ % emwAug18 - nice. Replies like this are perfect...
+We thank the reviewer for pointing out that the maximum core length exceeds practical dimensions of increment borers. We have updated the text to clarify this on \lr{max_length}.\\ 
 
 \emph{A final point, more philosophical in nature but worth raising. There is an important difference between a tool that works and a tool that is ready for others to use. In my experience, that difference only becomes apparent after months of routine use in a real lab setting: different samples, different operators, unexpected failures. The question for the authors is simple: is TIM currently part of their day-to-day data collection, or was this manuscript written closer to the assembly stage? This matters because the dendrochronology community has seen promising methods published before they were truly mature, and the labs that tried to adopt them paid the price in time and frustration. TIM is explicitly aimed at labs with limited economic capacity, which makes this question even more important, those labs have less margin to troubleshoot. The authors should provide an account of how long and how intensively the tool has been in use. This point is relevant to build confidence in the method.}\\
 
@@ -117,10 +106,16 @@ The reviewer raises valuable points when assessing the readiness for others to a
 
 Additionally, we shared our design files with another lab (based on another continent) who have since recreated TIM and have been able to use it for their research. While we continue to work to make TIM easier to build and use, we have done our best to provide labs who want to replicate the design with the resources they need to reproduce TIM. All of TIM's design is open-source and we are willing to assist with reasonable inquiries regarding the replication process.  \\
 
+\emph{In a nutshell, I love the approach, but I would be more convinced if the issues that I am presenting could be clarified.}\\
+
 % Reviewer 1 comments end
 
 % Reviewer 2 comments start 
 {\bf Reviewer \# 2 -- comments:} \\
+
+\emph{This manuscript describes the utility for and design of an open-source system for scanning cores and cookies with an automatic stitching of high resolution images to a larger mosaic for efficient analysis. The justification is clearly made in the introduction. The description of the methodology is logically described and is mainly clear and easy to follow. In most cases where this reader formed a question, the next section inevitably answered the query.}
+
+
 
 \emph{The system describes is very practical and I like that there are manual alternatives to the automated queuing approach. Likewise for cookies/disk material, specific radii can be manually selected to save time and file storage space/size. It would be useful to note what happens when a storage limit is hit -what does the system do in such a case? OK, I see that uncompressed array files are saved – but does this allow stitching?}\\
 
@@ -130,35 +125,31 @@ We thank the reviewer for highlighting the need for clarification regarding file
 
 More dramatic stains would not affect the imaging and stitching contrast settings. We chose to use silicon carbide as it was more reversable than staining.\\
 
-\emph{It’s a little unclear with the current notation what “21 140 DPI” means – should it be 21,140 DPI? Also, one version of your abstract indicates 0.83 pixels per micron and the other 1.2 microns per pixel. Similarly for Point 3, is the value \$3,000 USD? The problem seems to be a space has been introduced to replace the thousand separators: L54 – 6 400 DPI rather than 6,400 DPI. See L67, L69, L88, L89… etc. throughout the manuscript.}\\
+\emph{My last question is also answered about the potential for ring or feature detection. I hope that is something your team considers as it seems like the next logical step – and would then provide serious competition to the WinDendro systems. Bravo!}
+
+\emph{Abstrct point 3: It’s a little unclear with the current notation what “21 140 DPI” means – should it be 21,140 DPI? Also, one version of your abstract indicates 0.83 pixels per micron and the other 1.2 microns per pixel. Similarly for Point 3, is the value \$3,000 USD? The problem seems to be a space has been introduced to replace the thousand separators: L54 – 6 400 DPI rather than 6,400 DPI. See L67, L69, L88, L89… etc. throughout the manuscript.}\\
 
 We changed the notation to use commas in our number notation. Additionally the abstract was revised to only display microns per pixel. \todo{Update the submission abstract to include this} \\
 
-% emwAug18 -- just as an example I pulled out the first small comment below to show how ALL of these should be addressed eventually (aka soon).
-
 \emph{L96: Change “current” to currently}\\
 
-Done. See line XX. \\
+Done. See line \lr{line_change_1}. \\
 
-\emph{
-    \begin{itemize}
-        \item L96: Change “current” to currently % emwAug18 - see above.
-        \item L129: Should read “…and have a planar surface for…”
-        \item L137: Small point admittedly, but conventionally the reference to a figure should appear before the figure itself occurs. Same for Figure 3 which appears before the reference to it. % emwAug18 -- there is a ton online on trying to do this ... I think you may need to use floats and h!  but I would set a time limit on this (20 minutes) and then give up if this ends up being a pain. Then you can just say -- we have worked to re-position the images but found it difficult to place the image exactly before the text without causing other formatting issues. If our article were accepted, we certainly would work with the journal typesetter to make sure the images are well placed relative to the text where they are mentioned. 
-        \item L160: Gu et al. should not be within parenthesis given the current structure, only the publication date (2015).
-        \item L185: Clarification needed. “…same threshold was used across all cores for 5 species…” Is the point that the sequence worked for variation caused by having different species, or that the transition from one species to another was handled?
-    \end{itemize}}
+\emph{L129: Should read “…and have a planar surface for…”}\\
 
-The manuscript has been updated to address these line items. \\
-    
-\begin{itemize}
-        \item \lr{line_change_1}: Changed to "currently"
-        \item \lr{line_change_2}: Changed to "...have a planar surface..."
-        \item Moved figure reference above figure \todo{figure out how to do this}
-        \item \lr{line_change_3}: Changed citation.
-        \item \lr{line_change_4}: Added clarification that the sequence works when transition between species in the same batch.
-    \end{itemize}
+Done. See line \lr{line_change_2}.
 
+\emph{L137: Small point admittedly, but conventionally the reference to a figure should appear before the figure itself occurs. Same for Figure 3 which appears before the reference to it. }\\ % emwAug18 -- there is a ton online on trying to do this ... I think you may need to use floats and h!  but I would set a time limit on this (20 minutes) and then give up if this ends up being a pain. Then you can just say -- we have worked to re-position the images but found it difficult to place the image exactly before the text without causing other formatting issues. If our article were accepted, we certainly would work with the journal typesetter to make sure the images are well placed relative to the text where they are mentioned. 
+
+Done. Moved figure reference above figure \todo{figure out how to do this}
+
+\emph{L160: Gu et al. should not be within parenthesis given the current structure, only the publication date (2015).}\\
+
+Done. See line \lr{line_change_3}.
+
+\emph{L185: Clarification needed. “…same threshold was used across all cores for 5 species…” Is the point that the sequence worked for variation caused by having different species, or that the transition from one species to another was handled?}\\
+
+Done. See line \lr{line_change_4}. \todo{needs more than this I think}
 
 \emph{Section 2.4.2: This description needs a little rephrasing for better clarity. Quite a number of sentences repeat words (code was generated to convert code, package similarly. Again final sentence -code was generated for codebase integration and was noted in code… etc. I think I understand in general what you mean, but I’m not sure. Please rephrase more carefully.}\\
 
@@ -168,6 +159,7 @@ We thank the reviewer for addressing the repetition of words in the manuscript. 
 
 We have updated the figures to make font larger and resync the images. \todo{Update figure with scale bar, increase font, etc.}\\
 
+\emph{So with a little revision I suggest that this will be a really interesting paper and provide an excellent tool for a section of cross disciplinary research that is crying out for such a resource. Well done.}\\
 
 \newpage
 % \bibliography{..//..//..//..//vitisbiblio}
