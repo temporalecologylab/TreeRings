@@ -6,11 +6,11 @@ import matplotlib.pyplot as plt
 # --------------------------
 
 plt.rcParams.update({
-    "font.size": 16,
-    "axes.labelsize": 18,
-    "xtick.labelsize": 16,
-    "ytick.labelsize": 16,
-    "legend.fontsize": 16
+    "font.size": 24,
+    "axes.labelsize": 28,
+    "xtick.labelsize": 22,
+    "ytick.labelsize": 22,
+    "legend.fontsize": 22
 })
 
 # --------------------------
@@ -18,6 +18,12 @@ plt.rcParams.update({
 # --------------------------
 
 df = pd.read_csv("core_scanning_time_data.csv")
+
+df = df[df["sample_length_mm"] < 300] 
+df = df[df["sample_length_mm"] > 50] 
+
+df["stitching_time_min"] = df["stitching_time_sec"] / 60
+df["scanning_time_min"] = df["scanning_time_sec"] / 60
 
 # Calculate total time
 df["total_time_min"] = (

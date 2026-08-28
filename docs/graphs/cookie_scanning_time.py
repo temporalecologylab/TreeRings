@@ -2,11 +2,11 @@ import pandas as pd
 import matplotlib.pyplot as plt
 
 plt.rcParams.update({
-    "font.size": 16,
-    "axes.labelsize": 18,
-    "xtick.labelsize": 16,
-    "ytick.labelsize": 16,
-    "legend.fontsize": 16
+    "font.size": 24,
+    "axes.labelsize": 28,
+    "xtick.labelsize": 22,
+    "ytick.labelsize": 22,
+    "legend.fontsize": 22
 })
 
 df = pd.read_csv("cookie_scanning_time_data.csv")
