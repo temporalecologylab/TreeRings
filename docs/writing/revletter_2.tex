@@ -35,14 +35,13 @@ accessible. The manuscript is generally clear, and the combination of low-cost h
 scanning, and on-device stitching is potentially useful. However, the evidence currently presented is not
 sufficient to evaluate image quality, operational performance, and readiness for adoption.}\\
 
-We thank the editor for their positive thoughts on TIM and were excited to hear that they and the reviewers saw promise in our new tool. We apologize that we failed to submit high-resolution images and other more detailed information with our initial submission and have worked to rectify that as detailed further below.\\
+We thank the editor for their positive thoughts on TIM and were excited to hear that they and the reviewers saw promise in our new tool. We apologize that we failed to submit high-resolution images and other more detailed information with our initial submission and have worked to rectify these omissions, as detailed further below.\\
 
 \emph{The most important point is that the central claim of very high resolution can't currently be judged. Because no full-resolution stitched images are provided and the figures are low-resolution thumbnails without scale bars. Please include representative full-resolution examples for both a core and a cookie. Please also distinguish pixel sampling from effective optical resolution and reconcile the inconsistent values in the text.} \\
 
 We agree that stitched images are necessary to evaluate the image quality. Thus, we have added full-resolution scans for multiple species in the supplementary material  (Table \ref{tab:scans}). We reconciled the inconsistent values in submission abstract. \\
 
-
-We are able to get an estimate of the effective optical resolution using a 1 mm stage micrometer with 0.01 mm graduations. A cropped image of the stage micrometer taken by TIM is shown below in Figure \ref{fig:stage_micrometer}. \\
+We now provide an estimate of the effective optical resolution using a 1 mm stage micrometer with 0.01 mm graduations. A cropped image of the stage micrometer taken by TIM is shown below in Figure \ref{fig:stage_micrometer} (this image and Fig. \ref{fig:stage_micrometer_4_graduations} are both now provided in the supplement). \\
 
 \begin{figure}[htbp]
     \centering
@@ -51,7 +50,7 @@ We are able to get an estimate of the effective optical resolution using a 1 mm 
     \label{fig:stage_micrometer}
 \end{figure}
 
-When the image is cropped further to focus on four graduations (Figure \ref{fig:stage_micrometer_4_graduations}), it's possible to count about 4 pixels between each graduation mark. This indicates that we are able to distinguish features that are less than 10 microns. \\
+When the image is cropped further to focus on four graduations (Figure \ref{fig:stage_micrometer_4_graduations}), it is possible to count about 4 pixels between each graduation mark. This indicates that we are able to distinguish features that are less than 10 microns. \\
 
 \begin{figure}[htbp]
     \centering
@@ -63,9 +62,11 @@ We believe pixel sampling allows us to set a good scale to measure between point
 
 \emph{Two practical points need clarification: whether autofocusing only every 5 to 10 frames affects sharpness or stitching on uneven samples, and the generality of the particle-smearing step.}\\
 
-This is a great point as this is something we ourselves added and found to work, so we can fully understand that others would be surprised as well. To address this we have provided extended text about this in the manuscript between \lr{autofocusing_1} and \lr{autofocusing_2}, which we quote below in response to Reviewer \#2. \\
+This is a great point. As this is something we ourselves added and found to work, we can fully understand that others would be surprised as well. To address this we have provided extended text about this in the revised manuscript between \lr{autofocusing_1} and \lr{autofocusing_2}, which we quote below in response to Reviewer \#2. \\
 
-To explain briefly here as well, autofocusing every 5 to 10 frames is the result of the sample maintaining a nearly constant distance from the camera sensor, but we test that the autofocus on each image appears sharp. While it is possible for TIM to autofocus every frame, we have found this approach works well and chosen to only refocus the lens more often than every 5-10 frames only when adjacent frames have significantly different focus scores. We have added specificity into the use case of the particle smearing method between \lr{particle_smearing_1} and \lr{particle_smearing_2}. \\
+To explain briefly here as well, autofocusing every 5 to 10 frames is the result of the sample maintaining a nearly constant distance from the camera sensor, but we test that the autofocus on each image appears sharp. While it is possible for TIM to autofocus every frame, we have found this approach works well and chosen to only refocus the lens more often than every 5-10 frames only when adjacent frames have significantly different focus scores. \\
+
+We have also added specificity into the use case of the particle smearing method between \lr{particle_smearing_1} and \lr{particle_smearing_2}. \\
 
 \emph{Finally, please clarify how long and how intensively TIM has been in routine use, including approximate numbers of samples, species and operators, the period of use, and any failure modes. This would reassure the resource-limited labs you are targeting. Please also address the suggestion both reviewers list, and add scale references to the sample images throughout.} \\
 
@@ -75,7 +76,7 @@ We have updated the manuscript to outline this between \lr{usage_1} and \lr{usag
 
 \emph{These are all addressable, and I look forward to seeing the revised version.} \\
 
-We thank the editor for the hopeful comment and are excited to share the revised manuscript. \\
+We thank the editor for the hopeful comments and are excited to share the revised manuscript. \\
 
 % Associate editor comments end
 
@@ -87,7 +88,7 @@ cost optics is genuinely innovative, and the sub-micron resolution potential cou
 for wood anatomical analysis. However, several aspects require clarification to assess the potential of
 these low cost cameras.} \\
 
-We thank the reviewer for their positive comments and were happy to hear they see promise in the design. We appreciate that we should have provided more images and details in and with the manuscript as we now do. We detail these changes further below.\\ 
+We thank the reviewer for their positive comments and were happy to hear they see promise in the design. We appreciate that we should have provided more images and details in and with the manuscript, as we now do. We detail these changes further below.\\ 
 
 \emph{The most pressing concern is image quality. The pixel size of the Raspberry Pi HQ sensor (1.55 µm × 1.55 µm) is substantially smaller than sensors used in prosumer cameras currently used by existing systems. While the authors claim high resolution, no final stitched images are provided for evaluation to assess image quality. The low-resolution thumbnails in Figures 4 and 5, which also lack scale bars, make it impossible to assess whether the resolution gain includes reasonable image quality. This is particularly important given that the key innovation of such an advance in resolution is enabling anatomical measurements (moving forward current 4 microns from existing platforms is not necessary for annual rings or earlywood/latewood). I encourage the authors to include representative final images at full resolution.}\\
 
@@ -100,11 +101,12 @@ We thank the reviewer for their insight to improve the legibility of the figure.
 
 \emph{The particle smearing approach is imaginative but raises some concern. In my experience with similar systems, additional surface treatment has never been necessary for successful stitching. The example shown in Figure 5 corresponds to a gymnosperm with highly distinctive tracheid structures, I am shocked that stitching has problems with such an easy sample. It would be informative to know how TIM performs with diffuse-porous angiosperms such as Betula or Populus, where informative tracheid pattern is absent and wood is very white. Additionally, silicon carbide is a very hard material. In TIM configuration the machine is over the samples, so it should not be a problem, but I would be worried if a lab with optical material close to TIM is smearing sand in a routine fashion. I have lived in the coast for many years and there is nothing so disturbing than the way sand gets into every crack.}\\
 
-We appreciate the reviewer's comment and understand the concern that an easy sample would need additional surface treatment to be successfully stitched. We have changed the sample used in Figure 5 to be a harder to scan sample, more representative of a sample which would need surface treatment. Additionally, we have added specificity into the use case of the particle smearing method between \lr{particle_smearing_1} and \lr{particle_smearing_2}. \\
+%emw28Aug -- check my edits are correct!!!
+We appreciate the reviewer's comment and understand their concerns. We agree that many samples will not need additional surface treatment to be successfully stitched. We have thus changed the sample used in Figure 5 (main manuscript text) to be a harder-to-scan sample, more representative of a sample which would need surface treatment. Additionally, we have added specificity into the use case of the particle smearing method between \lr{particle_smearing_1} and \lr{particle_smearing_2}. This includes highlighting that most samples should not need this approach. \\
 
 \emph{Regarding autofocusing, the authors indicate that autofocusing occurs approximately every 5-10 frames. Existing systems typically autofocus every frame. The authors should clarify whether this trade-off affects final image sharpness, particularly in samples with surface irregularities and how it affects to sharpness and stitching.} \\
 
-We appreciate the concern of Reviewer 1 and have clarified how autofocusing every few frames affects the final image sharpness between \lr{autofocusing_1} and \lr{autofocusing_2}. The clarification is quoted below. \\
+We appreciate the concern of Reviewer 1 and have clarified how autofocusing every few frames affects the final image sharpness between \lr{autofocusing_1} and \lr{autofocusing_2}. This clarification is quoted below. \\
 
 \begin{quote}This approach of auto-focusing only when deviations from the previous sharpness are found ensures that all neighboring images have functionally the same sharpness, while minimizing the time spent on autofocusing. 
 % In the case that the sample is not aligned well to the camera, the autofocusing procedure runs more frequently. 
@@ -114,7 +116,7 @@ The autofocusing procedure will run more frequently when the sample is not align
 
 \emph{A minor but important point concerns the scale of measurement. The authors invest considerably (given the cost of TIM) in a precision micrometric scale for calibration, yet no scale reference appears in any of the sample images presented. For a measurement tool, every sample should include a scale reference. A simple millimetric reference would suffice (you can improve accuracy by measuring more milimeters in the scale) and that would allow readers to verify the reported DPI values independently.}\\
 
-We agree with the reviewer that a scale reference on the scan is necessary to verify the DPI. To address this, we have provided scans with a few different scale references. These include a scan of a caliper with millimeter graduations, a cookie scan with a paper ruler on its surface, a photo of a 1mm stage micrometer with 0.01mm graduations, and digital scale bars on each core scan. We cannot provide physical references on top of cores because of the high-resolution and precise focusing of TIM---the slight addition of a change in depth from a paper scale bar causes significant blurring in the images. Cookies have enough surface area for a millimetric reference to be placed on the surface while reserving a useful portion of the sample unaffected by the blurring caused by the physical scale. \\% Scanning a sample with a physical scale bar in the image is non-trivial due to the camera's narrow focal depth.
+We agree with the reviewer that a scale reference on the scan is necessary to verify the DPI. To address this, we have provided scans with a few different scale references. These include a scan of a caliper with millimeter graduations, a cookie scan with a paper ruler on its surface, a photo of a 1 mm stage micrometer with 0.01 mm graduations, and digital scale bars on each core scan. We do not provide physical references on top of cores because of the high-resolution and precise focusing of TIM---the slight addition of a change in depth from a paper scale bar causes significant blurring in the images. Cookies have enough surface area for a millimetric reference to be placed on the surface while reserving a useful portion of the sample unaffected by the blurring caused by the physical scale. \\% Scanning a sample with a physical scale bar in the image is non-trivial due to the camera's narrow focal depth.
 
 \emph{The statement in line 300 indicating a maximum core length of 1500 mm at full resolution warrants clarification, as this exceeds the practical dimensions of any standard increment core and it is complicated to work with a “cookie” that size.}\\
 
@@ -125,7 +127,7 @@ We thank the reviewer for pointing out that the maximum core length exceeds prac
 The reviewer raises valuable points when assessing the readiness for others to adopt TIM. While TIM does not have the polish of a commercial product, TIM has scanned over 1000 samples by at least 4 different operators over the past two years, as we now explain this in the text, between \lr{usage_1} and \lr{usage_2} as well as between \lr{usage_2start} and \lr{usage_2end}.\\ 
 % emwAug18 - see my edits and add in: \R{usage_2start} \R{usage_2end}
 
-Additionally, we shared our design files with another lab (based on another continent) who have since recreated TIM and have been able to use it for their research. While we continue to work to make TIM easier to build and use, we have done our best to provide labs who want to replicate the design with the resources they need to reproduce TIM. All of TIM's design is open-source and we are willing to assist with reasonable inquiries regarding the replication process.  \\
+Additionally, we shared our design files with another lab (based on another continent) and that lab has recreated TIM and used it for their research. While we continue to work to make TIM easier to build and use, we have done our best to provide labs who want to replicate the design with the resources they need to reproduce TIM. All of TIM's design is open-source and we are willing to assist with reasonable inquiries regarding the replication process.  \\
 
 \emph{In a nutshell, I love the approach, but I would be more convinced if the issues that I am presenting could be clarified.} \\
 
@@ -137,7 +139,7 @@ We thank the reviewer for the positive comment and are happy to provide a revise
 
 \emph{This manuscript describes the utility for and design of an open-source system for scanning cores and cookies with an automatic stitching of high resolution images to a larger mosaic for efficient analysis. The justification is clearly made in the introduction. The description of the methodology is logically described and is mainly clear and easy to follow. In most cases where this reader formed a question, the next section inevitably answered the query.} \\
 
-We appreciate the positive comment on their experience while reading the manuscript. \\
+We appreciate the reviewer's positive comments on the manuscript. \\
 
 \emph{The system describes is very practical and I like that there are manual alternatives to the automated queuing approach. Likewise for cookies/disk material, specific radii can be manually selected to save time and file storage space/size. It would be useful to note what happens when a storage limit is hit -what does the system do in such a case? OK, I see that uncompressed array files are saved – but does this allow stitching?}\\
 
@@ -145,11 +147,11 @@ We thank the reviewer for highlighting the need for clarification regarding file
 
 \emph{Its great that the study even tests the use of a grain enhancer like silicon carbide. I presume that more dramatic stains would not affect imaging and stitching contrast settings?}\\
 
-More dramatic stains would not affect the imaging and stitching contrast settings. We chose to use silicon carbide as it was more reversable than staining.\\
+More dramatic stains would not affect the imaging and stitching contrast settings. We chose to use silicon carbide as we found simple staining techniques did not resolve the stitching issue.\\ %emw28Aug -- I changed this so it jives with what we say in the main text now. You could also say at the end here: We now explain this in more detail in this section, between \lr{particle_smearing_1} - \lr{particle_smearing_2}. 
 
 \emph{My last question is also answered about the potential for ring or feature detection. I hope that is something your team considers as it seems like the next logical step – and would then provide serious competition to the WinDendro systems. Bravo!} \\
 
-We thank the reviewer for their enthusiasm about the potential for ring and feature detection. We are hopeful that future methods for ring and other feature identification are well developed. \\
+We thank the reviewer for their enthusiasm about the potential for ring and feature detection. We are hopeful that future methods for ring and other feature identification are developed and can be integrated with TIM through its open-source design. \\ %emw28Aug -- check my edits
 
 \emph{Abstract point 3: It’s a little unclear with the current notation what “21 140 DPI” means – should it be 21,140 DPI? Also, one version of your abstract indicates 0.83 pixels per micron and the other 1.2 microns per pixel. Similarly for Point 3, is the value \$3,000 USD? The problem seems to be a space has been introduced to replace the thousand separators: L54 – 6 400 DPI rather than 6,400 DPI. See L67, L69, L88, L89… etc. throughout the manuscript.}\\
 
@@ -185,7 +187,7 @@ We have updated the figure by cropping the image to the extent of the stage micr
 
 \emph{So with a little revision I suggest that this will be a really interesting paper and provide an excellent tool for a section of cross disciplinary research that is crying out for such a resource. Well done.}\\
 
-We appreciate the positive comment and the acknowledgement of the potential of the tool. \\
+We appreciate the positive comments and the acknowledgement of the potential of our tool. We hope other groups will build and use TIM or develop further on its design. \\ %emw28Aug -- check my edits
 
 \newpage
 % \bibliography{..//..//..//..//vitisbiblio}

@@ -234,17 +234,17 @@ The top and bottom edges of the core are detected by comparing the sharpness met
 When the camera moves past either edge of a core, there is no subject in the focused plane of the lens. These images are very blurry and the sharpness metric is at least an order of magnitude less than the images that are focused on the core. 
 If the Golden Section Search algorithm cannot find an image with a higher sharpness metric than this threshold, it is safe to assume the sample is no longer in the frame. This technique reduces scanning setup time as the operator does not need to measure the length of each core when adding the sample into scanning queue.
 % Clarification comments 6
-\R{line_change_4}Among the over two dozen species (gynosperms and angiosperms) that we have scanned, we found the sharpness metric did not vary significantly when in-focus, allowing multiple similar species to be scanned in the same batch.
+\R{line_change_4}Among the 20 species (gynosperms and angiosperms) that we have scanned, we found the sharpness metric did not vary significantly when in-focus, allowing multiple similar species to be scanned in the same batch.
 
 Golden Section Search autofocusing is robust, but takes up to 10 seconds to obtain the most in-focus image (in our implementation). When capturing tens or hundreds of images per sample, autofocusing time thus becomes significant.
 In the interest of minimizing scanning time per sample, we chose to only autofocus when necessary. Autofocusing occurs on the very first image to get a baseline sharpness metric. The machine then moves to capture the neighboring image.
-If the new image has at least a sharpness metric of 95\% of its previously imaged neighbor, we choose not to run the autofocusing procedure. If the prepared surface of the core is perfectly planar to the table that TIM is installed on, we have found that it is possible to only autofocus once for tens of images while maintaining high image sharpness (See Table \ref{tab:scans}).
+If the new image has at least a sharpness metric of 95\% of its previously imaged neighbor, we choose not to run the autofocusing procedure. If the prepared surface of the core is perfectly planar to the table that TIM is installed on, we have found that it is possible to only autofocus once for tens of images while maintaining high image sharpness (see Table \ref{tab:scans}).
 When TIM encounters a new image that has a focus metric lower than its previous neighbor, it runs the autofocusing procedure.
 %% Addressing reviewer comments 1 
 \R{autofocusing_1}This approach of auto-focusing only when deviations from the previous sharpness are found ensures that all neighboring images have functionally the same sharpness, while minimizing the time spent on autofocusing. 
 % In the case that the sample is not aligned well to the camera, the autofocusing procedure runs more frequently. 
 While scanning well prepared samples, we generally saw an autofocusing routine for every 5-10 images. All of the images captured with this method maintained high image sharpness throughout the sample and were well suited for stitching. 
-This time saving feature can be tuned in the configuration file to have a more stringent or lenient sharpness threshold. 
+This time-saving feature can be tuned in the configuration file to have a more stringent or lenient sharpness threshold. 
 The autofocusing procedure will run more frequently when the sample is not aligned well to the camera and in cases where the sample is less even. However, samples that have visible scoring marks from sanding, noticeable non-planar surfaces, or other major surface irregularities will likely have difficulties scanning with or without adaptive autofocusing. We have found that such samples simply require more attentive sanding to ensure a blemish free, planar surface for successful and rapid scanning.\R{autofocusing_2} %% End reviewer comments 1
 
 \subsubsection{Accounting for Translation Error Between Core Samples}
@@ -378,7 +378,7 @@ This maximum cookie diameter is significantly smaller than the maximum core samp
 \end{figure}
 
 \subsection{Strengths and Opportunities} 
-TIM's design minimizes the barriers to build an affordable, efficient and high-resolution image capture system. \R{usage_2start}We have used TIM across different operators for over two years and found it works well with intermittent or intensive. For example, we have used TIM to scan batches of 24 cores to be scanned a day over the course of three months, with many batches scanned overnight.\R{usage_2end}
+TIM's design minimizes the barriers to build an affordable, efficient and high-resolution image capture system. \R{usage_2start}We have used TIM across different operators for over two years and found it works well with intermittent or intensive use. For example, we have used TIM to scan batches of 24 cores a day over the course of three months, with many batches scanned overnight.\R{usage_2end}
 We have found that TIM does not compromise scan quality and can scan both cookies and cores. We have measured tree ring widths using the digitized samples from TIM using CooRecorder as well as ImageJ \citep{schneider_nih_2012}.
 %% Addressing reviewer comments 2
 % emwAug18 - I would move the species list to the supp and just ref it above as suggested. 
