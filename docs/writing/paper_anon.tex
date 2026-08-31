@@ -43,7 +43,7 @@
 2.  Here we present the Tree Imaging Machine (TIM)---a do-it-yourself fully open scanning tool to digitize tree cookies and cores. TIM takes partially overlapping microscopic images of samples and stitches them together to form a mosaic, which can be zoomed in to visualize features on the scale of 0.01 mm. 
 We provide all instructions for the open-source hardware, using readily available parts, alongside the related software. % emwAug10 -- check my addition: correct? You could add the links here if you want 
 
-3. With scans of up to 21,140 DPI (1.2 micron per pixel), TIM produces one of the highest resolution images among similar tools for less than \$3,000 USD. Operators can prepare multiple samples and let the machine work until the queue is finished. Given this batch approach and automatic stitching, TIM provides a major speed advance for high-resolution image capture of tree rings, and can rapidly digitize cores of over 50 cm and complete cookies. % amfJan25 -- Does this speed need to be quantified? Maybe even just an average time per scan from the metadata that was already collected. emwREPLY: I think it's fine to just say it's a speed-up 
+3. With scan resolution of at least 21,000 DPI (1.2 micron per pixel), TIM produces one of the highest resolution images among similar tools for less than \$3,000 USD. Operators can prepare multiple samples and let the machine work until the queue is finished. Given this batch approach and automatic stitching, TIM provides a major speed advance for high-resolution image capture of tree rings, and can rapidly digitize cores of over 50 cm and complete cookies. % amfJan25 -- Does this speed need to be quantified? Maybe even just an average time per scan from the metadata that was already collected. emwREPLY: I think it's fine to just say it's a speed-up 
 
 4. TIM provides a new method to gather high quality tree ring images at larger sizes and dimensions, integrating higher scanning resolution, tree cookie sampling, and batch digitization in a single low-cost package. 
 Designed as completely open-source, we hope TIM will facilitate the widespread sampling of tree rings across diverse ecosystems and reduce barriers for researchers with smaller budgets. 
@@ -116,7 +116,7 @@ TIM requires additional sanding considerations for each sample type.  For cookie
 For cores, care should be taken to maximize the scanning surface. This means removing material to be coincident to the center of the cross section of the core. 
 Similarly to cookies, the scanning surface should be as close to parallel to the XY-plane as possible, but generally does not need to be leveled using the leveling tables.
 
-\begin{figure}
+\begin{figure}[H]
   \centering
   \begin{subfigure}{.5\textwidth}
     \centering
@@ -162,7 +162,15 @@ A few principles are common regardless of what is being scanned, and we describe
 The individual images from TIM have a field of view of approximately 3 mm x 5 mm. Because cores and cookies can be many orders of magnitude larger than one of these images, the final scan of these samples will be the combination of many images stitched together.
 Stitching two images together requires both images to share a region of overlap in which the subject of the image is the same \citep{mohammadi_comparative_2024}.
 Unique features inside this region of overlap act as a map to connect the two images.
-By default TIM is set to have a 33\% overlap with its neighbor but this can be adjusted easily while adding a sample in the GUI. 
+By default TIM is set to have a 33\% overlap with its neighbor but this can be adjusted easily while adding a sample in the GUI. The imaging process of a cookie is shown in Figure \ref{fig:cookie_overlap}.
+
+
+\subsubsection{Golden Section Search Autofocusing}
+
+Most microscope lenses are a fixed focal length, requiring the subject to be moved in relation to the lens for focusing. Additionally, inexpensive microscope lenses often have a very small depth of field. 
+Variations of height across the length of a sanded sample result in images losing focus during a scan (Figure \ref{fig:realistic_levelling}). 
+An autofocusing algorithm was implemented using a Golden Section Search method as described by \citet{gu_region_2015} to capture in-focus images.\R{line_change_3} In short, the camera's position is moved in the $Z$ axis and stops when it maximizes the sharpness metric of the image. 
+We found the variance of Laplacian sharpness metric to be easy to implement in Python and robust across samples \citep{pech-pacheco_diatom_2000}. 
 
 \begin{figure}
   \centering
@@ -174,7 +182,7 @@ By default TIM is set to have a 33\% overlap with its neighbor but this can be a
   \end{subfigure}
   \begin{subfigure}{.3\textwidth}
       \centering
-      \includegraphics[width=.95\linewidth]{../content/cookie_figure_traverse_start.png}  
+      \includegraphics[width=.95\linewidth]{../content/cookie_figure_traverse_start_scale.png}  
       \caption{}
       \label{SUBFIGURE LABEL 2}
   \end{subfigure}
@@ -185,16 +193,9 @@ By default TIM is set to have a 33\% overlap with its neighbor but this can be a
       \label{SUBFIGURE LABEL 3}
   \end{subfigure} 
   \caption{An example imaging process of a cookie sample in two dimensions. Here, the height and width of the capture region enclose the entire surface area of the cookie.  TIM begins by generating a grid of target coordinates to systematically capture a grid of continuous and partially overlapping images (a). TIM takes its first image at the center coordinate of the sample, then the rectangular field of view from the camera moves to adjacent target coordinates until it reaches the left boundary---capturing an image for each target coordinate (b). After completing the row, TIM moves to a new row and continues capturing adjacent images (c). }
-  \label{FIGURE LABEL}
+  \label{fig:cookie_overlap}
   \end{figure}
-
-\subsubsection{Golden Section Search Autofocusing}
-
-Most microscope lenses are a fixed focal length, requiring the subject to be moved in relation to the lens for focusing. Additionally, inexpensive microscope lenses often have a very small depth of field. 
-Variations of height across the length of a sanded sample result in images losing focus during a scan (Figure \ref{fig:realistic_levelling}). 
-An autofocusing algorithm was implemented using a Golden Section Search method as described by \citet{gu_region_2015} to capture in-focus images.\R{line_change_3} In short, the camera's position is moved in the $Z$ axis and stops when it maximizes the sharpness metric of the image. 
-We found the variance of Laplacian sharpness metric to be easy to implement in Python and robust across samples \citep{pech-pacheco_diatom_2000}. 
-
+  
 \subsubsection{Core Scanning Procedure}
 \label{sec:scanning}
 
@@ -274,7 +275,7 @@ Cookies can be both partially and completely scanned. Scanning entire cookies is
 Additionally, the operator must navigate the camera to the center of the cookie before adding the sample to the queue. A button called ``Test Cookie Boundaries" was made to trace the bounding box of the cookie for the operator
 to verify that the sample is truly within the bounds. These height and width bounds are used to calculate where the machine needs to move to achieve a set of partially overlapping images in both directions. 
 
-The file sizes of entire cookie scans can quickly become too large to analyze with commonly available software. A full resolution scan (21,140 DPI) of a 10 cm x 10 cm cookie is multiple gigabytes in a lossless file format. 
+The file sizes of entire cookie scans can quickly become too large to analyze with commonly available software. A full resolution scan (21,000 DPI) of a 10 cm x 10 cm cookie is multiple gigabytes in a lossless file format. 
 TIM can adjust the resolution of the final scan to be any percentage of the maximum DPI if needed. Whole cookie scans are interesting for archiving (though they will likely need special considerations for most samples at high resolution). 
 
 Portions of cookies can be scanned by treating them as if they were a core. This can be done by aligning the pith of the cookie's major or minor axis to the $Y$ axis and using the core scanning procedure. Any radius of the cookie can be scanned this way.
@@ -298,7 +299,7 @@ With the same images, multiple final stitched resolutions can be made.
 
 % Addressing reviewer comments 5
 \R{particle_smearing_1}
-We found a small number of samples were difficult to stitch and developed a method to aid stitching in these cases. These cases were rare and involved either cores from (1) species with very hard to distinguish and light-colored anatomy (e.g., \emph{Callitropsis nootkatensis}) that were not fixed with basic staining approaches, or (2) they retained scratches that we could not remove even with 1500 grit sanding. For such cases, we developed a particle smearing method (described below) that aided the stitching process. Particle smearing does not need to be done to every sample and is best reserved for samples that have proven difficult to stitch after first trying other approaches to adjust samples (e.g., staining or additional sanding). When needed though, we found this approach very successful and that it did not interfere with the measurements of annual growth rings. Measurement of other anatomical measurements such as vessel counting, however, may be affected depending on the size of particles relative to vessels. 
+We found a small number of samples were difficult to stitch and developed a method to aid stitching in these cases. These cases were rare and involved either cores from (1) species with very hard to distinguish and light-colored anatomy (e.g., \emph{Callitropsis nootkatensis}) that were not fixed with basic staining approaches, or (2) they retained scratches that we could not remove even with 1,500 grit sanding. For such cases, we developed a particle smearing method (described below) that aided the stitching process. Particle smearing does not need to be done to every sample and is best reserved for samples that have proven difficult to stitch after first trying other approaches to adjust samples (e.g., staining or additional sanding). When needed though, we found this approach very successful and that it did not interfere with the measurements of annual growth rings. Measurement of other anatomical measurements such as vessel counting, however, may be affected depending on the size of particles relative to vessels. 
 \R{particle_smearing_2}
 
 \subsubsection{Particle Smearing}
@@ -344,8 +345,7 @@ Other small snippets of code were generated to select pixels in specific regions
 % MEE's guidelines have a distinct Results section from Discussion although maybe they're flexible on this? Conclusion is optional for MEE
 
 TIM is capable of producing extremely high resolution scans across diverse species. \R{usage_1}To date, we have used TIM to scan over 1,300 cores and 80 cookies spanning 20 species (Table \ref{tab:species}).\R{usage_2}
-We calculated the maximum dots per inch (DPI) at 21,140 of individual images captured from the system using a microscopy slide scale (with 0.01 mm graduations, Figure \ref{fig:dpi_measurements}), and developed a Python tool to replicate this for varied lens focal lengths. When downscaling the final stitch, 
-DPI scales linearly with the downscale percentage defined in the machine parameters.
+We calculated TIM can scan at least 21,000 dots per inch (DPI) by using a photo of a 1 mm stage micrometer with 0.01 mm graduations (Figure \ref{fig:dpi_measurements}) and a custom Python script. This resolution was measured with the lens' zoom dial configured at approximately half of what is available.\R{dpi_zoom} Further increases in resolution are possible with this lens at the expense of scanning time and file size. When downscaling the final stitch, DPI scales linearly with the downscale percentage defined in the machine parameters. % amfaug31 Check wording on this  
 
 Digitizing samples takes significantly longer for cookies than it does for cores (Figure \ref{fig:digitization_time}). This is due to the surface area of cookies requiring more images, as it has a squared relationship to sample radius.
 For large cookies, the operator can choose to selectively scan a radius of the cookie instead of the whole surface (as a single radius contains a portion of each ring) and/or scan at a lower DPI. Scanning complete cookies at maximum DPI is unrealistic as file size limits are quickly encountered with small diameter cookies. 
@@ -433,7 +433,7 @@ We hope that such an open-source device will facilitate the widespread sampling 
     \caption{Zoomed in Scale Bar}
     \label{fig:dpi_measurement_zoomed}
   \end{subfigure}
-  \caption{Example of a single DPI measurement using a 1 mm stage micrometer with 0.01 mm graduations. We found the DPI measured at multiple locations in the field of view vertically and horizontally converged on the same value. The centerpoint of graduation marks used when taking this measurement.}
+  \caption{Example of a single DPI measurement using a 1 mm stage micrometer with 0.01 mm graduations. We found the DPI measured at multiple locations in the field of view vertically and horizontally converged on the same value. The centerpoint of graduation marks used when taking this measurement. DPI measurements are constant so long as the lens does not change zoom. Our scans are primarily imaged with the lens' zoom dial at 2.5x out of 4.5x, resulting in approximately 21,000 DPI. }
   \label{fig:dpi_measurements}
 \end{figure}
 

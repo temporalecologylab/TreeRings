@@ -41,6 +41,8 @@ We thank the editor for their positive thoughts on TIM and were excited to hear 
 
 We agree that stitched images are necessary to evaluate the image quality. Thus, we have added full-resolution scans for multiple species in the supplementary material  (Table \ref{tab:scans}). We reconciled the inconsistent values in submission abstract. \\
 
+We now clarify that the resolution of the scan is based on the analog zoom adjustment of the lens body. Our implementation has the lens' zoom at about half of its capability leading to a resolution measurement of at least 21,000 DPI and describe this on \lr{dpi_zoom}. \\ % amfaug31 check wording for resolution description change
+
 We now provide an estimate of the effective optical resolution using a 1 mm stage micrometer with 0.01 mm graduations. A cropped image of the stage micrometer taken by TIM is shown below in Figure \ref{fig:stage_micrometer} (this image and Fig. \ref{fig:stage_micrometer_4_graduations} are both now provided in the supplement). \\
 
 \begin{figure}[htbp]
@@ -101,8 +103,7 @@ We thank the reviewer for their insight to improve the legibility of the figure.
 
 \emph{The particle smearing approach is imaginative but raises some concern. In my experience with similar systems, additional surface treatment has never been necessary for successful stitching. The example shown in Figure 5 corresponds to a gymnosperm with highly distinctive tracheid structures, I am shocked that stitching has problems with such an easy sample. It would be informative to know how TIM performs with diffuse-porous angiosperms such as Betula or Populus, where informative tracheid pattern is absent and wood is very white. Additionally, silicon carbide is a very hard material. In TIM configuration the machine is over the samples, so it should not be a problem, but I would be worried if a lab with optical material close to TIM is smearing sand in a routine fashion. I have lived in the coast for many years and there is nothing so disturbing than the way sand gets into every crack.}\\
 
-%emw28Aug -- check my edits are correct!!!
-We appreciate the reviewer's comment and understand their concerns. We agree that many samples will not need additional surface treatment to be successfully stitched. We have thus changed the sample used in Figure 5 (main manuscript text) to be a harder-to-scan sample, more representative of a sample which would need surface treatment. Additionally, we have added specificity into the use case of the particle smearing method between \lr{particle_smearing_1} and \lr{particle_smearing_2}. This includes highlighting that most samples should not need this approach. \\
+We appreciate the reviewer's comment and understand their concerns. We agree that many samples will not need additional surface treatment to be successfully stitched. We have thus changed the description used in Figure 5 (main manuscript text) to specify the why this is a hard-to-scan sample which required additional surface treatment. Additionally, we have added specificity into the use case of the particle smearing method between \lr{particle_smearing_1} and \lr{particle_smearing_2}. This includes highlighting that most samples should not need this approach. \\
 
 \emph{Regarding autofocusing, the authors indicate that autofocusing occurs approximately every 5-10 frames. Existing systems typically autofocus every frame. The authors should clarify whether this trade-off affects final image sharpness, particularly in samples with surface irregularities and how it affects to sharpness and stitching.} \\
 
@@ -125,7 +126,6 @@ We thank the reviewer for pointing out that the maximum core length exceeds prac
 \emph{A final point, more philosophical in nature but worth raising. There is an important difference between a tool that works and a tool that is ready for others to use. In my experience, that difference only becomes apparent after months of routine use in a real lab setting: different samples, different operators, unexpected failures. The question for the authors is simple: is TIM currently part of their day-to-day data collection, or was this manuscript written closer to the assembly stage? This matters because the dendrochronology community has seen promising methods published before they were truly mature, and the labs that tried to adopt them paid the price in time and frustration. TIM is explicitly aimed at labs with limited economic capacity, which makes this question even more important, those labs have less margin to troubleshoot. The authors should provide an account of how long and how intensively the tool has been in use. This point is relevant to build confidence in the method.}\\
 
 The reviewer raises valuable points when assessing the readiness for others to adopt TIM. While TIM does not have the polish of a commercial product, TIM has scanned over 1000 samples by at least 4 different operators over the past two years, as we now explain this in the text, between \lr{usage_1} and \lr{usage_2} as well as between \lr{usage_2start} and \lr{usage_2end}.\\ 
-% emwAug18 - see my edits and add in: \R{usage_2start} \R{usage_2end}
 
 Additionally, we shared our design files with another lab (based on another continent) and that lab has recreated TIM and used it for their research. While we continue to work to make TIM easier to build and use, we have done our best to provide labs who want to replicate the design with the resources they need to reproduce TIM. All of TIM's design is open-source and we are willing to assist with reasonable inquiries regarding the replication process.  \\
 
@@ -165,8 +165,7 @@ Done. See \lr{line_change_1}. \\
 
 Done. See \lr{line_change_2}. \\
 
-\emph{L137: Small point admittedly, but conventionally the reference to a figure should appear before the figure itself occurs. Same for Figure 3 which appears before the reference to it. }\\ % emwAug18 -- there is a ton online on trying to do this ... I think you may need to use floats and h!  but I would set a time limit on this (20 minutes) and then give up if this ends up being a pain. Then you can just say -- we have worked to re-position the images but found it difficult to place the image exactly before the text without causing other formatting issues. If our article were accepted, we certainly would work with the journal typesetter to make sure the images are well placed relative to the text where they are mentioned. 
-
+\emph{L137: Small point admittedly, but conventionally the reference to a figure should appear before the figure itself occurs. Same for Figure 3 which appears before the reference to it. }\\ 
 Done. Moved figure reference above figure. \\
 
 \emph{L160: Gu et al. should not be within parenthesis given the current structure, only the publication date (2015).}\\
@@ -187,7 +186,7 @@ We have updated the figure by cropping the image to the extent of the stage micr
 
 \emph{So with a little revision I suggest that this will be a really interesting paper and provide an excellent tool for a section of cross disciplinary research that is crying out for such a resource. Well done.}\\
 
-We appreciate the positive comments and the acknowledgement of the potential of our tool. We hope other groups will build and use TIM or develop further on its design. \\ %emw28Aug -- check my edits
+We appreciate the positive comments and the acknowledgement of the potential of our tool. We hope other groups will build and use TIM or develop further on its design. \\ 
 
 \newpage
 % \bibliography{..//..//..//..//vitisbiblio}
