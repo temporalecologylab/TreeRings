@@ -1,0 +1,197 @@
+<mxfile host="app.diagrams.net" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/152.0.0.0 Safari/537.36" version="28.2.8">
+  <diagram name="Page-1" id="UBKsaey_C8QVMly_fNnR">
+    <mxGraphModel dx="1295" dy="736" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="TWtmE-yXBcySb3YMROd6-67" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFCE9F;container=0;" vertex="1" parent="1">
+          <mxGeometry x="438.6666666666667" y="130.98159509202452" width="401.3333333333333" height="359.0184049079754" as="geometry" />
+        </mxCell>
+        <mxCell id="TWtmE-yXBcySb3YMROd6-62" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#7EA6E0;container=0;" vertex="1" parent="1">
+          <mxGeometry y="130.98159509202452" width="401.3333333333333" height="359.0184049079754" as="geometry" />
+        </mxCell>
+        <mxCell id="TWtmE-yXBcySb3YMROd6-49" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0;exitY=0;exitDx=0;exitDy=0;exitPerimeter=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="TWtmE-yXBcySb3YMROd6-7" target="TWtmE-yXBcySb3YMROd6-9">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="186.66666666666666" y="274.9488752556237" />
+              <mxPoint x="186.66666666666666" y="238.9570552147239" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="TWtmE-yXBcySb3YMROd6-52" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" target="TWtmE-yXBcySb3YMROd6-11">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="252" y="274.9488752556237" as="sourcePoint" />
+            <Array as="points">
+              <mxPoint x="242.66666666666666" y="274.9488752556237" />
+              <mxPoint x="242.66666666666666" y="238.9570552147239" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="TWtmE-yXBcySb3YMROd6-58" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.783;exitY=0.005;exitDx=0;exitDy=0;exitPerimeter=0;" edge="1" parent="1" source="TWtmE-yXBcySb3YMROd6-7" target="TWtmE-yXBcySb3YMROd6-28">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="224" y="275" />
+              <mxPoint x="224" y="176" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="TWtmE-yXBcySb3YMROd6-60" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.407;exitY=1;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="TWtmE-yXBcySb3YMROd6-7" target="TWtmE-yXBcySb3YMROd6-26">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="TWtmE-yXBcySb3YMROd6-76" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0;exitY=0;exitDx=66;exitDy=71.98364008179959;exitPerimeter=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="TWtmE-yXBcySb3YMROd6-7" target="TWtmE-yXBcySb3YMROd6-27">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="230" y="347" />
+              <mxPoint x="230" y="376" />
+              <mxPoint x="286" y="376" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="TWtmE-yXBcySb3YMROd6-77" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.256;exitY=1.011;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="TWtmE-yXBcySb3YMROd6-7" target="TWtmE-yXBcySb3YMROd6-25">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="TWtmE-yXBcySb3YMROd6-7" value="CNC Motor Controller" style="shape=cube;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;darkOpacity=0.05;darkOpacity2=0.1;container=0;" vertex="1" parent="1">
+          <mxGeometry x="168" y="274.9488752556237" width="112" height="71.98364008179959" as="geometry" />
+        </mxCell>
+        <mxCell id="TWtmE-yXBcySb3YMROd6-1" value="&lt;h2&gt;OpenBuilds ACRO CNC System&lt;/h2&gt;" style="rounded=1;whiteSpace=wrap;html=1;container=0;" vertex="1" parent="1">
+          <mxGeometry x="87.5" y="71" width="226.33333333333334" height="53.98773006134969" as="geometry" />
+        </mxCell>
+        <mxCell id="TWtmE-yXBcySb3YMROd6-3" value="&lt;h2&gt;TIM CNC Control Interface&lt;/h2&gt;" style="rounded=1;whiteSpace=wrap;html=1;container=0;" vertex="1" parent="1">
+          <mxGeometry x="536.75" y="71" width="205.17" height="53.99" as="geometry" />
+        </mxCell>
+        <mxCell id="TWtmE-yXBcySb3YMROd6-9" value="X-Axis Motor" style="ellipse;whiteSpace=wrap;html=1;aspect=fixed;container=0;" vertex="1" parent="1">
+          <mxGeometry x="51.333333333333336" y="202.9652351738241" width="71.98364008179959" height="71.98364008179959" as="geometry" />
+        </mxCell>
+        <mxCell id="TWtmE-yXBcySb3YMROd6-10" value="Y-Axis Motor&lt;div&gt;1&lt;/div&gt;" style="ellipse;whiteSpace=wrap;html=1;aspect=fixed;container=0;" vertex="1" parent="1">
+          <mxGeometry x="112" y="140.879345603272" width="71.98364008179959" height="71.98364008179959" as="geometry" />
+        </mxCell>
+        <mxCell id="TWtmE-yXBcySb3YMROd6-11" value="Z&lt;span style=&quot;background-color: transparent; color: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));&quot;&gt;-Axis Motor&lt;/span&gt;" style="ellipse;whiteSpace=wrap;html=1;aspect=fixed;container=0;" vertex="1" parent="1">
+          <mxGeometry x="303.3333333333333" y="202.9652351738241" width="71.98364008179959" height="71.98364008179959" as="geometry" />
+        </mxCell>
+        <mxCell id="TWtmE-yXBcySb3YMROd6-73" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="TWtmE-yXBcySb3YMROd6-12" target="TWtmE-yXBcySb3YMROd6-72">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="588" y="372" />
+              <mxPoint x="556" y="372" />
+              <mxPoint x="556" y="390" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="TWtmE-yXBcySb3YMROd6-78" value="MIPI Ribbon&amp;nbsp;&lt;div&gt;Cable&lt;/div&gt;" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];labelBackgroundColor=none;" vertex="1" connectable="0" parent="TWtmE-yXBcySb3YMROd6-73">
+          <mxGeometry x="-0.2485" y="1" relative="1" as="geometry">
+            <mxPoint x="-46" y="-3" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="TWtmE-yXBcySb3YMROd6-12" value="Jetson Orin Nano" style="shape=cube;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;darkOpacity=0.05;darkOpacity2=0.1;container=0;" vertex="1" parent="1">
+          <mxGeometry x="548.3333333333334" y="274.9488752556237" width="112" height="71.98364008179959" as="geometry" />
+        </mxCell>
+        <mxCell id="TWtmE-yXBcySb3YMROd6-16" value="" style="shape=flexArrow;endArrow=classic;startArrow=classic;html=1;rounded=0;fillColor=#FFFF00;width=30.344827586206897;startSize=17;endSize=17.46896551724138;fontStyle=4;labelBorderColor=default;entryX=0.104;entryY=0.626;entryDx=0;entryDy=0;entryPerimeter=0;exitX=0;exitY=0;exitDx=112;exitDy=45.991820040899796;exitPerimeter=0;" edge="1" parent="1" source="TWtmE-yXBcySb3YMROd6-7" target="TWtmE-yXBcySb3YMROd6-12">
+          <mxGeometry width="100" height="100" relative="1" as="geometry">
+            <mxPoint x="308" y="319.56073619631906" as="sourcePoint" />
+            <mxPoint x="532" y="319.8666666666667" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="TWtmE-yXBcySb3YMROd6-69" value="&lt;span style=&quot;&quot;&gt;USB-A to USB-B Serial Connection&lt;/span&gt;" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];labelBorderColor=none;fontColor=default;labelBackgroundColor=none;container=0;" vertex="1" connectable="0" parent="TWtmE-yXBcySb3YMROd6-16">
+          <mxGeometry x="0.6776" y="-3" relative="1" as="geometry">
+            <mxPoint x="-90" y="-3" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="TWtmE-yXBcySb3YMROd6-25" value="X-Limit Switch" style="shape=hexagon;perimeter=hexagonPerimeter2;whiteSpace=wrap;html=1;fixedSize=1;container=0;" vertex="1" parent="1">
+          <mxGeometry x="97.31" y="405.42" width="86.67" height="44.58" as="geometry" />
+        </mxCell>
+        <mxCell id="TWtmE-yXBcySb3YMROd6-26" value="Y-Limit Switch" style="shape=hexagon;perimeter=hexagonPerimeter2;whiteSpace=wrap;html=1;fixedSize=1;container=0;" vertex="1" parent="1">
+          <mxGeometry x="170" y="430" width="86.67" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="TWtmE-yXBcySb3YMROd6-27" value="Z-Limit Switch" style="shape=hexagon;perimeter=hexagonPerimeter2;whiteSpace=wrap;html=1;fixedSize=1;container=0;" vertex="1" parent="1">
+          <mxGeometry x="242.67" y="405.42" width="87.33" height="44.58" as="geometry" />
+        </mxCell>
+        <mxCell id="TWtmE-yXBcySb3YMROd6-28" value="Y-Axis Motor&lt;div&gt;2&lt;/div&gt;" style="ellipse;whiteSpace=wrap;html=1;aspect=fixed;container=0;" vertex="1" parent="1">
+          <mxGeometry x="242.66666666666666" y="140.879345603272" width="71.98364008179959" height="71.98364008179959" as="geometry" />
+        </mxCell>
+        <mxCell id="TWtmE-yXBcySb3YMROd6-31" value="24V 15A Power Supply" style="rhombus;whiteSpace=wrap;html=1;container=0;" vertex="1" parent="1">
+          <mxGeometry x="9.333333333333334" y="283.9468302658487" width="112" height="107.97546012269937" as="geometry" />
+        </mxCell>
+        <mxCell id="TWtmE-yXBcySb3YMROd6-32" value="Keyboard" style="shape=trapezoid;perimeter=trapezoidPerimeter;whiteSpace=wrap;html=1;fixedSize=1;container=0;" vertex="1" parent="1">
+          <mxGeometry x="616" y="149.8773006134969" width="112" height="53.98773006134969" as="geometry" />
+        </mxCell>
+        <mxCell id="TWtmE-yXBcySb3YMROd6-33" value="Mouse" style="shape=trapezoid;perimeter=trapezoidPerimeter;whiteSpace=wrap;html=1;fixedSize=1;container=0;" vertex="1" parent="1">
+          <mxGeometry x="466.6666666666667" y="149.8773006134969" width="112" height="53.98773006134969" as="geometry" />
+        </mxCell>
+        <mxCell id="TWtmE-yXBcySb3YMROd6-35" value="19V 2.4A Power Supply" style="rhombus;whiteSpace=wrap;html=1;container=0;" vertex="1" parent="1">
+          <mxGeometry x="700" y="355.9304703476482" width="112" height="107.97546012269937" as="geometry" />
+        </mxCell>
+        <mxCell id="TWtmE-yXBcySb3YMROd6-38" value="Computer Monitor" style="shape=parallelogram;perimeter=parallelogramPerimeter;whiteSpace=wrap;html=1;fixedSize=1;container=0;" vertex="1" parent="1">
+          <mxGeometry x="710" y="238.96" width="120.67" height="53.99" as="geometry" />
+        </mxCell>
+        <mxCell id="TWtmE-yXBcySb3YMROd6-41" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;" edge="1" parent="1" source="TWtmE-yXBcySb3YMROd6-33" target="TWtmE-yXBcySb3YMROd6-12">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="522.6666666666666" y="247.95501022494886" />
+              <mxPoint x="569.3333333333334" y="247.95501022494886" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="TWtmE-yXBcySb3YMROd6-44" value="USB-A" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];labelBackgroundColor=#FFCE9F;container=0;" vertex="1" connectable="0" parent="TWtmE-yXBcySb3YMROd6-41">
+          <mxGeometry x="-0.2099" y="3" relative="1" as="geometry">
+            <mxPoint x="17" y="-33" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="TWtmE-yXBcySb3YMROd6-42" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.661;entryY=0.01;entryDx=0;entryDy=0;entryPerimeter=0;" edge="1" parent="1" source="TWtmE-yXBcySb3YMROd6-32" target="TWtmE-yXBcySb3YMROd6-12">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="672" y="247.95501022494886" />
+              <mxPoint x="622.5333333333333" y="247.95501022494886" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="TWtmE-yXBcySb3YMROd6-43" value="USB-A" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];labelBackgroundColor=#FFCE9F;container=0;" vertex="1" connectable="0" parent="TWtmE-yXBcySb3YMROd6-42">
+          <mxGeometry x="-0.4234" y="5" relative="1" as="geometry">
+            <mxPoint x="15" y="-27" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="TWtmE-yXBcySb3YMROd6-45" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0;entryY=0;entryDx=112;entryDy=45.9918200408998;entryPerimeter=0;" edge="1" parent="1" source="TWtmE-yXBcySb3YMROd6-38" target="TWtmE-yXBcySb3YMROd6-12">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="775" y="321" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="TWtmE-yXBcySb3YMROd6-46" value="DisplayPort" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];labelBackgroundColor=#FFCE9F;container=0;" vertex="1" connectable="0" parent="TWtmE-yXBcySb3YMROd6-45">
+          <mxGeometry x="-0.3258" y="3" relative="1" as="geometry">
+            <mxPoint x="-18" y="-14" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="TWtmE-yXBcySb3YMROd6-47" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0;exitY=0;exitDx=0;exitDy=0;" edge="1" parent="1" source="TWtmE-yXBcySb3YMROd6-35" target="TWtmE-yXBcySb3YMROd6-12">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="641.2" y="382.92433537832306" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="TWtmE-yXBcySb3YMROd6-48" value="DC Barrel Jack" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];labelBackgroundColor=#FFCE9F;container=0;" vertex="1" connectable="0" parent="TWtmE-yXBcySb3YMROd6-47">
+          <mxGeometry x="-0.2451" y="-1" relative="1" as="geometry">
+            <mxPoint x="10" y="-9" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="TWtmE-yXBcySb3YMROd6-50" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" target="TWtmE-yXBcySb3YMROd6-10">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="240" y="275" as="sourcePoint" />
+            <Array as="points">
+              <mxPoint x="205.33333333333334" y="274.9488752556237" />
+              <mxPoint x="205.33333333333334" y="175.97137014314927" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="TWtmE-yXBcySb3YMROd6-56" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0;exitDx=0;exitDy=0;entryX=-0.002;entryY=0.504;entryDx=0;entryDy=0;entryPerimeter=0;" edge="1" parent="1" source="TWtmE-yXBcySb3YMROd6-31" target="TWtmE-yXBcySb3YMROd6-7">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="TWtmE-yXBcySb3YMROd6-72" value="Raspberry Pi HQ Camera" style="whiteSpace=wrap;html=1;aspect=fixed;container=0;" vertex="1" parent="1">
+          <mxGeometry x="519.8666666666667" y="396.4212678936605" width="71.98364008179959" height="71.98364008179959" as="geometry" />
+        </mxCell>
+        <mxCell id="TWtmE-yXBcySb3YMROd6-79" value="&lt;h1&gt;TIM Electrical Components&lt;/h1&gt;" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="87.5" y="1" width="660" height="60" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
