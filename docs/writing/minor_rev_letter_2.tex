@@ -1,0 +1,89 @@
+% !TeX root = ./minor_rev_letter_2.tex
+\documentclass[12pt,a4paper]{article}
+
+\usepackage[top=1.00in, bottom=1.0in, left=1.1in, right=1.1in]{geometry}
+\usepackage{lineno}
+\usepackage{graphicx}
+\usepackage{natbib}
+\usepackage{amsmath}
+\usepackage{xr-hyper}
+\externaldocument{paper_anon}
+% \usepackage{hyperref}
+\usepackage{gensymb}
+\usepackage{todonotes}
+
+% Cross referencing items
+\newcommand{\R}[1]{\label{#1}\linelabel{#1}}
+\newcommand{\lr}[1]{line~\ref{#1}}
+
+\setlength\parindent{0pt}
+\setlength {\marginparwidth }{2cm}
+\begin{document}
+%\bibliographystyle{}
+
+% TO DO
+
+% DISCUSS!
+
+\emph{Reviewer and editor comments are in italics.} Our replies are in plain font.\\ 
+
+% Associate editor comments start
+{\bf Associate Editor -- comments:} \\
+
+\emph{Many thanks for your revision; a small number of points remain to be dealt with.} \\
+
+\emph{While your response letter says that you separated pixel sampling from effective optical resolution, it seems that the new version of the manuscript does not (from seeing L. 308- 313 + Figure S1 caption we understand that the stage-micrometer calibration is the resolution measurement). Please address this in your revision.} \\
+
+%TODO: Update MS to include what we put in the revision letter.
+
+\emph{Secondly there is a possible change that will add value to the approach, i.e. by turning the scale bars into a verified measurement. Since ring-width measurement is built around a stitched mosaic preserving distance along the core across a hundred+ frames, you could report the measured vs. true length over the longest span available in that scan (or for a core of known length) especially because you have already scanned a caliper with millimetre graduations (see Table S3).} \\
+
+%TODO: Politely say this is going to take a significant amount of time to implement. We can explain what we currently do. 
+
+\emph{The images of Figures 3, 4, 5, S1 are a bit blurry. Maybe it has to do with the import, the actual rendering of the pixel limits of the system and/or how it is handled in the pdf generated on ScholarOne but please check whether your resolution is high enough to help with readability.} \\
+
+We thank the editor for noting the blurriness of the figures. We have compared the ScholarOne pdf with the pdf we submitted and there is a noticeable blurriness on the ScholarOne pdf. We are happy to provide the figures in separate files if that would help when rendering the final pdf. \\
+
+\emph{We are missing a detailed figure of the electronic diagram and the basics indications on how to build it. Figure 1 is fine for showing the final product in real life but we need a “full skeleton view” that can be the main part of figure 1. To stay within limits of the number of words for this kind of paper you can set a detailed description in Suppl. mat. on how to build a TIM, what to do and not to do, the fail safes for the electronics + plus add a table describing each element of TIM, where to get it, the current costs (the paper describes the total costs but we do not have any itemized), etc.} \\
+
+% OpenBuilds ACRO Mechanical Assembly Video: https://www.youtube.com/watch?v=YDLJrxrMEAo&t=4s
+% OpenBuilds ACRO Electrical Assembly Video: https://www.youtube.com/watch?v=GrjqW2MDCvM&t=2s
+
+% We only have instructions for pieces that extend the ACRO system, but not for the ACRO system itself. 
+% For others to recreate TIM, they would need to purchase or design an alternative moving-gantry CNC system. Such as a kit for a DIY CNC router or laser engraver.
+% We have instructions for all the adapters we made to make the ACRO system work, which we have added to our code repository. But without being able to buy the ACRO system, much of these components are not necessarily compatible with other CNC machines.
+% Assembly instructions would vary by kit, but as long as the motor controller is able to run GRBL, our software should work., Additionally, new 3D printed adapters would need to be designed mount the camera and computer to a new machine. I'm not sure how to best address this in the manuscript or in the letter. 
+
+% TODO: go through the MS and try to change the phrasing to make sure this is clear
+% This kind of makes TIM a different kind of paper. Instead of a 'complete' DIY tool, it almost needs to be sold as the 'end effector' and 'CNC control software' which can be mounted on existing CNC machines. 
+
+\emph{Illumination is also not described anywhere in the Methods, yet it determines contrast and colour rendering and a lab rebuilding TIM will need to know what to buy. Please specify the light source and its mounting. MEE usually asks for manufacturer name, city and country for named equipment (e.g Raspberry Pi, Seeed).} \\
+
+%TODO: Add a description of the ring microscope LED to the MS. 
+We have added a description of the ring microscope LED light which mounts to the camera lens. 
+
+\emph{Regarding the 2.5 GB TIFF limit, tifffile and libtiff both write BigTIFF, which could remove the 4 GB ceiling and would let cookie scans open in ImageJ rather than only through custom scripts you are mentioning in your text.} \\
+
+%TODO: Test BigTIFF writing instead of writing DAT
+% In the program logic I'll swap the numpy dat saver to be a BigTIFF write instead. Then I'll take that image, try to open it on ImageJ, and if it loads up, we'll ship it.
+
+\emph{Talking about custom scripts, I could not find any code/scripts online on the zenodo repository, only Tiff images. In figure 1, we can read that “the 3D printed parts are available for download on the NIH 3D printing repository (HYPERLINK REMOVED) and the software is open source, with instructions to recreate this tool available on GitHub (HYPERLINK REMOVED).” I thank the authors for ensuring anonymity for the review process but if we are not able to assess all those in the review it is a pb. By going to the NIH 3D website though and typing “TIM” I was able to find the printing instructions but also the name of the first author. Yet I could not find the code and custom scripts references written in the ms; MEE needs to review the codes during the review process, and this will be crucial in order to help with repeatability.} \\
+
+% TODO: Add code to manuscript submission
+% TODO: Find the anonymous github repo link. Where did I put it on the last submission? Maybe I left it out...
+
+\emph{In Figure 6, the caption states that samples range from a 3 mm × 220 mm core to a 75 mm × 56 mm cookie; yet panel (a) extends to 300 mm and panel (b) stops near 1,600 mm², all short of the 4,200 mm² such a cookie would occupy. Panel (b) also joins four cookies with lines, yet four points cannot be the base of a relationship; with 80 cookies scanned, more points should be available too. Please also state the overlap setting used for the plotted runs.} \\ 
+
+% This caption is left over from the original submission. I changed the figure and didn't edit the caption. Silly me.
+% TODO: Use christophe's metadata to add more data to the cookie plotting graph.
+
+\emph{Line 332 refers to “over two years” of use, whereas your response letter dates the working version to May 2025. The response letter also mentions that a second laboratory has built TIM from your design files and uses it for research. That is a good answer to Reviewer 1's adoption-readiness concern and you could add something on that subject in the suppl mat.(and you could add this in the new suppl. section I requested above, for instance you could give info on any bugs was encountered and how it was solved. And by the way we do not know how many operators are needed to assemble but also run TIM.} \\
+
+% TODO: Clarify that it was a bit ambiguous for us to say when TIM started so this was our time for when TIM got a major scanning speed update. 
+% TODO: Rectify the timeline discrepancy
+
+\emph{I could find several typos still in the paper, e.g. Figure 4 is never cited in the text; L 271 uses Callitropsis nootkatensis and Table S1 Chamaecyparis nootkatensis; use one name. L 187: gynosperms; Fig. 5 “due significant scratches”; please also name the species. L 195- 200 describe the skip rule as “at least 95\% of” the previous sharpness in one place and “lower than” the previous neighbour in another; some references are not completed (e.g. Mansur (2022)); the sentences on LLM need to be in its own section. } \\
+
+% TODO: Rectify types and inconsistencies. 
+
+\end{document}
