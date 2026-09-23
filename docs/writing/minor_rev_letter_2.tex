@@ -34,11 +34,14 @@
 
 \emph{While your response letter says that you separated pixel sampling from effective optical resolution, it seems that the new version of the manuscript does not (from seeing L. 308- 313 + Figure S1 caption we understand that the stage-micrometer calibration is the resolution measurement). Please address this in your revision.} \\
 
-%TODO: Update MS to include what we put in the revision letter.
+%TODO: Update MS to include what we put in the revision letter. Add specifically that we can distinguish features up to 10 microns, potentially more but we are limited by our measurement equipment.
 
 \emph{Secondly there is a possible change that will add value to the approach, i.e. by turning the scale bars into a verified measurement. Since ring-width measurement is built around a stitched mosaic preserving distance along the core across a hundred+ frames, you could report the measured vs. true length over the longest span available in that scan (or for a core of known length) especially because you have already scanned a caliper with millimetre graduations (see Table S3).} \\
 
-%TODO: Politely say this is going to take a significant amount of time to implement. We can explain what we currently do. 
+% TODO: Politely say this is going to take a significant amount of time to implement. We can explain what we currently do. 
+% TODO: Measure point to point in pixels and point to point with physical measurement and compare accuracy. 
+% I didn't write down the unique id's of each of the scans... only the species. I really do not want to scan a bunch more. 
+% Can we do this only for the caliper? 
 
 \emph{The images of Figures 3, 4, 5, S1 are a bit blurry. Maybe it has to do with the import, the actual rendering of the pixel limits of the system and/or how it is handled in the pdf generated on ScholarOne but please check whether your resolution is high enough to help with readability.} \\
 
@@ -64,7 +67,7 @@ We have added a description of the ring microscope LED light which mounts to the
 
 \emph{Regarding the 2.5 GB TIFF limit, tifffile and libtiff both write BigTIFF, which could remove the 4 GB ceiling and would let cookie scans open in ImageJ rather than only through custom scripts you are mentioning in your text.} \\
 
-%TODO: Test BigTIFF writing instead of writing DAT
+% TODO: Test BigTIFF writing instead of writing DAT. Try around line 200 of stitcher.py
 % In the program logic I'll swap the numpy dat saver to be a BigTIFF write instead. Then I'll take that image, try to open it on ImageJ, and if it loads up, we'll ship it.
 
 \emph{Talking about custom scripts, I could not find any code/scripts online on the zenodo repository, only Tiff images. In figure 1, we can read that “the 3D printed parts are available for download on the NIH 3D printing repository (HYPERLINK REMOVED) and the software is open source, with instructions to recreate this tool available on GitHub (HYPERLINK REMOVED).” I thank the authors for ensuring anonymity for the review process but if we are not able to assess all those in the review it is a pb. By going to the NIH 3D website though and typing “TIM” I was able to find the printing instructions but also the name of the first author. Yet I could not find the code and custom scripts references written in the ms; MEE needs to review the codes during the review process, and this will be crucial in order to help with repeatability.} \\
