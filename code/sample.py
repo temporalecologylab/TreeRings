@@ -51,7 +51,7 @@ class Sample:
         self.id2 = id2
         self.notes = notes
         self.image_count = 0
-
+  
         dirtime = datetime.now().strftime("%H_%M_%S")
 
         if directory is not None:
@@ -85,6 +85,10 @@ class Sample:
         self.stitch_width_pixels = None
         self.stitch_depth = None
         self.dpi = None
+
+        # Tracking focus scores across sample
+        self.focus_scores_subject = np.empty((self.rows, self.cols)) # Meant to build a stronger understanding of the value of what a good focus score is considering they vary spatially along the sample
+        self.focus_scores_background = np.empty((self.rows, self.cols)) 
 
     def increment_image_count(self):
         """Increment the image counter when a good image is taken"""

@@ -141,9 +141,9 @@ class Controller:
 
     def autofocus(self, range = None, position = None):
         if range is None:
-            self.golden_section_search(-0.2, 0.2, tol=0.05, max_iter=20, position = position)
+            return self.golden_section_search(-0.2, 0.2, tol=0.05, max_iter=20, position = position)
         else:
-            self.golden_section_search(-1 * range / 2, range / 2, tol=0.05, max_iter=20, position = position)
+            return self.golden_section_search(-1 * range / 2, range / 2, tol=0.05, max_iter=20, position = position)
 
     def golden_section_search(self, x_l, x_u, tol=0.01, max_iter=20, position = None):
         """
@@ -322,55 +322,6 @@ class Controller:
                     break
             watchdog_counter += 1
         return 0
-    
-    def capture_core_bottom(self, sample: sample.Sample, progress_callback:Callable, stop_capture: Event):
-        self.set_directory(sample.directory)
-        start_time = time.time()
-
-        sample.set_start_time_imaging(start_time)
-
-        self.set_feed_rate(1)
-        img_num = 0
-        
-        self._gantry.jog_absolute_xyz(sample.x, sample.y, sample.z)
-        self._gantry.block_for_jog()
-        
-        while True and not stop_capture.is_set():
-            start_stack = time.time()
-            
-            if img_num != 0:
-                self._gantry.jog_relative_y(-1 * sample.y_step_size)
-                self._gantry.block_for_jog()
-                time.sleep(0.25)
-
-            if img_num % 2 == 0:
-                self.autofocus()
-
-        # Targets are XYZ coordinates to jog to to capture an image.
-            sample.coordinates.append(self._gantry.get_xyz())
-
-            file_location = f"{sample.directory}/frame_{img_num}_{0}.tiff"
-            self.camera.save_frame(file_location)
-
-            img_num += 1
-
-            elapsed_time = time.time() - start_stack
-            progress_callback((elapsed_time, img_num, sample.rows*sample.cols))
-
-            counter = 0
-            while self.get_focus_metric() < self.focus_threshold and counter < 2:
-                log.info("Focus metric low, attempting to refocus with larger searching range.")
-                self.autofocus(2) # increase the range if we didn't find a good focus. But stop if we never find a good focus 
-                counter += 1
-
-            
-        ##
-        ## Make this a method
-        sample.rows = img_num
-        sample.cols = 1
-        end_time = time.time()
-        sample.set_end_time_imaging(end_time)
-        sample.to_json()
 
     def capture_top_section(self, sample: sample.Sample, progress_callback:Callable, stop_capture: Event)->int:
         fake_image_count = 100
@@ -492,7 +443,7 @@ class Controller:
         sample.to_json()
 
     #### SERPENTINE METHODS ####
-    def capture_sample(self, sample: sample.Sample, progress_callback: Callable, stop_capture: Event):
+    def capture_cookie(self, sample: sample.Sample, progress_callback: Callable, stop_capture: Event):
         """Abstraction to execute a capture sequence. This involves moving the the top left of the sample, traversing in a serpentining pattern 
         across the dimensions of the sample. At each step in the grid, multiple images are taken and only the most in focus is kept. 
 
@@ -503,60 +454,68 @@ class Controller:
         """
 
         while not stop_capture.is_set():
-            focus_queue = queue.Queue()
-            pid_queue = queue.Queue()
-            pid_lock = Lock()
-
-            self.focus.set_setpoint(round(self.n_images/2))
-
             #set directories
             self.set_directory(sample.directory)
 
             start_time = time.time()
 
             sample.set_start_time_imaging(start_time)
-            gantry_thread = Thread(target=self.capture_grid_photos, args=(sample, focus_queue, pid_queue, pid_lock, progress_callback, stop_capture))
-            focus_thread = Thread(target=self.focus.find_focus, args=(sample, focus_queue, pid_queue, pid_lock))
-            gantry_thread.start()
-            focus_thread.start()
-            
-            gantry_thread.join()	
-            focus_queue.join()    	
-            focus_thread.join()
 
+            # Navigate to the sample's origin
+            self._gantry.jog_absolute_xyz(sample.x, sample.y, sample.z)        
+            self._gantry.block_for_jog()
+
+            first = True
+            previous_focus_metric = -1
+
+            targets = np.vstack((sample.targets_top, sample.targets_bot))
+
+            for target in targets:
+                x, y, z, row, col = target[0], target[1], target[2], int(target[3]), int(target[4])
+                self._gantry.jog_absolute_xyz(x, y, z)        
+                self._gantry.block_for_jog()
+                
+                if first:
+                    first = False
+                    # Collect a known good image and focus score
+                    _, best_focus_score = self.autofocus()
+                    sample.focus_scores_subject[row][col] = best_focus_score
+                    previous_focus_metric = best_focus_score
+                else:
+                    # Check to see if background to skip autofocusing
+                    # Check to see if the image is reasonably focused to skip autofocusing
+
+                    focus_score = self.get_focus_metric()
+                    percentage_of_previous = focus_score / previous_focus_metric 
+                    percentage_of_median = focus_score / np.median(sample.focus_scores_subject)
+                    previous_focus_metric = focus_score
+
+                    is_background = percentage_of_median < 0.5      
+                    is_focused = percentage_of_previous > 0.9        
+
+                    # If you are not focused, and you are not an image of the background, spend the time to autofocus
+                    if not is_focused and not is_background:
+                        self.autofocus()
+
+                    # Log the focus score 
+                    if is_background:
+                        sample.focus_scores_background[row][col] = focus_score
+                    else:
+                        sample.focus_scores_subject[row][col] = focus_score
+
+                file_location = f"{sample.directory}/frame_{row}_{col}.tiff"
+                self.camera.save_frame(file_location)
+                sample.increment_image_count()  
+    
             end_time = time.time()
             sample.set_end_time_imaging(end_time)
             sample.to_json()
+
+            # GUI Progress callback which I toyed with. May not work. 
+            elapsed_time = time.time() - sample.start_time_imaging
+            progress_callback((elapsed_time / sample.image_count, sample.image_count, sample.rows * sample.cols))
+
             break
-            
-    def capture_all_cores(self, progress_callback: Callable, stop_capture: Event):
-        """Callable for the GUI to iterate through all samples. For multiple sample capture.
-
-        Args:
-            progress_callback (Callable): GUI widget to update progress bar
-            stop_capture (Event): Event to stop capture as soon as possible
-        """
-        while not stop_capture.is_set():
-            for i in range(len(self.samples)):
-                sample = self.samples.pop(-1)
-                width_est_pixels = sample.width / sample.image_width_mm * self.camera.w_pixels 
-                height_est_pixels = sample.height / sample.image_height_mm * self.camera.h_pixels
-                max_filesize_est = width_est_pixels * height_est_pixels * 3 / 10e6 # megabytes
-                log.info("MAX FILE SIZE ESTIMATE {} MB".format(round(max_filesize_est, 2)))
-                progress_callback((True, True, "{}_{}_{}".format(sample.species, sample.id1, sample.id2)))
-
-                self.capture_core_bottom(sample, progress_callback, stop_capture)
-                
-                # Only stitch if the capture complete successfully
-                if not stop_capture.is_set():
-                    print('stitching frames')
-                    self.stitch_frames(sample)
-                if len(self.samples) == 0:
-                    stop_capture.set()
-
-            return
-
-
 
     def capture_all_samples(self, progress_callback: Callable, stop_capture: Event):
         """Callable for the GUI to iterate through all samples. For multiple sample capture.
@@ -577,7 +536,7 @@ class Controller:
                 if sample.is_core:
                     self.capture_core_middle_2(sample, progress_callback, stop_capture)
                 else:
-                    self.capture_sample(sample, progress_callback, stop_capture)
+                    self.capture_cookie(sample, progress_callback, stop_capture)
                 
                 # Only stitch if the capture complete successfully
                 if not stop_capture.is_set():
