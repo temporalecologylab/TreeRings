@@ -135,13 +135,14 @@ class Stitcher:
             self._metadata = j
             f.close()
 
-    def memmap_to_tiff(self, memmap, path_tif):
+    def memmap_to_tiff(self, memmap, path_tif, bigtiff = False):
         if memmap is not None:
             tifffile.imwrite(
                 path_tif,
                 memmap,
                 photometric='rgb',
-                compression='LZW'
+                compression='LZW',
+                bigtiff = bigtiff
             )
 
     def get_frames(self):
@@ -197,20 +198,28 @@ class Stitcher:
         self.sample.to_json(path)
 
         # no need in writing a normal tiff if it's going to be greater than the maximum tiff filesize
-        if (shape[0] * shape[1] * shape[2]) / 1e6  < 3500:
-            stitch = np.memmap(mosaic_dat_path, dtype='uint8', mode='r', shape=(shape[0], shape[1], shape[2]))
+        stitch = np.memmap(mosaic_dat_path, dtype='uint8', mode='r', shape=(shape[0], shape[1], shape[2]))
 
-            try:
-                self.memmap_to_tiff(stitch, str.replace(mosaic_dat_path, ".dat", ".tif"))
-                del stitch
-                # get rid of dat if there's a tiff 
-                os.remove(mosaic_dat_path)
 
-            except OSError:
-                log.info("Not enough memory to create large tiff file")
+        try:
+            if (shape[0] * shape[1] * shape[2]) / 1e6  > 3500:
+                save_as_big_tiff = True
+            else:
+                save_as_big_tiff = False
+
+            self.memmap_to_tiff(stitch, str.replace(mosaic_dat_path, ".dat", ".tif"), save_as_big_tiff)
+            del stitch
+            # get rid of dat if there's a tiff 
+            os.remove(mosaic_dat_path)
+
+        except OSError:
+            log.info("Error writing tiff file")
+    
+        # elif (shape[0] * shape[1] * shape[2]) / 1e6 > self._max_file_size: 
+        #     raise MaxFileSizeException(self._max_file_size)
+
+        else:
             
-        elif (shape[0] * shape[1] * shape[2]) / 1e6 > self._max_file_size: 
-            raise MaxFileSizeException(self._max_file_size)
 
 
 if __name__ == "__main__":
