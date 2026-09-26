@@ -577,9 +577,9 @@ class Controller:
 
             sample.set_start_time_imaging(start_time)
 
-            sample.capture_cookie_top_section(sample, progress_callback, stop_capture)
+            self.capture_cookie_top_section(sample, progress_callback, stop_capture)
             
-            sample.capture_cookie_bottom_section(sample, progress_callback, stop_capture)
+            self.capture_cookie_bottom_section(sample, progress_callback, stop_capture)
             
             end_time = time.time()
             sample.set_end_time_imaging(end_time)
