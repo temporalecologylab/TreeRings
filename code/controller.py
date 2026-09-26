@@ -442,6 +442,122 @@ class Controller:
         sample.set_end_time_imaging(end_time)
         sample.to_json()
 
+
+    def capture_cookie_top_section(self, sample: sample.Sample, progress_callback: Callable, stop_capture: Event):
+        # Navigate to the sample's origin
+        self._gantry.jog_absolute_xyz(sample.x, sample.y, sample.z)        
+        self._gantry.block_for_jog()
+        time.sleep(0.25) # allow vibrations to settle
+        
+        first = True
+        previous_focus_metric = -1
+        
+        targets = sample.targets_top 
+        for target in targets:
+            x, y, z, row, col = target[0], target[1], target[2], int(target[3]), int(target[4])
+            self._gantry.jog_absolute_xy(x, y)        
+            self._gantry.block_for_jog()
+            time.sleep(0.25) # allow vibrations to settle
+            
+            if first:
+                first = False
+                # Collect a known good image and focus score
+                _, best_focus_score = self.autofocus()
+                print(f"First Focus Score: {best_focus_score}")
+                sample.focus_scores_subject[row][col] = best_focus_score
+                sample.first_focus_score = best_focus_score
+                previous_focus_metric = best_focus_score
+            else:
+                # Check to see if background to skip autofocusing
+                # Check to see if the image is reasonably focused to skip autofocusing
+
+                focus_score = self.get_focus_metric()
+                print(f"Focus score: {focus_score}")
+                percentage_change_from_previous = abs(1 - (focus_score / previous_focus_metric)) 
+                percentage_of_median = focus_score / sample.first_focus_score# np.median(sample.focus_scores_subject)
+                previous_focus_metric = focus_score
+
+                is_background = percentage_of_median < 0.5      
+                is_focused = percentage_change_from_previous >  0.05      
+
+                # If you are not focused, and you are not an image of the background, spend the time to autofocus
+                if not is_focused and not is_background:
+                    self.autofocus()
+
+                # Log the focus score 
+                if is_background:
+                    sample.focus_scores_background[row][col] = focus_score
+                    print("Is background")
+                else:
+                    sample.focus_scores_subject[row][col] = focus_score
+                    print("Well focused. No need to autofocus.")
+
+            file_location = f"{sample.directory}/frame_{row}_{col}.tiff"
+            self.camera.save_frame(file_location)
+            sample.increment_image_count()  
+
+            # GUI Progress callback which I toyed with. May not work. 
+            elapsed_time = time.time() - sample.start_time_imaging
+            progress_callback((elapsed_time / sample.image_count, sample.image_count, sample.rows * sample.cols))
+    
+    def capture_cookie_bottom_section(self, sample: sample.Sample, progress_callback: Callable, stop_capture: Event):
+        # Navigate to the sample's origin
+        self._gantry.jog_absolute_xyz(sample.x, sample.y, sample.z)        
+        self._gantry.block_for_jog()
+        time.sleep(0.25) # allow vibrations to settle
+
+        first = True
+        previous_focus_metric = -1
+        
+        targets = sample.targets_bot 
+        for target in targets:
+            x, y, z, row, col = target[0], target[1], target[2], int(target[3]), int(target[4])
+            self._gantry.jog_absolute_xy(x, y)        
+            self._gantry.block_for_jog()
+            time.sleep(0.25) # allow vibrations to settle
+            
+            if first:
+                first = False
+                # Collect a known good image and focus score
+                _, best_focus_score = self.autofocus()
+                print(f"First Focus Score: {best_focus_score}")
+                sample.focus_scores_subject[row][col] = best_focus_score
+                sample.first_focus_score = best_focus_score
+                previous_focus_metric = best_focus_score
+            else:
+                # Check to see if background to skip autofocusing
+                # Check to see if the image is reasonably focused to skip autofocusing
+
+                focus_score = self.get_focus_metric()
+                print(f"Focus score: {focus_score}")
+                percentage_change_from_previous = abs(1 - (focus_score / previous_focus_metric)) 
+                percentage_of_median = focus_score / sample.first_focus_score# np.median(sample.focus_scores_subject)
+                previous_focus_metric = focus_score
+
+                is_background = percentage_of_median < 0.5      
+                is_focused = percentage_change_from_previous >  0.05      
+
+                # If you are not focused, and you are not an image of the background, spend the time to autofocus
+                if not is_focused and not is_background:
+                    self.autofocus()
+
+                # Log the focus score 
+                if is_background:
+                    sample.focus_scores_background[row][col] = focus_score
+                    print("Is background")
+                else:
+                    sample.focus_scores_subject[row][col] = focus_score
+                    print("Well focused. No need to autofocus.")
+
+            file_location = f"{sample.directory}/frame_{row}_{col}.tiff"
+            self.camera.save_frame(file_location)
+            sample.increment_image_count()  
+
+            # GUI Progress callback which I toyed with. May not work. 
+            elapsed_time = time.time() - sample.start_time_imaging
+            progress_callback((elapsed_time / sample.image_count, sample.image_count, sample.rows * sample.cols))
+            
+
     #### SERPENTINE METHODS ####
     def capture_cookie(self, sample: sample.Sample, progress_callback: Callable, stop_capture: Event):
         """Abstraction to execute a capture sequence. This involves moving the the top left of the sample, traversing in a serpentining pattern 
@@ -461,68 +577,17 @@ class Controller:
 
             sample.set_start_time_imaging(start_time)
 
-            # Navigate to the sample's origin
-            self._gantry.jog_absolute_xyz(sample.x, sample.y, sample.z)        
-            self._gantry.block_for_jog()
-
-            first = True
-            previous_focus_metric = -1
-
-            targets = np.vstack((sample.targets_top, sample.targets_bot))
-
-            for target in targets:
-                x, y, z, row, col = target[0], target[1], target[2], int(target[3]), int(target[4])
-                self._gantry.jog_absolute_xy(x, y)        
-                self._gantry.block_for_jog()
-                
-                if first:
-                    first = False
-                    # Collect a known good image and focus score
-                    _, best_focus_score = self.autofocus()
-                    print(f"First Focus Score: {best_focus_score}")
-                    sample.focus_scores_subject[row][col] = best_focus_score
-                    sample.first_focus_score = best_focus_score
-                    previous_focus_metric = best_focus_score
-                else:
-                    # Check to see if background to skip autofocusing
-                    # Check to see if the image is reasonably focused to skip autofocusing
-
-                    focus_score = self.get_focus_metric()
-                    print(f"Focus score: {focus_score}")
-                    percentage_of_previous = focus_score / previous_focus_metric 
-                    percentage_of_median = focus_score / sample.first_focus_score# np.median(sample.focus_scores_subject)
-                    previous_focus_metric = focus_score
-
-                    is_background = percentage_of_median < 0.5      
-                    is_focused = percentage_of_previous > 0.98        
-
-                    # If you are not focused, and you are not an image of the background, spend the time to autofocus
-                    if not is_focused and not is_background:
-                        self.autofocus()
-
-                    # Log the focus score 
-                    if is_background:
-                        sample.focus_scores_background[row][col] = focus_score
-                        print("Is background")
-                    else:
-                        sample.focus_scores_subject[row][col] = focus_score
-                        print("Well focused. No need to autofocus.")
-
-                file_location = f"{sample.directory}/frame_{row}_{col}.tiff"
-                self.camera.save_frame(file_location)
-                sample.increment_image_count()  
-    
-                # GUI Progress callback which I toyed with. May not work. 
-                elapsed_time = time.time() - sample.start_time_imaging
-                progress_callback((elapsed_time / sample.image_count, sample.image_count, sample.rows * sample.cols))
-    
+            sample.capture_cookie_top_section(sample, progress_callback, stop_capture)
+            
+            sample.capture_cookie_bottom_section(sample, progress_callback, stop_capture)
+            
             end_time = time.time()
             sample.set_end_time_imaging(end_time)
             sample.to_json()
 
+            break
             
 
-            break
 
     def capture_all_samples(self, progress_callback: Callable, stop_capture: Event):
         """Callable for the GUI to iterate through all samples. For multiple sample capture.

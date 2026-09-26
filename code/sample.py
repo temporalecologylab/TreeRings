@@ -117,8 +117,8 @@ class Sample:
             "background": self.background,
             "background_std": self.background_std,
             "focus_index": self.focus_index,
-            "normalized_variance": self.nvar  
-        }
+            "normalized_variance": self.nvar
+            }
 
         if self.dpi is not None:
             metadata["dpi"] = int(self.dpi) # TODO: Add set dpi method
