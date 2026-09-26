@@ -153,9 +153,9 @@ class Controller:
         Implementation described in this video: https://www.youtube.com/watch?v=AGXq-ut2oJg
         """
         phi = 0.618 # golden ratio
-
+        _,_, z_start = self._gantry.get_xyz()
         z_current = 0  # Track current position
-
+	
         # Initial internal points
         d = phi * (x_u - x_l)
         x1 = x_u - d  # left internal point
@@ -213,10 +213,10 @@ class Controller:
         best_score = max(f1, f2)
 
         # # Return to zero
-        # self.controller.jog_relative_z(-z_current, block=True)
+        #self.jog_absolute_z(z_start, block=True)
 
         # # Go to best focus
-        # self.controller.jog_relative_z(best_z, block=True)
+        self.jog_relative_z(best_z - z_current, block=True)
 
         print(f"\nBest focus at z={best_z:.3f} mm, score={best_score:.2f}")
         return best_z, best_score
@@ -443,26 +443,30 @@ class Controller:
         sample.to_json()
 
 
-    def capture_cookie_top_section(self, sample: sample.Sample, progress_callback: Callable, stop_capture: Event):
+    def capture_cookie_targets(self, targets, sample: sample.Sample, progress_callback: Callable, stop_capture: Event):
         # Navigate to the sample's origin
         self._gantry.jog_absolute_xyz(sample.x, sample.y, sample.z)        
         self._gantry.block_for_jog()
-        time.sleep(0.25) # allow vibrations to settle
+        time.sleep(0.4) # allow vibrations to settle
         
         first = True
         previous_focus_metric = -1
+        background_streak_counter = 0
         
-        targets = sample.targets_top 
         for target in targets:
+            if stop_capture.is_set():
+                break
+                
             x, y, z, row, col = target[0], target[1], target[2], int(target[3]), int(target[4])
             self._gantry.jog_absolute_xy(x, y)        
             self._gantry.block_for_jog()
-            time.sleep(0.25) # allow vibrations to settle
+            time.sleep(0.4) # allow vibrations to settle
+
             
             if first:
                 first = False
                 # Collect a known good image and focus score
-                _, best_focus_score = self.autofocus()
+                _, best_focus_score = self.autofocus(1)
                 print(f"First Focus Score: {best_focus_score}")
                 sample.focus_scores_subject[row][col] = best_focus_score
                 sample.first_focus_score = best_focus_score
@@ -472,82 +476,35 @@ class Controller:
                 # Check to see if the image is reasonably focused to skip autofocusing
 
                 focus_score = self.get_focus_metric()
-                print(f"Focus score: {focus_score}")
-                percentage_change_from_previous = abs(1 - (focus_score / previous_focus_metric)) 
-                percentage_of_median = focus_score / sample.first_focus_score# np.median(sample.focus_scores_subject)
-                previous_focus_metric = focus_score
 
-                is_background = percentage_of_median < 0.5      
-                is_focused = percentage_change_from_previous >  0.05      
+                percentage_change_from_previous = focus_score / previous_focus_metric
+                percentage_of_first = focus_score / sample.first_focus_score# np.median(sample.focus_scores_subject)
+                print("\n----------------------------------")
+                print(f"Previous: {previous_focus_metric}")
+                print(f"Current: {focus_score}")
+                print(f"Percentage of Previous: {percentage_change_from_previous}")
+                print("------------------------------------\n")
 
-                # If you are not focused, and you are not an image of the background, spend the time to autofocus
-                if not is_focused and not is_background:
-                    self.autofocus()
-
-                # Log the focus score 
-                if is_background:
-                    sample.focus_scores_background[row][col] = focus_score
-                    print("Is background")
-                else:
-                    sample.focus_scores_subject[row][col] = focus_score
-                    print("Well focused. No need to autofocus.")
-
-            file_location = f"{sample.directory}/frame_{row}_{col}.tiff"
-            self.camera.save_frame(file_location)
-            sample.increment_image_count()  
-
-            # GUI Progress callback which I toyed with. May not work. 
-            elapsed_time = time.time() - sample.start_time_imaging
-            progress_callback((elapsed_time / sample.image_count, sample.image_count, sample.rows * sample.cols))
-    
-    def capture_cookie_bottom_section(self, sample: sample.Sample, progress_callback: Callable, stop_capture: Event):
-        # Navigate to the sample's origin
-        self._gantry.jog_absolute_xyz(sample.x, sample.y, sample.z)        
-        self._gantry.block_for_jog()
-        time.sleep(0.25) # allow vibrations to settle
-
-        first = True
-        previous_focus_metric = -1
-        
-        targets = sample.targets_bot 
-        for target in targets:
-            x, y, z, row, col = target[0], target[1], target[2], int(target[3]), int(target[4])
-            self._gantry.jog_absolute_xy(x, y)        
-            self._gantry.block_for_jog()
-            time.sleep(0.25) # allow vibrations to settle
-            
-            if first:
-                first = False
-                # Collect a known good image and focus score
-                _, best_focus_score = self.autofocus()
-                print(f"First Focus Score: {best_focus_score}")
-                sample.focus_scores_subject[row][col] = best_focus_score
-                sample.first_focus_score = best_focus_score
-                previous_focus_metric = best_focus_score
-            else:
-                # Check to see if background to skip autofocusing
-                # Check to see if the image is reasonably focused to skip autofocusing
-
-                focus_score = self.get_focus_metric()
-                print(f"Focus score: {focus_score}")
-                percentage_change_from_previous = abs(1 - (focus_score / previous_focus_metric)) 
-                percentage_of_median = focus_score / sample.first_focus_score# np.median(sample.focus_scores_subject)
-                previous_focus_metric = focus_score
-
-                is_background = percentage_of_median < 0.5      
-                is_focused = percentage_change_from_previous >  0.05      
+                is_background = percentage_of_first < 0.4      
+                is_focused = percentage_change_from_previous > 0.9      
 
                 # If you are not focused, and you are not an image of the background, spend the time to autofocus
-                if not is_focused and not is_background:
-                    self.autofocus()
-
-                # Log the focus score 
-                if is_background:
-                    sample.focus_scores_background[row][col] = focus_score
-                    print("Is background")
+                if background_streak_counter > 3:
+                    self.autofocus(1)
+                    print("Autofocusing because too many background in a row.")
+                    background_streak_counter = 0
+                elif is_background:
+                    print("Is background, no need to autofocus")
+                    background_streak_counter += 1
+                elif not is_focused:
+                    print("Autofocusing.")
+                    self.autofocus(1)
                 else:
-                    sample.focus_scores_subject[row][col] = focus_score
-                    print("Well focused. No need to autofocus.")
+                    print("Well focused. No need to autofocus. ")
+                    
+                previous_focus_metric = self.get_focus_metric()
+                time.sleep(0.1)
+
 
             file_location = f"{sample.directory}/frame_{row}_{col}.tiff"
             self.camera.save_frame(file_location)
@@ -569,25 +526,32 @@ class Controller:
             stop_capture (Event): Event to stop capture after the current image sequence 
         """
 
-        while not stop_capture.is_set():
-            #set directories
-            self.set_directory(sample.directory)
 
-            start_time = time.time()
+        #set directories
+        self.set_directory(sample.directory)
 
-            sample.set_start_time_imaging(start_time)
+        start_time = time.time()
 
-            self.capture_cookie_top_section(sample, progress_callback, stop_capture)
+        sample.set_start_time_imaging(start_time)
+
+        self.capture_cookie_targets(sample.targets_top, sample, progress_callback, stop_capture)
+           
+        if stop_capture.is_set():
+            return
             
-            self.capture_cookie_bottom_section(sample, progress_callback, stop_capture)
+        self.capture_cookie_targets(sample.targets_bot, sample, progress_callback, stop_capture)
             
-            end_time = time.time()
-            sample.set_end_time_imaging(end_time)
-            sample.to_json()
-
-            break
+        if stop_capture.is_set():
+            return
             
-
+        print("Finished capturing cookie targets.")
+            
+        end_time = time.time()
+        sample.set_end_time_imaging(end_time)
+        sample.to_json()
+        
+        print("To json")
+        return
 
     def capture_all_samples(self, progress_callback: Callable, stop_capture: Event):
         """Callable for the GUI to iterate through all samples. For multiple sample capture.
@@ -609,7 +573,8 @@ class Controller:
                     self.capture_core_middle_2(sample, progress_callback, stop_capture)
                 else:
                     self.capture_cookie(sample, progress_callback, stop_capture)
-                
+                    
+                print("Ready to stitch")
                 # Only stitch if the capture complete successfully
                 if not stop_capture.is_set():
                     print('stitching frames')
