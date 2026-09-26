@@ -153,7 +153,6 @@ class Controller:
         Implementation described in this video: https://www.youtube.com/watch?v=AGXq-ut2oJg
         """
         phi = 0.618 # golden ratio
-        _,_, z_start = self._gantry.get_xyz()
         z_current = 0  # Track current position
 	
         # Initial internal points
@@ -211,9 +210,6 @@ class Controller:
         # Choose best
         best_z = x1 if f1 > f2 else x2
         best_score = max(f1, f2)
-
-        # # Return to zero
-        #self.jog_absolute_z(z_start, block=True)
 
         # # Go to best focus
         self.jog_relative_z(best_z - z_current, block=True)
