@@ -8,6 +8,11 @@ import utils
 from pathlib import Path
 from datetime import datetime
 
+
+
+    
+
+
 class Sample:
     def __init__(self, sample_width_mm: int, sample_height_mm: int, species:str, id1:str, id2:str, notes:str, image_width_mm:float, image_height_mm:float, image_width_pixels:float, image_height_pixels:float, is_core:bool, percent_overlap:int = 50, is_vertical:bool = True, x:float = None, y:float = None, z:float = None, directory:str = None):
         """Class which contains the necessary information for each sample that needs to be digitized. Data comes from user inputs from GUI. Data is saved in metadata.json files alongside stitched images
@@ -51,6 +56,8 @@ class Sample:
         self.id2 = id2
         self.notes = notes
         self.image_count = 0
+
+
   
         dirtime = datetime.now().strftime("%H_%M_%S")
 
@@ -67,6 +74,8 @@ class Sample:
         
         if not is_core:
             self.targets_top, self.targets_bot = self.calculate_image_locations(self.rows, self.cols, self.x_step_size, self.y_step_size) # Each index of the (-1, 5) shape array is (X, Y, Z, row, col)
+            self.targets_centerline = self.get_centerline_col_targets()
+        
         self.background = []
         self.background_std = []
         self.coordinates = []
@@ -89,6 +98,16 @@ class Sample:
         # Tracking focus scores across sample
         self.focus_scores_subject = np.empty((self.rows, self.cols)) # Meant to build a stronger understanding of the value of what a good focus score is considering they vary spatially along the sample
         self.focus_scores_background = np.empty((self.rows, self.cols)) 
+
+        # Keeping track of scanning active variables
+        self.active_row = -1 
+        self.active_col = -1
+        self.center_row = self.rows // 2
+        self.center_col = self.cols // 2
+        self.background_threshold = -1
+        self.autofocus_range_big = 2 # mm 
+        self.autofocus_range_small = 1 # mm 
+
 
     def increment_image_count(self):
         """Increment the image counter when a good image is taken"""
@@ -307,7 +326,28 @@ class Sample:
             tuple[float]: X, Y, Z coordintes of top left corner of sample
         """
         return self._top_left
-    
+
+    def get_centerline_col_targets(self):
+        """Get a list of all the targets in the centermost column of the target grid.
+        """
+        centerline_targets = []
+
+        for target in self.targets_top:
+            x, y, z, row, col = target[0], target[1], target[2], int(target[3]), int(target[4])
+
+            # if you are in the centerline col, welcome 
+            if col == self.cols // 2:
+                centerline_targets.append(target)
+
+        for target in self.targets_bot:
+            x, y, z, row, col = target[0], target[1], target[2], int(target[3]), int(target[4])
+            
+            # if you are in the centerline col, welcome 
+            if col == self.cols // 2:
+                centerline_targets.append(target)
+
+        return centerline_targets
+
 
 def main():
     sample = Sample(150, 0, "test", "test", "test", "test", 5, 3, 30, 0, 0, 0)

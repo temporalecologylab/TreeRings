@@ -509,7 +509,121 @@ class Controller:
             # GUI Progress callback which I toyed with. May not work. 
             elapsed_time = time.time() - sample.start_time_imaging
             progress_callback((elapsed_time / sample.image_count, sample.image_count, sample.rows * sample.cols))
+
+    def capture_cookie_row(self, sample: sample.Sample, progress_callback: Callable, stop_capture: Event):
+        max_col = sample.cols 
+        min_col = 0
+        is_background_counter = 0
+
+        # Set the background threshold from the center of the sample 
+        self.autofocus(sample.autofocus_range_big)
+        previous_focus_score = self.get_focus_metric() 
+
+        self.save_active_frame(sample)
+
+        # Go right unless you encounter confident background or run out of cols
+        while sample.active_col < max_col and not is_background_counter > 2 :
             
+            self.jog_relative_x(sample.x_step_size) 
+            self._gantry.block_for_jog()
+            
+
+            focus_score = self.get_focus_metric() 
+            is_background = focus_score < sample.background_threshold 
+            is_close = focus_score / previous_focus_score > 0.9
+
+            if is_background:
+                _, best_score = self.autofocus(sample.autofocus_range_big)
+                previous_focus_score = best_score
+                if best_score < sample.background_threshold:
+                    is_background_counter += 1
+            elif is_close:
+                print("Focus score is close to previous, not focusing.")
+                previous_focus_score = focus_score
+            else:
+                self.autofocus(sample.autofocus_range_small)
+
+            self.save_active_frame(sample)
+
+            sample.active_col += 1
+        # Go back to center but don't save a frame as it has already been imaged
+        self.jog_relative_x((sample.center_col - sample.active_col) * sample.x_step_size)
+        self._gantry.block_for_jog()
+
+        # Go left unless you encounter confident background or run out of cols
+        while sample.active_col > min_col and not is_background_counter > 2:
+            self.jog_relative_x(-1 * sample.x_step_size) 
+            self._gantry.block_for_jog()
+
+            focus_score = self.get_focus_metric() 
+            is_background = focus_score < sample.background_threshold 
+            is_close = focus_score / previous_focus_score > 0.9
+
+            if is_background:
+                _, best_score = self.autofocus(sample.autofocus_range_big)
+                previous_focus_score = best_score
+                if best_score < sample.background_threshold:
+                    is_background_counter += 1
+            elif is_close:
+                print("Focus score is close to previous, not focusing.")
+                previous_focus_score = focus_score
+            else:
+                _, best_score = self.autofocus(sample.autofocus_range_small)
+                previous_focus_score = best_score 
+
+            self.save_active_frame(sample)
+
+            sample.active_col -= 1
+
+        # Go back to center but don't save a frame as it has already been imaged
+        self.jog_relative_x((sample.center_col - sample.active_col) * sample.x_step_size)
+        self._gantry.block_for_jog()
+
+        print(f"Done capturing row {sample.active_row}")
+
+    def capture_cookie_inside_out(self, sample: sample.Sample, progress_callback: Callable, stop_capture: Event):
+        # Navigate to the sample's origin
+        self._gantry.jog_absolute_xyz(sample.x, sample.y, sample.z)        
+        self._gantry.block_for_jog()
+        time.sleep(0.4) # allow vibrations to settle
+
+        # Consider the centerpoint of the sample to be middle row, middle col
+        sample.active_row = sample.center_row
+        sample.active_col = sample.center_col
+
+        # Set the background threshold from the center of the sample 
+        self.autofocus(sample.autofocus_range_big)
+        calibration_focus_score = self.get_focus_metric() 
+        sample.background_threshold = 0.5 * calibration_focus_score
+
+        # Capture whole row 
+        self.capture_cookie_row(sample, progress_callback, stop_capture)
+
+        # Go one row up until and capture whole row. decrement active row until you attempt to go to a negative row
+        while self.active_row > 0 and not stop_capture.is_set():
+            self.active_row -= 1
+            self.jog_relative_y(sample.y_step_size)
+            self.capture_cookie_row(sample, progress_callback, stop_capture)
+
+        # Jog back to center 
+        self._gantry.jog_absolute_xyz(sample.x, sample.y, sample.z)
+        self._gantry.block_for_jog()
+        time.sleep(0.4) # allow vibrations to settle
+        sample.active_row = sample.center_row
+        sample.active_col = sample.center_col
+
+        # Go one row down and capture whole row. increment active row until you attempt to exceed the number of rows - 1
+        while self.active_row < sample.rows and not stop_capture.is_set():
+            self.active_row += 1
+            self._gantry.jog_relative_y(-sample.y_step_size)
+
+        # Done capturing 
+        print("Done capturing cookie. Center outward")
+        
+    def save_active_frame(self, sample: sample.Sample):
+        file_location = f"{sample.directory}/frame_{sample.active_row}_{sample.active_col}.tiff"
+        self.camera.save_frame(file_location)
+        sample.increment_image_count() 
 
     #### SERPENTINE METHODS ####
     def capture_cookie(self, sample: sample.Sample, progress_callback: Callable, stop_capture: Event):
@@ -569,6 +683,7 @@ class Controller:
                     self.capture_core_middle_2(sample, progress_callback, stop_capture)
                 else:
                     self.capture_cookie(sample, progress_callback, stop_capture)
+                    self.capture_cookie_inside_out(sample, progress_callback, stop_capture)
                     
                 print("Ready to stitch")
                 # Only stitch if the capture complete successfully
