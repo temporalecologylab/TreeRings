@@ -553,7 +553,7 @@ class Controller:
             elapsed_time = time.time() - sample.start_time_imaging
             progress_callback((elapsed_time / sample.image_count, sample.image_count, sample.rows * sample.cols))
             
-        # Reset background counter
+        # Get the rest of the images in the grid that are background without autofocusing. Not imaging results in 'ragged' stitching that don't work
         while is_background_counter >= 2 and sample.active_col > 0 and sample.active_col < (sample.cols - 1):
         
             if direction == "right":
@@ -572,20 +572,25 @@ class Controller:
         self._gantry.jog_absolute_xyz(start_x, start_y, start_z)
         self._gantry.block_for_jog()
         sample.active_col = sample.center_col
-        self.autofocus(sample.autofocus_range_big)
+        # self.autofocus(sample.autofocus_range_big)
         
     def capture_cookie_row(self, sample: sample.Sample, progress_callback: Callable, stop_capture: Event):
 
 	# Start coordinates 
 	
         # Set the background threshold from the center of the sample 
-        print(f"Beginning row {sample.active_row} of {sample.rows}. Autofocusing")
+        print(f"Beginning row {sample.active_row} of {sample.rows}. Autofocusing\n")
         best_z, best_score = self.autofocus(sample.autofocus_range_big)
 
         # Update Z start with the autofocused distance
         
         self.save_active_frame(sample)
-    
+
+        if sample.active_row == sample.center_row and sample.active_col == sample.center_col: 
+            calibration_focus_score = best_score
+            sample.background_threshold = 0.6 * calibration_focus_score
+            print(f"Setting background threshold to be {sample.background_threshold}\n")
+
         self.capture_direction("right", sample, progress_callback, stop_capture)
 
         self.capture_direction("left", sample, progress_callback, stop_capture)
@@ -613,13 +618,6 @@ class Controller:
         # Consider the centerpoint of the sample to be middle row, middle col
         sample.active_row = sample.center_row
         sample.active_col = sample.center_col
-
-        # Set the background threshold from the center of the sample 
-        self.autofocus(sample.autofocus_range_big)
-        calibration_focus_score = self.get_focus_metric() 
-        sample.background_threshold = 0.6 * calibration_focus_score
-
-        self.save_active_frame(sample)
 
         print("Starting top half of cookie scanning.")
         # Capture whole center row
