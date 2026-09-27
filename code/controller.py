@@ -2,7 +2,6 @@
 # This stores the majority of the logic to capture scans, move the gantry, etc.
 
 import gantry
-import focus
 import sample
 import camera
 import stitcher
@@ -23,12 +22,11 @@ import os
 import numpy as np
 
 class Controller:
-    def __init__(self, g: gantry.Gantry, c: camera.Camera, f: focus.Focus):
+    def __init__(self, g: gantry.Gantry, c: camera.Camera):
         """Abstraction of the controller which moves the gantry, gets information from the GUI, operates the camera, and determines when to stitch.
 
             g (gantry.Gantry): Gantry instance to interface with the GRBL controller.
             c (camera.Camera): Camera instance to interface with the GStreamer pipeline and camera.
-            f (focus.Focus): Focus instance to capture in focus images.
             a (alignment.Alignment): Alignment instance to ensure core alignmennt 
         """
         #Settings for capturing images from multiple distances
@@ -48,7 +46,6 @@ class Controller:
         self.samples = []
         self._gantry = g
         self.camera = c
-        self.focus = f
 
         #attributes
         self.image_height_mm = self.config["gui"]["DEFAULT_IMAGE_HEIGHT_MM"]
@@ -438,78 +435,6 @@ class Controller:
         sample.set_end_time_imaging(end_time)
         sample.to_json()
 
-
-    def capture_cookie_targets(self, targets, sample: sample.Sample, progress_callback: Callable, stop_capture: Event):
-        # Navigate to the sample's origin
-        self._gantry.jog_absolute_xyz(sample.x, sample.y, sample.z)        
-        self._gantry.block_for_jog()
-        time.sleep(0.4) # allow vibrations to settle
-        
-        first = True
-        previous_focus_metric = -1
-        background_streak_counter = 0
-        
-        for target in targets:
-            if stop_capture.is_set():
-                break
-                
-            x, y, z, row, col = target[0], target[1], target[2], int(target[3]), int(target[4])
-            self._gantry.jog_absolute_xy(x, y)        
-            self._gantry.block_for_jog()
-            time.sleep(0.4) # allow vibrations to settle
-
-            
-            if first:
-                first = False
-                # Collect a known good image and focus score
-                _, best_focus_score = self.autofocus(1)
-                print(f"First Focus Score: {best_focus_score}")
-                sample.focus_scores_subject[row][col] = best_focus_score
-                sample.first_focus_score = best_focus_score
-                previous_focus_metric = best_focus_score
-            else:
-                # Check to see if background to skip autofocusing
-                # Check to see if the image is reasonably focused to skip autofocusing
-
-                focus_score = self.get_focus_metric()
-
-                percentage_change_from_previous = focus_score / previous_focus_metric
-                percentage_of_first = focus_score / sample.first_focus_score# np.median(sample.focus_scores_subject)
-                print("\n----------------------------------")
-                print(f"Previous: {previous_focus_metric}")
-                print(f"Current: {focus_score}")
-                print(f"Percentage of Previous: {percentage_change_from_previous}")
-                print("------------------------------------\n")
-
-                is_background = percentage_of_first < 0.4      
-                is_focused = percentage_change_from_previous > 0.9      
-
-                # If you are not focused, and you are not an image of the background, spend the time to autofocus
-                if background_streak_counter > 3:
-                    self.autofocus(1)
-                    print("Autofocusing because too many background in a row.")
-                    background_streak_counter = 0
-                elif is_background:
-                    print("Is background, no need to autofocus")
-                    background_streak_counter += 1
-                elif not is_focused:
-                    print("Autofocusing.")
-                    self.autofocus(1)
-                else:
-                    print("Well focused. No need to autofocus. ")
-                    
-                previous_focus_metric = self.get_focus_metric()
-                time.sleep(0.1)
-
-
-            file_location = f"{sample.directory}/frame_{row}_{col}.tiff"
-            self.camera.save_frame(file_location)
-            sample.increment_image_count()  
-
-            # GUI Progress callback which I toyed with. May not work. 
-            elapsed_time = time.time() - sample.start_time_imaging
-            progress_callback((elapsed_time / sample.image_count, sample.image_count, sample.rows * sample.cols))
-
     def capture_direction(self, direction, sample: sample.Sample, progress_callback: Callable, stop_capture: Event):
         start_x, start_y, start_z = self._gantry.get_xyz()
         previous_focus_score = self.get_focus_metric()
@@ -659,43 +584,6 @@ class Controller:
         self.camera.save_frame(file_location)
         sample.increment_image_count() 
 
-    #### SERPENTINE METHODS ####
-    def capture_cookie(self, sample: sample.Sample, progress_callback: Callable, stop_capture: Event):
-        """Abstraction to execute a capture sequence. This involves moving the the top left of the sample, traversing in a serpentining pattern 
-        across the dimensions of the sample. At each step in the grid, multiple images are taken and only the most in focus is kept. 
-
-        Args:
-            sample (sample.Sample): Instance of a sample to be captured
-            progress_callback (Callable): GUI Callback to update progress bar 
-            stop_capture (Event): Event to stop capture after the current image sequence 
-        """
-
-
-        #set directories
-        self.set_directory(sample.directory)
-
-        start_time = time.time()
-
-        sample.set_start_time_imaging(start_time)
-
-        self.capture_cookie_targets(sample.targets_top, sample, progress_callback, stop_capture)
-           
-        if stop_capture.is_set():
-            return
-            
-        self.capture_cookie_targets(sample.targets_bot, sample, progress_callback, stop_capture)
-            
-        if stop_capture.is_set():
-            return
-            
-        print("Finished capturing cookie targets.")
-            
-        end_time = time.time()
-        sample.set_end_time_imaging(end_time)
-        sample.to_json()
-        
-        print("To json")
-        return
 
     def capture_all_samples(self, progress_callback: Callable, stop_capture: Event):
         """Callable for the GUI to iterate through all samples. For multiple sample capture.
@@ -754,194 +642,6 @@ class Controller:
             finally:
                 st.delete_dats()
                 del st
-    
-    def capture_grid_photos(self, sample: sample.Sample, focus_queue: queue.Queue, pid_queue: queue.Queue, pid_lock, progress_callback: Callable, stop_capture: Event):
-        """Command to traverse the sample and capture an image at each location. 
-
-        Not updated to use new autofocus method... 
-        Args:
-            sample(sample.Sample): Sample object which contains all the relevant sample information.
-            focus_queue (queue.Queue): Queue to have images added to for the focus thread to parse which is the most in focus.
-            pid_queue (queue.Queue): Queue to determine if the z height needs to be adjusted to stay in focus.
-            pid_lock (_type_): Lock to prevent race conditions
-            progress_callback (Callable): GUI widget to update progress bar
-            stop_capture (Event): Event to stop capturing when possible
-        """
-        # for loop capture
-        # Change feed rate back to being slow
-        self.set_feed_rate(1)
-        while True and not stop_capture.is_set():
-            img_num = 0
-
-            # Targets are XYZ coordinates to jog to to capture an image.
-            targets = np.vstack((sample.targets_top, sample.targets_bot))
-            for target in targets:
-                self._gantry.block_for_jog()
-                start_stack = time.time()
-                if stop_capture.is_set():
-                    break
-
-                x, y, z, row, col = target[0], target[1], target[2], int(target[3]), int(target[4])
-
-                # Jog to the origin of the sample
-                if img_num == 0:
-                    self._gantry.jog_absolute_xyz(x, y, z)
-
-                    # If the sample is a vertically aligned core, try to center the core in the FOV on the first 
-                    if sample.is_core and sample.is_vertical:
-                        log.info("Core centering procedure start.")
-                        self._gantry.block_for_jog()
-                        r = self.config["controller"]["CORE_CENTERING_RANGE"] #5
-                        n_images_centering = self.config["controller"]["N_IMAGES_CORE_CENTERING"]
-                        filenames = self.capture_images_multiple_x(sample.directory, n_images_centering, self._gantry.feed_rate_z, r, self.acceleration_buffer)
-                        self.recenter_core_naive(filenames, r, self._gantry.feed_rate_z)
-                # Jog x and y and allow PID to handle the Z
-                elif img_num == len(sample.targets_top):
-                    
-                    if sample.is_core and sample.is_vertical:
-                        self._gantry.jog_absolute_y(y)
-                        self._gantry.jog_absolute_z(z)
-                    else:
-                        self._gantry.jog_absolute_xyz(x,y,z)
-                else:
-                    if sample.is_core and sample.is_vertical:
-                        self._gantry.jog_absolute_y(y)
-                    else:
-                        self._gantry.jog_absolute_xy(x, y)
-                    # pid_lock.acquire()
-                    update_z = pid_queue.get()
-                    # pid_lock.release()
-                    z += update_z
-                    log.info(f"PID update Z by {update_z} mm")
-                    if update_z != 0:
-                        self._gantry.jog_relative_z(update_z)
-
-
-                sample.coordinates.append(self._gantry.get_xyz())
-                img_filenames = self.capture_images_multiple_z(sample.directory, self.n_images, self._gantry.feed_rate_z, self.height_range, self.acceleration_buffer, row, col)
-                focus_queue.put(img_filenames)
-                img_num += 1
-
-                elapsed_time = time.time() - start_stack
-                progress_callback((elapsed_time, img_num, sample.rows*sample.cols))
-            
-            pid_queue.task_done() # pretty sure we don't need this 
-            focus_queue.put([-1])
-            break
-        
-
-    def capture_images_multiple_z(self, d: str, image_count: int, feed_rate: int, r: float, acceleration_buffer:float, row:int, col:int):
-        """A method to move the camera through a Z range to allow for multiple images to be taken. This implementation is designed to reduce motion blur by taking advantage of a slow feed rate and avoiding a deceleration then sleep cycle to get an in focus image.
-            This is a key component for naive image focusing. 
-
-        Args:
-            d (str): Directory of where to save frames
-            image_count (int): How many images do you want to take throughout the range
-            feed_rate (int): What is the feed rate of the Z-axis in mm/min
-            r (float): The distance in mm between the first and last image.
-            acceleration_buffer (float): Extra distance beyond the range to allow for the z-axis to reach constant velocity
-            row (int): Row location of where on the sample grid the images are in 
-            col (int): Col location of where on the sample grid the images are in 
-
-        """
-        # adding absolute jogging to start point because there is slight stochasticity between relative jogs. Resulting in drift
-
-        image_filenames = []
-
-        time_between_photos_s = r / feed_rate * 60 / image_count # mm / (mm / min) * (s / min) is the dim analysis for units of seconds
-        time_zero_acceleration_s = acceleration_buffer / feed_rate * 60
-
-        # Jog to the top of the range + acceleration buffer
-        top = (r / 2) + acceleration_buffer
-        self.jog_relative_z(top)
-        self._gantry.block_for_jog()
-
-        time.sleep(0.5)  # sleep to prevent excessive vibration
-
-        # Jog to the bottom of the range. Begin taking photos after exiting the acceleration buffer zone
-        bottom = -1 * (r + (acceleration_buffer * 2))
-        self.jog_relative_z(bottom)
-        # Sleep until outside of the acceleration
-        time.sleep(time_zero_acceleration_s)
-        
-        # First photo at the top of the range 
-        for i in range(image_count):
-            file_location = f"{d}/frame_{row}_{col}_{i}.tiff"
-            image_filenames.append(file_location)
-            self.camera.save_frame(file_location)
-            time.sleep(time_between_photos_s)
-        
-        # This might take a while so do not send the next jog until we finish the previous
-        self._gantry.block_for_jog()
-        # Return to original location
-        # self.jog_absolute_z(z_start)
-        self.jog_relative_z(-1 * bottom / 2)
-        self._gantry.block_for_jog()        
-
-        return image_filenames
-    
-    def capture_images_multiple_x(self, d:str, image_count: int, feed_rate: int, r: float, acceleration_buffer:float):
-        """Aligning cores in the center of the field of view of the camera. Used to counteract the non zero error when jogging with the machine. Designed to run once per core. 
-            This is how naive core centering would work but this could be improved with an informed approach. 
-        Args:
-            d (str): Directory of where to save frames
-            image_count (int): How many images do you want to take throughout the range
-            feed_rate (int): What is the feed rate of the Z-axis in mm/min
-            r (float): The distance in mm between the first and last image.
-            acceleration_buffer (float): Extra distance beyond the range to allow for the x-axis to reach constant velocity
-        """
-        # Assume that the machine has already jogged to the origin of the core (X0, Y0, Z0)
-        # adding absolute jogging to start point because there is slight stochasticity between relative jogs. Resulting in drift
-        image_filenames = []
-
-        time_between_photos_s = r / feed_rate * 60 / image_count # mm / (mm / min) * (s / min) is the dim analysis for units of seconds
-        time_zero_acceleration_s = acceleration_buffer / feed_rate * 60
-
-        # Jog to the top of the range + acceleration buffer
-        x_min = -(r / 2) - acceleration_buffer
-        self.jog_relative_x(x_min, feed=feed_rate)
-        self._gantry.block_for_jog()
-
-        time.sleep(0.5)  # sleep to prevent excessive vibration
-
-        # Jog to the x_max of the range. Begin taking photos after exiting the acceleration buffer zone
-        x_max = r + (acceleration_buffer * 2)
-        self.jog_relative_x(x_max, feed=feed_rate)
-        # Sleep until outside of the acceleration
-        time.sleep(time_zero_acceleration_s)
-        
-        # First photo at the x_min of the range 
-        for i in range(image_count):
-            file_location = f"{d}/frame_alignment_{i}.tiff"
-            image_filenames.append(file_location)
-            self.camera.save_frame(file_location)
-            time.sleep(time_between_photos_s)
-        
-        # This might take a while so do not send the next jog until we finish the previous
-        self._gantry.block_for_jog()
-        # Return to original location
-        self.jog_relative_x(-1 * (r / 2 + acceleration_buffer), feed=feed_rate)
-        log.info("Jog to original location.")
-        self._gantry.block_for_jog()        
-
-        return image_filenames
-
-    def recenter_core_naive(self,  filenames: list, r: float, feed:int = None):
-        """After finding the best focused file from capture_images_multiple_x, center the core naively.
-
-        Args:
-            filenames (list): Filenames of all of the images captured at multiple x locations.
-            r (float): The distance in mm between the first and last image.
-            feed (int): Feed rate in mm/min.
-            acceleration_buffer (float): Extra distance beyond the range to allow for the x-axis to reach constant velocity
-        """
-        focused_filename, _, _ = self.focus.best_focused_image(filenames, delete = True)
-        i = filenames.index(focused_filename)
-        i_middle = len(filenames) // 2 # guaranteed to be middle because n_images must be odd
-        damper = 0.75
-        d = ((i - i_middle) / i_middle) * (r / 2) * damper
-        self.jog_relative_x(d, feed=feed) # max travel should be half of the range in either direction. Als
-        log.info("Jog {} mm to recenter vertical core. i: {}, i_middle: {}".format(d, i, i_middle))
 
     #### JOG METHODS ####
     

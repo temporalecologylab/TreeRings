@@ -79,8 +79,6 @@ class Sample:
         self.background = []
         self.background_std = []
         self.coordinates = []
-        self.focus_index = []
-        self.nvar = []
         self.is_core = is_core
         self.is_vertical = is_vertical
         
@@ -94,10 +92,6 @@ class Sample:
         self.stitch_width_pixels = None
         self.stitch_depth = None
         self.dpi = None
-
-        # Tracking focus scores across sample
-        self.focus_scores_subject = np.empty((self.rows, self.cols)) # Meant to build a stronger understanding of the value of what a good focus score is considering they vary spatially along the sample
-        self.focus_scores_background = np.empty((self.rows, self.cols)) 
 
         # Keeping track of scanning active variables
         self.active_row = -1 
@@ -135,8 +129,6 @@ class Sample:
             "coordinates": self.coordinates,
             "background": self.background,
             "background_std": self.background_std,
-            "focus_index": self.focus_index,
-            "normalized_variance": self.nvar
             }
 
         if self.dpi is not None:
