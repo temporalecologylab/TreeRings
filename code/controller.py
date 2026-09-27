@@ -132,7 +132,7 @@ class Controller:
                 elif position == "bottom":
                     return self.variance_of_laplacian(self.roi_bottom(image, frac=0.3))
                 else:
-                    return self.variance_of_laplacian(self.roi_center(image, frac=0.2))
+                    return self.variance_of_laplacian(self.roi_center(image, frac=0.5))
             except:
                 log.info("Could not capture tempfile, retrying")
                 continue
@@ -510,7 +510,7 @@ class Controller:
             elapsed_time = time.time() - sample.start_time_imaging
             progress_callback((elapsed_time / sample.image_count, sample.image_count, sample.rows * sample.cols))
 
-    def capture_direction(self, direction, sample: sample.Sample, progress_callback: Callable, stop_capture: Event)
+    def capture_direction(self, direction, sample: sample.Sample, progress_callback: Callable, stop_capture: Event):
         start_x, start_y, start_z = self._gantry.get_xyz()
         previous_focus_score = self.get_focus_metric()
         time.sleep(0.2)
@@ -523,7 +523,7 @@ class Controller:
         is_background_counter = 0
         
         # Go in a direction unless you encounter confident background or run out of cols
-        while sample.active_col > 0 and sample.active_col < (sample.cols - 1) and not is_background_counter > 2 :
+        while sample.active_col > 0 and sample.active_col < (sample.cols - 1) and not is_background_counter >= 2 :
             
             self.jog_relative_x(polarity * sample.x_step_size) 
             sample.active_col += 1 * polarity
@@ -554,8 +554,17 @@ class Controller:
             progress_callback((elapsed_time / sample.image_count, sample.image_count, sample.rows * sample.cols))
             
         # Reset background counter
-        if (is_background_counter > 2):
-            print(f"Too many backgrounds in a row. Finishing row portion {sample.cols - (sample.active_col + 1)} early")
+        while is_background_counter >= 2 and sample.active_col > 0 and sample.active_col < (sample.cols - 1):
+        
+            if direction == "right":
+                print(f"Skipping autofocus for remaining {sample.cols - 1 - sample.active_col} frames in this direction. To save time.")
+            else: 
+                print(f"Skipping autofocus for remaining {sample.active_col} frames in this direction.")
+            self.jog_relative_x(polarity * sample.x_step_size) 
+            sample.active_col += 1 * polarity
+            self._gantry.block_for_jog()
+            
+            self.save_active_frame(sample)
                 
         is_background_counter = 0
 
@@ -615,31 +624,37 @@ class Controller:
         print("Starting top half of cookie scanning.")
         # Capture whole center row
         self.capture_cookie_row(sample, progress_callback, stop_capture)
-        sample.active_row -= 1
 
         # Go one row up until and capture whole row. decrement active row until you attempt to go to a negative row
         while sample.active_row > 0 and not stop_capture.is_set():
             self.jog_relative_y(sample.y_step_size)
-            self.capture_cookie_row(sample, progress_callback, stop_capture)
             sample.active_row -= 1
+            self.capture_cookie_row(sample, progress_callback, stop_capture)
+
 
         # Jog back to center 
         print("\nReturning to center\n")
         self._gantry.jog_absolute_xyz(sample.x, sample.y, sample.z)
         self._gantry.block_for_jog()
         time.sleep(0.4) # allow vibrations to settle
-        sample.active_row = sample.center_row + 1
+        
+        sample.active_row = sample.center_row
         sample.active_col = sample.center_col
 
         # Go one row down and capture whole row. increment active row until you attempt to exceed the number of rows - 1
         print("\nStarting bottom half of cookie scanning.\n")
         while sample.active_row < sample.rows - 1 and not stop_capture.is_set():
             self.jog_relative_y(-1 * sample.y_step_size)
-            self.capture_cookie_row(sample, progress_callback, stop_capture)
             sample.active_row += 1
+            self.capture_cookie_row(sample, progress_callback, stop_capture)
+
 
         # Done capturing 
         print("\nDone capturing cookie. Center outward\n")
+        
+        end_time = time.time()
+        sample.set_end_time_imaging(end_time)
+        sample.to_json()
         
     def save_active_frame(self, sample: sample.Sample):
         file_location = f"{sample.directory}/frame_{sample.active_row}_{sample.active_col}.tiff"
