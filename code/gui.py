@@ -15,7 +15,6 @@ import time
 import utils
 import gantry
 import camera
-import focus
 import math
 import serial as ser
 
@@ -41,7 +40,7 @@ class App(Gtk.Window):
         self.connect("key-release-event", self.on_key_release)
         self.speed_toggle = True # start fast
         
-        self.controller = controller.Controller(gantry.Gantry(), camera.Camera(), focus.Focus(delete_flag=True, setpoint = math.floor(n_images / 2)))
+        self.controller = controller.Controller(gantry.Gantry(), camera.Camera())
 
         grid = Gtk.Grid()
         grid.set_row_homogeneous(False)
