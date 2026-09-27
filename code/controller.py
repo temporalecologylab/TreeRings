@@ -510,31 +510,25 @@ class Controller:
             elapsed_time = time.time() - sample.start_time_imaging
             progress_callback((elapsed_time / sample.image_count, sample.image_count, sample.rows * sample.cols))
 
-    def capture_cookie_row(self, sample: sample.Sample, progress_callback: Callable, stop_capture: Event):
-        max_col = sample.cols 
-        min_col = 0
-        is_background_counter = 0
-
-	# Start coordinates 
+    def capture_direction(self, direction, sample: sample.Sample, progress_callback: Callable, stop_capture: Event)
         start_x, start_y, start_z = self._gantry.get_xyz()
-	
-        # Set the background threshold from the center of the sample 
-        print(f"Beginning row {sample.active_row} of {sample.rows}. Autofocusing")
-        best_z, best_score = self.autofocus(sample.autofocus_range_big)
+        previous_focus_score = self.get_focus_metric()
+        time.sleep(0.2)
 
-        # Update Z start with the autofocused distance
-        start_z += best_z
+        if direction == "right": 
+            polarity = 1
+        else:
+            polarity = -1
+
+        is_background_counter = 0
         
-        previous_focus_score = self.get_focus_metric() 
-        self.save_active_frame(sample)
-        
-        # Go right unless you encounter confident background or run out of cols
-        while sample.active_col < max_col and not is_background_counter > 2 :
+        # Go in a direction unless you encounter confident background or run out of cols
+        while sample.active_col > 0 and sample.active_col < (sample.cols - 1) and not is_background_counter > 2 :
             
-            self.jog_relative_x(sample.x_step_size) 
+            self.jog_relative_x(polarity * sample.x_step_size) 
+            sample.active_col += 1 * polarity
             self._gantry.block_for_jog()
             
-
             focus_score = self.get_focus_metric() 
             is_background = focus_score < sample.background_threshold 
             is_close = focus_score / previous_focus_score > 0.9
@@ -552,10 +546,8 @@ class Controller:
                 print("Autofocusing.")
                 _, best_score = self.autofocus(sample.autofocus_range_small)
                 previous_focus_score = best_score
-                
-            self.save_active_frame(sample)
 
-            sample.active_col += 1
+            self.save_active_frame(sample)
             
                         # GUI Progress callback which I toyed with. May not work. 
             elapsed_time = time.time() - sample.start_time_imaging
@@ -563,51 +555,36 @@ class Controller:
             
         # Reset background counter
         if (is_background_counter > 2):
-            print(f"Too many backgrounds in a row. Finishing row portion {sample.cols - sample.active_col} early")
-             
+            print(f"Too many backgrounds in a row. Finishing row portion {sample.cols - (sample.active_col + 1)} early")
+                
         is_background_counter = 0
-        
+
         # Go back to center but don't save a frame as it has already been imaged
         self._gantry.jog_absolute_xyz(start_x, start_y, start_z)
         self._gantry.block_for_jog()
-        sample.active_col = sample.center_col - 1 
+        sample.active_col = sample.center_col
         self.autofocus(sample.autofocus_range_big)
+        
+    def capture_cookie_row(self, sample: sample.Sample, progress_callback: Callable, stop_capture: Event):
 
-        # Go left unless you encounter confident background or run out of cols
-        while sample.active_col > min_col and not is_background_counter > 2:
-            self.jog_relative_x(-1 * sample.x_step_size) 
-            self._gantry.block_for_jog()
+	# Start coordinates 
+	
+        # Set the background threshold from the center of the sample 
+        print(f"Beginning row {sample.active_row} of {sample.rows}. Autofocusing")
+        best_z, best_score = self.autofocus(sample.autofocus_range_big)
 
-            focus_score = self.get_focus_metric() 
-            is_background = focus_score < sample.background_threshold 
-            is_close = focus_score / previous_focus_score > 0.9
+        # Update Z start with the autofocused distance
+        
+        self.save_active_frame(sample)
+    
+        self.capture_direction("right", sample, progress_callback, stop_capture)
 
-            if is_background:
-                _, best_score = self.autofocus(sample.autofocus_range_big)
-                previous_focus_score = best_score
-                if best_score < sample.background_threshold:
-                    is_background_counter += 1
-            elif is_close:
-                print("Focus score is close to previous, not focusing.")
-                previous_focus_score = focus_score
-            else:
-                _, best_score = self.autofocus(sample.autofocus_range_small)
-                previous_focus_score = best_score 
-
-            self.save_active_frame(sample)
-
-            sample.active_col -= 1
-            
-            # GUI Progress callback which I toyed with. May not work. 
-            elapsed_time = time.time() - sample.start_time_imaging
-            progress_callback((elapsed_time / sample.image_count, sample.image_count, sample.rows * sample.cols))
+        self.capture_direction("left", sample, progress_callback, stop_capture)
+        
         print("\n---------------------------------------------------------------\n")
         print(f"Done capturing row {sample.active_row}. Returning to center. \n")
         print("\n---------------------------------------------------------------\n")
         # Go back to center but don't save a frame as it has already been imaged
-        self._gantry.jog_absolute_xyz(start_x, start_y, start_z)
-        self._gantry.block_for_jog()
-        sample.active_col = sample.center_col - 1 
 
 
 
@@ -631,34 +608,38 @@ class Controller:
         # Set the background threshold from the center of the sample 
         self.autofocus(sample.autofocus_range_big)
         calibration_focus_score = self.get_focus_metric() 
-        sample.background_threshold = 0.5 * calibration_focus_score
+        sample.background_threshold = 0.6 * calibration_focus_score
 
-        # Capture whole row 
+        self.save_active_frame(sample)
+
+        print("Starting top half of cookie scanning.")
+        # Capture whole center row
         self.capture_cookie_row(sample, progress_callback, stop_capture)
+        sample.active_row -= 1
 
         # Go one row up until and capture whole row. decrement active row until you attempt to go to a negative row
-        print("Starting top half of cookie scanning.")
         while sample.active_row > 0 and not stop_capture.is_set():
-            sample.active_row -= 1
             self.jog_relative_y(sample.y_step_size)
             self.capture_cookie_row(sample, progress_callback, stop_capture)
+            sample.active_row -= 1
 
         # Jog back to center 
-        print("Returning to center")
+        print("\nReturning to center\n")
         self._gantry.jog_absolute_xyz(sample.x, sample.y, sample.z)
         self._gantry.block_for_jog()
         time.sleep(0.4) # allow vibrations to settle
-        sample.active_row = sample.center_row
+        sample.active_row = sample.center_row + 1
         sample.active_col = sample.center_col
 
         # Go one row down and capture whole row. increment active row until you attempt to exceed the number of rows - 1
-        print("Starting bottom half of cookie scanning.")
-        while sample.active_row < sample.rows and not stop_capture.is_set():
-            sample.active_row += 1
+        print("\nStarting bottom half of cookie scanning.\n")
+        while sample.active_row < sample.rows - 1 and not stop_capture.is_set():
             self.jog_relative_y(-1 * sample.y_step_size)
             self.capture_cookie_row(sample, progress_callback, stop_capture)
+            sample.active_row += 1
+
         # Done capturing 
-        print("Done capturing cookie. Center outward")
+        print("\nDone capturing cookie. Center outward\n")
         
     def save_active_frame(self, sample: sample.Sample):
         file_location = f"{sample.directory}/frame_{sample.active_row}_{sample.active_col}.tiff"
