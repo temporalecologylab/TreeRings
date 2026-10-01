@@ -38,10 +38,8 @@
 
 \emph{Secondly there is a possible change that will add value to the approach, i.e. by turning the scale bars into a verified measurement. Since ring-width measurement is built around a stitched mosaic preserving distance along the core across a hundred+ frames, you could report the measured vs. true length over the longest span available in that scan (or for a core of known length) especially because you have already scanned a caliper with millimetre graduations (see Table S3).} \\
 
-% TODO: Politely say this is going to take a significant amount of time to implement. We can explain what we currently do. 
-% TODO: Measure point to point in pixels, convert with DPI, and point to point with physical measurement and compare accuracy. 
-% I didn't write down the unique id's of each of the scans... only the species. I really do not want to scan a bunch more. 
-% Can we do this only for the caliper first and then scans? Just say in the letter that we will need to scan new cores and would rather not. 
+% TODO: Scan cores and create table in supplement. Make sure to note species, sample_id, measured dot length, calibration slide 
+We thank the editor for the suggestion to add a verifiable measurement to compare the digital sample to the original. To provide consistency across samples, we designed a rudimentary 3D printed tool to firmly hold two ultra-fine tipped felt pens (Sharpie's) at a fixed distance from one another. We then marked each representative core sample with two dots spaced roughly 80 mm apart from each other. The dots on cookie samples were marked with 40 mm spacing. We now include a table in the Supplemental detailing the physical distance and pixel distance between the two dots. \\
 
 \emph{The images of Figures 3, 4, 5, S1 are a bit blurry. Maybe it has to do with the import, the actual rendering of the pixel limits of the system and/or how it is handled in the pdf generated on ScholarOne but please check whether your resolution is high enough to help with readability.} \\
 
@@ -63,11 +61,15 @@ We thank the editor for noting the blurriness of the figures. We have compared t
 \emph{Illumination is also not described anywhere in the Methods, yet it determines contrast and colour rendering and a lab rebuilding TIM will need to know what to buy. Please specify the light source and its mounting. MEE usually asks for manufacturer name, city and country for named equipment (e.g Raspberry Pi, Seeed).} \\
 
 %TODO: Add a description of the ring microscope LED to the MS. 
-We have added a description of the ring microscope LED light which mounts to the camera lens. 
+We have added a description of the ring microscope LED light which mounts to the camera lens on \lr{led_ring_light_1}.  \\
+
 
 \emph{Regarding the 2.5 GB TIFF limit, tifffile and libtiff both write BigTIFF, which could remove the 4 GB ceiling and would let cookie scans open in ImageJ rather than only through custom scripts you are mentioning in your text.} \\
 
+We thank the editor for the suggestion of saving large scans to a BigTIFF. We edited the code to implement this and it works well. We have updated the manuscript to account for this on .\\  
+
 % TODO: Test BigTIFF writing instead of writing DAT. Try around line 200 of stitcher.py
+% TODO: Also change the file writing to be the sample name id, etc. instead of just mosaic.tif 
 % In the program logic I'll swap the numpy dat saver to be a BigTIFF write instead. Then I'll take that image, try to open it on ImageJ, and if it loads up, we'll ship it.
 
 \emph{Talking about custom scripts, I could not find any code/scripts online on the zenodo repository, only Tiff images. In figure 1, we can read that “the 3D printed parts are available for download on the NIH 3D printing repository (HYPERLINK REMOVED) and the software is open source, with instructions to recreate this tool available on GitHub (HYPERLINK REMOVED).” I thank the authors for ensuring anonymity for the review process but if we are not able to assess all those in the review it is a pb. By going to the NIH 3D website though and typing “TIM” I was able to find the printing instructions but also the name of the first author. Yet I could not find the code and custom scripts references written in the ms; MEE needs to review the codes during the review process, and this will be crucial in order to help with repeatability.} \\
@@ -77,6 +79,7 @@ We have added a description of the ring microscope LED light which mounts to the
 
 \emph{In Figure 6, the caption states that samples range from a 3 mm × 220 mm core to a 75 mm × 56 mm cookie; yet panel (a) extends to 300 mm and panel (b) stops near 1,600 mm², all short of the 4,200 mm² such a cookie would occupy. Panel (b) also joins four cookies with lines, yet four points cannot be the base of a relationship; with 80 cookies scanned, more points should be available too. Please also state the overlap setting used for the plotted runs.} \\ 
 
+We thank the editor for finding this mistake. We now include more cookie scan data but removed the line mentioning the range in the description. We have included that the scans were taken between 33 and 50 percent image overlap on \lr{scanning_time_edits}. 
 % This caption is left over from the original submission. I changed the figure and didn't edit the caption. Silly me.
 % TODO: Use christophe's metadata to add more data to the cookie plotting graph.
 
@@ -84,6 +87,8 @@ We have added a description of the ring microscope LED light which mounts to the
 
 % TODO: Clarify that it was a bit ambiguous for us to say when TIM started so this was our time for when TIM got a major scanning speed update. 
 % TODO: Rectify the timeline discrepancy
+% TODO: Include somewhere in ms that it is possible to be assembled and operated by one person
+% TODO: Describe bugs... memory overflow on larger scans solved by editing Stitch2D source code. 
 
 \emph{I could find several typos still in the paper, e.g. Figure 4 is never cited in the text; L 271 uses Callitropsis nootkatensis and Table S1 Chamaecyparis nootkatensis; use one name. L 187: gynosperms; Fig. 5 “due significant scratches”; please also name the species. L 195- 200 describe the skip rule as “at least 95\% of” the previous sharpness in one place and “lower than” the previous neighbour in another; some references are not completed (e.g. Mansur (2022)); the sentences on LLM need to be in its own section. } \\
 
