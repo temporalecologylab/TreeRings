@@ -1,11 +1,7 @@
-%DIF 1c1
+% !TeX root = ./paper_anon.tex
 %DIF LATEXDIFF DIFFERENCE FILE
-%DIF DEL mee_submission_1.tex   Sun Aug 16 22:49:10 2026
-%DIF ADD paper_anon.tex         Fri Aug 28 07:49:30 2026
-%DIF < % !TeX root = ./mee_submission_1.tex
-%DIF -------
-% !TeX root = ./paper_anon.tex %DIF > 
-%DIF -------
+%DIF DEL paper_anon_rev1.tex   Sun Oct  4 23:12:07 2026
+%DIF ADD paper_anon.tex        Sun Oct  4 23:17:56 2026
 \documentclass[a4paper,12pt]{article}
 
 % Packages
@@ -16,27 +12,22 @@
 \usepackage{natbib}   
 \bibliographystyle{besjournals}
 
-%DIF 12c12-13
-%DIF < \usepackage{hyperref}          
-%DIF -------
-\usepackage{xr-hyper} %DIF > 
-% \usepackage{hyperref}           %DIF > 
-%DIF -------
+\usepackage{xr-hyper}
+% \usepackage{hyperref}          
 \usepackage{subcaption}     
 \usepackage{multirow}
 \usepackage{float}
 \usepackage{setspace}
 \usepackage{lineno}
-%DIF 18a19
-\usepackage{todonotes} %DIF > 
+\usepackage{todonotes}
+%DIF 20a20
+\usepackage{tabularx} %DIF > 
 %DIF -------
 
-%DIF 19a21-24
-% Cross Referencing Line numbers %DIF > 
-\externaldocument{revletter_2} %DIF > 
-\newcommand{\R}[1]{\label{#1}\linelabel{#1}} %DIF > 
-\newcommand{\lr}[1]{line~\lineref{#1}} %DIF > 
-%DIF -------
+% Cross Referencing Line numbers
+\externaldocument{revletter_2}
+\newcommand{\R}[1]{\label{#1}\linelabel{#1}}
+\newcommand{\lr}[1]{line~\lineref{#1}}
 
 % Page layout
 \geometry{margin=1in}          
@@ -138,12 +129,12 @@
 
 \begin{abstract}  
 
-1.  Studies of tree rings from climatology to ecology have become increasingly important with anthropogenic climate change, \DIFdelbegin \DIFdel{with }\DIFdelend \DIFaddbegin \DIFadd{driving }\DIFaddend a need for research across more locations and species. Meeting the increasing demand requires methods to image samples rapidly and efficiently, while also producing high quality images. % Getting rid of open-source as CaptuRING is cheap but GigaPixel is expensive and not open source
+1.  Studies of tree rings from climatology to ecology have become increasingly important with anthropogenic climate change, driving a need for research across more locations and species. Meeting the increasing demand requires methods to image samples rapidly and efficiently, while also producing high quality images. % Getting rid of open-source as CaptuRING is cheap but GigaPixel is expensive and not open source
 
 2.  Here we present the Tree Imaging Machine (TIM)---a do-it-yourself fully open scanning tool to digitize tree cookies and cores. TIM takes partially overlapping microscopic images of samples and stitches them together to form a mosaic, which can be zoomed in to visualize features on the scale of 0.01 mm. 
 We provide all instructions for the open-source hardware, using readily available parts, alongside the related software. % emwAug10 -- check my addition: correct? You could add the links here if you want 
 
-3. With scans of up to 21\DIFaddbegin \DIFadd{,}\DIFaddend 140 DPI (1.2 micron per pixel), TIM produces one of the highest resolution images among similar tools for less than \$3\DIFaddbegin \DIFadd{,}\DIFaddend 000 USD. Operators can prepare multiple samples and let the machine work until the queue is finished. Given this batch approach and automatic stitching, TIM provides a major speed advance for high-resolution image capture of tree rings, and can rapidly digitize cores of over 50 cm and complete cookies. % amfJan25 -- Does this speed need to be quantified? Maybe even just an average time per scan from the metadata that was already collected. emwREPLY: I think it's fine to just say it's a speed-up 
+3. With scan resolution of at least 21,000 DPI (1.2 micron per pixel), TIM produces one of the highest resolution images among similar tools for less than \$3,000 USD. Operators can prepare multiple samples and let the machine work until the queue is finished. Given this batch approach and automatic stitching, TIM provides a major speed advance for high-resolution image capture of tree rings, and can rapidly digitize cores of over 50 cm and complete cookies. % amfJan25 -- Does this speed need to be quantified? Maybe even just an average time per scan from the metadata that was already collected. emwREPLY: I think it's fine to just say it's a speed-up 
 
 4. TIM provides a new method to gather high quality tree ring images at larger sizes and dimensions, integrating higher scanning resolution, tree cookie sampling, and batch digitization in a single low-cost package. 
 Designed as completely open-source, we hope TIM will facilitate the widespread sampling of tree rings across diverse ecosystems and reduce barriers for researchers with smaller budgets. 
@@ -155,20 +146,20 @@ Designed as completely open-source, we hope TIM will facilitate the widespread s
 
 \section{Introduction}
 Incremental growth rings from trees have provided valuable insights into the abiotic and biotic environment across multiple fields---from climatology to forestry and ecology. Dated tree rings from dendrochronology have been critical to
-reconstructing past climates of regional and local environments, providing the most accurate, precise, and reliable dating among alternatives \citep{mann_northern_1999}, and thus informing  our understanding of climate change today \citep{fritts_dendroclimatology_1971,williams_using_2010,guibal_dendrochronology_2021,sheppard_dendroclimatology_2010,williams_large_2020}. Tree rings are also increasingly used in ecology to understand how plant competition affects tree growth in addition to climate \citep{buechling_climate_2017} and have implications in forestry to managing stand dynamics \citep{canham_neighborhood_2004}. These fields have leveraged two basic types of tree sampling techniques to capture the variation of tree rings: cores, which are cylindrical samples collected using an incremental borer, and `cookies,' which are entire cross sections \citep[and thus allow measuring as many radii from the sample as desired,][]{speer_fundamentals_2010}. As understanding tree growth and managing forest\DIFaddbegin \DIFadd{s}\DIFaddend  becomes more critical to mitigating climate change, scaling up the collection and processing of tree ring samples has become increasingly important.
+reconstructing past climates of regional and local environments, providing the most accurate, precise, and reliable dating among alternatives \citep{mann_northern_1999}, and thus informing  our understanding of climate change today \citep{fritts_dendroclimatology_1971,williams_using_2010,guibal_dendrochronology_2021,sheppard_dendroclimatology_2010,williams_large_2020}. Tree rings are also increasingly used in ecology to understand how plant competition affects tree growth in addition to climate \citep{buechling_climate_2017} and have implications in forestry to managing stand dynamics \citep{canham_neighborhood_2004}. These fields have leveraged two basic types of tree sampling techniques to capture the variation of tree rings: cores, which are cylindrical samples collected using an incremental borer, and `cookies,' which are entire cross sections \citep[and thus allow measuring as many radii from the sample as desired,][]{speer_fundamentals_2010}. As understanding tree growth and managing forests becomes more critical to mitigating climate change, scaling up the collection and processing of tree ring samples has become increasingly important.
 
 The first computer-based method to measure tree ring widths used a microcomputer, a stage micrometer, and a push button, and is still used today. To acquire data, a trained technician shifts a core underneath a microscope objective and pushes a button connected to a microcomputer to record a ring's location \citep{robinson_microcomputer_1980}.
 This method has high precision, but depends heavily on specific technicians and maintains no image record, preventing later measurement reproducibility and uncertainty quantification \citep{levanic_atrics_2007}.
 
-Image analysis of tree rings was later implemented to reduce both errors in sampling and sampling bias across individual technicians, with major methods developed in the 1980s and 1990s to digitize tree ring samples using optical scanning \citep{mcmillin_application_1982,guay_new_1992}. Optical scanners are still readily available for purchase\DIFdelbegin \DIFdel{, }\DIFdelend \DIFaddbegin \DIFadd{; }\DIFaddend using a top of the line scanner (e.g., Epson Perfection V850 Pro) produces a maximum resolutions of 6\DIFaddbegin \DIFadd{,}\DIFaddend 400 dpi and scan area of up to 21.6 cm x 29.7 cm.
-More recent techniques have aimed to achieve higher resolutions and/or larger samples through a different digitization approach---using an image-capturing system. These systems rely on a \DIFdelbegin \DIFdel{microscope }\DIFdelend \DIFaddbegin \DIFadd{digital }\DIFaddend camera to take images, motors to move the sample or camera, a computer to manage the capturing, and a second, more powerful, computer to stitch images into a larger composite image.
+Image analysis of tree rings was later implemented to reduce both errors in sampling and sampling bias across individual technicians, with major methods developed in the 1980s and 1990s to digitize tree ring samples using optical scanning \citep{mcmillin_application_1982,guay_new_1992}. Optical scanners are still readily available for purchase; using a top of the line scanner (e.g., Epson Perfection V850 Pro) produces a maximum resolutions of 6,400 dpi and scan area of up to 21.6 cm x 29.7 cm.
+More recent techniques have aimed to achieve higher resolutions and/or larger samples through a different digitization approach---using an image-capturing system. These systems rely on a digital camera to take images, motors to move the sample or camera, a computer to manage the capturing, and a second, more powerful, computer to stitch images into a larger composite image.
 Decreasing the field of view of each captured image increases the resolution of the final stitched image without restricting the size of the sample \citep{muhlich_stitching_2022}.
 Stitching multiple images into one mosaic is a common technique used in other fields such as mineralogy and cellular biology \citep{ro_image_2021}, which was
 first implemented for tree rings through the Advanced Tree-Ring Image Capturing System (ATRICS) \citep{levanic_atrics_2007}. % Adding ATRICS after introducing the image and stitch method
 
 
-Since ATRICS was introduced in 2007, image capture and stitching of tree rings have become more common. Today CaptuRING offers a more modern do-it-yourself alternative to ATRICS, creating scans up to 5\DIFaddbegin \DIFadd{,}\DIFaddend 339 dpi using a DSLR camera and motorized stage \citep{garcia-hidalgo_capturing_2022}. 
-Another alternative, Gigapixel, achieves an impressive 19\DIFaddbegin \DIFadd{,}\DIFaddend 812 dpi with the same DSLR image capture and composite stitch method \citep{griffin_gigapixel_2021}. 
+Since ATRICS was introduced in 2007, image capture and stitching of tree rings have become more common. Today CaptuRING offers a more modern do-it-yourself alternative to ATRICS, creating scans up to 5,339 dpi using a DSLR camera and motorized stage \citep{garcia-hidalgo_capturing_2022}. 
+Another alternative, Gigapixel, achieves an impressive 19,812 dpi with the same DSLR image capture and composite stitch method \citep{griffin_gigapixel_2021}. 
 While CaptuRING and Gigapixel both use DSLR cameras and motorized movement, they differ on two fronts. 
 First, Gigapixel's camera is traversed across a stationary sample while CaptuRING moves a core sample underneath a stationary camera.
 With a mobile camera, multiple samples can be recorded sequentially without needing to remove a sample from a stage upon image completion---significantly reducing the active setup time for an operator. 
@@ -179,14 +170,10 @@ This assumption fundamentally restricts the digitization only to cores, as cooki
 To address some of the current limitations, while building upon the open-source and open-hardware philosophies of CaptuRING, we designed the Tree Imaging Machine (TIM).
 We added support to digitize both cookies and cores, increased the maximum sample length, perform image stitching directly without the need for manual file transfer, and capture batches of samples sequentially---all while minimizing cost.
 Our design requires the use of 3D printed components and common hand tools such as hex keys and wrenches. No specialized equipment or power tools are required beyond this. 
-Excluding 3D printed parts, the total cost of the machine is approximately \$2\DIFaddbegin \DIFadd{,}\DIFaddend 200 USD \DIFdelbegin \DIFdel{\mbox{%DIFAUXCMD
-\citep[compared to the \$70 000 USD of the Gigapixel,][]{griffin_gigapixel_2021}}\hskip0pt%DIFAUXCMD
-}\DIFdelend \DIFaddbegin \DIFadd{\mbox{%DIFAUXCMD
-\citep[compared to the \$70,000 USD of the Gigapixel,][]{griffin_gigapixel_2021}}\hskip0pt%DIFAUXCMD
-}\DIFaddend .
+Excluding 3D printed parts, the total cost of the machine is approximately \$2,200 USD \citep[compared to the \$70,000 USD of the Gigapixel,][]{griffin_gigapixel_2021}.
 We chose to use a Raspberry Pi HQ camera with a microscope lens to save on purchasing a professional camera with a macro lens. Professional camera setups are comparable in price to the entire cost of TIM.
-These savings combined with not needing to purchase a professional stitching software license (such as PTGui from New House Internet Services BV, Rotterdam, NL, which is the suggested software to use with CaptuRING) makes TIM a more economical option than most products \DIFdelbegin \DIFdel{current available.Additionally }\DIFdelend \DIFaddbegin \DIFadd{currently available.}\R{line_change_1}
-\DIFadd{Additionally, }\DIFaddend the design is open-source and open-hardware allowing for contributors to add new sensors or alter the control methods. 
+These savings combined with not needing to purchase a professional stitching software license (such as PTGui from New House Internet Services BV, Rotterdam, NL, which is the suggested software to use with CaptuRING) makes TIM a more economical option than most products currently available.\R{line_change_1}
+Additionally, the design is open-source and open-hardware allowing for contributors to add new sensors or alter the control methods. 
 
 \section{Methods}
 
@@ -195,10 +182,7 @@ These savings combined with not needing to purchase a professional stitching sof
 \begin{figure}
   \centering
   \includegraphics[height=0.5\linewidth]{../content/tina.jpg} % There are a few limits which don't sound correct to me in this part (file size, machine design, quality sanding, etc.)
-  \caption{Complete assembly of TIM, shown with a few smaller cookies ready to be scanned.  All of the 3D printed parts are available for download on the \DIFdelbeginFL \href{https://doi.org/10.60705/3DPX/21561.3}{\DIFdelFL{NIH 3D printing repository}} %DIFAUXCMD
-\DIFdelendFL \DIFaddbeginFL \DIFaddFL{NIH 3D printing repository (HYPERLINK REMOVED) }\DIFaddendFL and the software is  open source, with instructions to recreate this tool available on \DIFdelbeginFL \href{https://github.com/temporalecologylab/TreeRings}{\DIFdelFL{GitHub}}%DIFAUXCMD
-\DIFdelendFL \DIFaddbeginFL \DIFaddFL{GitHub (HYPERLINK REMOVED)}\DIFaddendFL . \DIFaddbeginFL \DIFaddFL{Links to images produced by TIM are provided in Table \ref{tab:scans}.}\DIFaddendFL } 
-  %DIF <  emwAug10 -- In addition to putting the links here, I would make sure each is sprinkled in around where most of the info related to it is introduced in the main text. 
+  \caption{Complete assembly of TIM, shown with a few smaller cookies ready to be scanned.  All of the 3D printed parts are available for download on the NIH 3D printing repository (HYPERLINK REMOVED) and the software is  open source, with instructions to recreate this tool available on GitHub (HYPERLINK REMOVED). Links to images produced by TIM are provided in Table \ref{tab:scans}.} 
   \label{fig:tim_assembled}
 \end{figure}
 
@@ -209,76 +193,42 @@ The machine kit includes extruded aluminum rails, carriages to slide along the r
 To fit on the end-effector plates of the ACRO system, we made an adapter to connect the linear actuator to the $X$ and $Y$ axis, thus creating motion in the $Z$ axis.
 The size of the work plane is ultimately up to the size of the ACRO kit that is purchased---allowing for more flexibility.
 Building on top of kits allowed for quick assembly with sound instructions and saved development time. 
-For the camera, we chose a 12MP Raspberry Pi HQ Camera equipped with a SEEED studio microscope lens with adjustable focal length resulting in up to 150x zoom. The focal length was adjusted to make the field of view approximately 3 mm by 5 mm height and width. The camera was connected to the gantry machine using custom, 3D printed, adapters.
+For the camera, we chose a 12MP Raspberry Pi HQ Camera equipped with a SEEED studio microscope lens with adjustable focal length resulting in up to 150x zoom. The focal length was adjusted to make the field of view approximately 3 mm by 5 mm height and width. \DIFdelbegin \DIFdel{The camera }\DIFdelend \DIFaddbegin \R{led_ring_light_1}\DIFadd{The camera lens has three attachment points for a microscope ring light LED. We attached a generic, white light LED ring light similar to the AmScope LED-78.}\R{led_ring_light_2} \DIFadd{The camera }\DIFaddend was connected to the gantry machine using custom, 3D printed, adapters.
 For the computer, we implemented all of the software control, image stitching, and graphical user interface (GUI) to run on an NVIDIA Jetson Orin Nano 8GB (Jetson edge computer), which also connects to the camera via a MIPI cable. % amf28jan2026 The Jetson Orin Nano 8GB is it's complete product name emwREPLY: okay, that's fine then!
 
 By choosing this combination, we were able to reduce the weight and cost of the camera significantly. This minimized the design challenges of stabilizing the movement of a heavier DSLR and allowed us to invest more in a powerful computer that can handle intensive image processing. 
-The Jetson is an edge computer which drives a monitor for a GUI, sends commands to the motor controller to move the machine, runs image processing calculations for machine control, and performs calculations to stitch individual images into one mosaic. 
+The Jetson is an edge computer which drives a monitor for a GUI, sends commands to the motor controller to move the machine, runs image processing calculations for machine control, and performs calculations to stitch individual images into one mosaic. \DIFaddbegin \R{gui_ref}\DIFadd{Screenshots of the GUI windows are shown in Figure \ref{fig:gui_figure}.
+}\DIFaddend 
 
 \subsection{Preparing Cookies and Cores}
-TIM can scan both tree cookies and \DIFdelbegin \DIFdel{tree }\DIFdelend cores but they need to be well prepared before scanning. Samples that are not well sanded may not have enough detail when stitching images together into the complete mosaic. \DIFdelbegin \DIFdel{The general guidelines used }\DIFdelend \DIFaddbegin \DIFadd{Thus, users of TIM should follow general guidelines }\DIFaddend for preparing cookies and \DIFdelbegin \DIFdel{cores applies---requiring samples to be sanded }\DIFdelend \DIFaddbegin \DIFadd{cores---sanding samples }\DIFaddend with incrementally increasing sand paper grit. Samples must be uniformly sanded and have \DIFaddbegin \DIFadd{a }\DIFaddend planar surface for scanning \citep{speer_fundamentals_2010}.\DIFaddbegin \R{line_change_2}
-\DIFaddend We sanded samples using a 4 inch belt sander with lower grits between 120 and 240 for the bulk of the material removal\DIFdelbegin \DIFdel{.
-An orbital sander was used to sand the }\DIFdelend \DIFaddbegin \DIFadd{, followed by sanding using an orbital sander with progressively }\DIFaddend finer grits between 240 and 400. We then used a microscope to visually inspect the quality of the sanding. Samples were considered to be sufficiently prepared when vessels were easily recognizable.
+TIM can scan both tree cookies and cores but they need to be well prepared before scanning. Samples that are not well sanded may not have enough detail when stitching images together into the complete mosaic. Thus, users of TIM should follow general guidelines for preparing cookies and cores---sanding samples with incrementally increasing sand paper grit. Samples must be uniformly sanded and have a planar surface for scanning \citep{speer_fundamentals_2010}.\R{line_change_2}
+We sanded samples using a 4 inch belt sander with lower grits between 120 and 240 for the bulk of the material removal, followed by sanding using an orbital sander with progressively finer grits between 240 and 400. We then used a microscope to visually inspect the quality of the sanding. Samples were considered to be sufficiently prepared when vessels were easily recognizable.
 
-TIM requires additional sanding considerations for each sample type.  For cookies, it is important to have the top and bottom surfaces nearly parallel. \DIFdelbegin %DIFDELCMD < \begin{figure}
-%DIFDELCMD <   \centering
-%DIFDELCMD <   \begin{subfigure}{.5\textwidth}
-%DIFDELCMD <     \centering
-%DIFDELCMD <     \includegraphics[height=0.5\linewidth]{../diagrams/sample_setup_ideal.png}
-%DIFDELCMD <     %%%
-%DIFDELCMD < \caption{%
-{%DIFAUXCMD
-\DIFdelFL{Ideal sample leveling}}
-    %DIFAUXCMD
-%DIFDELCMD < \label{fig:ideal_levelling}
-%DIFDELCMD <   \end{subfigure}%%%
-%DIF < 
-  %DIFDELCMD < \begin{subfigure}{.5\textwidth}
-%DIFDELCMD <     \centering
-%DIFDELCMD <     \includegraphics[height=0.5\linewidth]{../diagrams/sample_setup_realistic.png}
-%DIFDELCMD <     %%%
-%DIFDELCMD < \caption{%
-{%DIFAUXCMD
-\DIFdelFL{Realistic sample leveling}}
-    %DIFAUXCMD
-%DIFDELCMD < \label{fig:realistic_levelling}
-%DIFDELCMD <   \end{subfigure}
-%DIFDELCMD <   %%%
-%DIFDELCMD < \caption{%
-{%DIFAUXCMD
-\DIFdelFL{Side view of the camera (top, in black) and sample on top of a leveling table. The ideal sample leveling shows a uniform distance, $d$, at all $XY$ coordinates on the sample. This is impossible to achieve in reality, the true sample leveling has a non-uniform distance at unique $XY$.}}
-  %DIFAUXCMD
-%DIFDELCMD < \label{fig:sample_levelling}
-%DIFDELCMD < \end{figure}
-%DIFDELCMD < %%%
-\DIFdelend Small differences in plane angle can be corrected using the 3D printed leveling table we designed (Figure \ref{fig:ideal_levelling}). \DIFdelbegin %DIFDELCMD < 
-
-%DIFDELCMD < %%%
-\DIFdelend %DIF > \todo{Make figure appear after reference.}
+TIM requires additional sanding considerations for each sample type.  For cookies, it is important to have the top and bottom surfaces nearly parallel. Small differences in plane angle can be corrected using the 3D printed leveling table we designed (Figure \ref{fig:ideal_levelling}). %\todo{Make figure appear after reference.}
 For cores, care should be taken to maximize the scanning surface. This means removing material to be coincident to the center of the cross section of the core. 
 Similarly to cookies, the scanning surface should be as close to parallel to the XY-plane as possible, but generally does not need to be leveled using the leveling tables.
 
-\DIFaddbegin \begin{figure}
+\begin{figure}[H]
   \centering
   \begin{subfigure}{.5\textwidth}
     \centering
     \includegraphics[height=0.5\linewidth]{../diagrams/sample_setup_ideal.png}
-    \caption{\DIFaddFL{Ideal sample leveling}}
+    \caption{Ideal sample leveling}
     \label{fig:ideal_levelling}
-  \end{subfigure}%DIF > 
+  \end{subfigure}%
   \begin{subfigure}{.5\textwidth}
     \centering
     \includegraphics[height=0.5\linewidth]{../diagrams/sample_setup_realistic.png}
-    \caption{\DIFaddFL{Realistic sample leveling}}
+    \caption{Realistic sample leveling}
     \label{fig:realistic_levelling}
   \end{subfigure}
-  \caption{\DIFaddFL{Side view of the camera (top, in black) and sample on top of a leveling table. The ideal sample leveling shows a uniform distance, $d$, at all $XY$ coordinates on the sample. This is impossible to achieve in reality, the true sample leveling has a non-uniform distance at unique $XY$.}}
+  \caption{Side view of the camera (top, in black) and sample on top of a leveling table. The ideal sample leveling shows a uniform distance, $d$, at all $XY$ coordinates on the sample. This is impossible to achieve in reality, the true sample leveling has a non-uniform distance at unique $XY$.}
   \label{fig:sample_levelling}
 \end{figure}
 
 
 
-\DIFaddend \subsection{Scanning Samples} % Methods
+\subsection{Scanning Samples} % Methods
 
 TIM can scan cores, cookies, and sections of cookies. Each one of these scans requires a slightly different process, which we describe in separate subsections.
 A few principles are common regardless of what is being scanned, and we describe these first. 
@@ -304,7 +254,15 @@ A few principles are common regardless of what is being scanned, and we describe
 The individual images from TIM have a field of view of approximately 3 mm x 5 mm. Because cores and cookies can be many orders of magnitude larger than one of these images, the final scan of these samples will be the combination of many images stitched together.
 Stitching two images together requires both images to share a region of overlap in which the subject of the image is the same \citep{mohammadi_comparative_2024}.
 Unique features inside this region of overlap act as a map to connect the two images.
-By default TIM is set to have a 33\% overlap with its neighbor but this can be adjusted easily while adding a sample in the GUI. 
+By default TIM is set to have a 33\% overlap with its neighbor but this can be adjusted easily while adding a sample in the GUI. The imaging process of a cookie is shown in Figure \ref{fig:cookie_overlap}.
+
+
+\subsubsection{Golden Section Search Autofocusing}
+
+Most microscope lenses are a fixed focal length, requiring the subject to be moved in relation to the lens for focusing. Additionally, inexpensive microscope lenses often have a very small depth of field. 
+Variations of height across the length of a sanded sample result in images losing focus during a scan (Figure \ref{fig:realistic_levelling}). 
+An autofocusing algorithm was implemented using a Golden Section Search method as described by \citet{gu_region_2015} to capture in-focus images.\R{line_change_3} In short, the camera's position is moved in the $Z$ axis and stops when it maximizes the sharpness metric of the image. 
+We found the variance of Laplacian sharpness metric to be easy to implement in Python and robust across samples \citep{pech-pacheco_diatom_2000}. 
 
 \begin{figure}
   \centering
@@ -316,7 +274,7 @@ By default TIM is set to have a 33\% overlap with its neighbor but this can be a
   \end{subfigure}
   \begin{subfigure}{.3\textwidth}
       \centering
-      \includegraphics[width=.95\linewidth]{../content/cookie_figure_traverse_start.png}  
+      \includegraphics[width=.95\linewidth]{../content/cookie_figure_traverse_start_scale.png}  
       \caption{}
       \label{SUBFIGURE LABEL 2}
   \end{subfigure}
@@ -327,23 +285,11 @@ By default TIM is set to have a 33\% overlap with its neighbor but this can be a
       \label{SUBFIGURE LABEL 3}
   \end{subfigure} 
   \caption{An example imaging process of a cookie sample in two dimensions. Here, the height and width of the capture region enclose the entire surface area of the cookie.  TIM begins by generating a grid of target coordinates to systematically capture a grid of continuous and partially overlapping images (a). TIM takes its first image at the center coordinate of the sample, then the rectangular field of view from the camera moves to adjacent target coordinates until it reaches the left boundary---capturing an image for each target coordinate (b). After completing the row, TIM moves to a new row and continues capturing adjacent images (c). }
-  \label{FIGURE LABEL}
+  \label{fig:cookie_overlap}
   \end{figure}
 
-\subsubsection{Golden Section Search Autofocusing}
-
-Most microscope lenses are a fixed focal length, requiring the subject to be moved in relation to the lens for focusing. Additionally, inexpensive microscope lenses often have a very small depth of field. 
-Variations of height across the length of a sanded sample result in images losing focus during a scan (Figure \ref{fig:realistic_levelling}). 
-An autofocusing algorithm was implemented using a Golden Section Search method as described by \DIFdelbegin \DIFdel{\mbox{%DIFAUXCMD
-\citep{gu_region_2015} }\hskip0pt%DIFAUXCMD
-}\DIFdelend \DIFaddbegin \DIFadd{\mbox{%DIFAUXCMD
-\citet{gu_region_2015} }\hskip0pt%DIFAUXCMD
-}\DIFaddend to capture in-focus images.\DIFaddbegin \R{line_change_3} \DIFaddend In short, the camera's position is moved in the $Z$ axis and stops when it maximizes the sharpness metric of the image. 
-We found the variance of Laplacian sharpness metric to be easy to implement in Python and robust across samples \citep{pech-pacheco_diatom_2000}. 
-
 \subsubsection{Core Scanning Procedure}
-\DIFaddbegin \label{sec:scanning}
-\DIFaddend 
+\label{sec:scanning}
 
 Scanning a core starts with aligning the length of the sample to the $Y$-axis of the machine at any $X$ position. We 3D printed a tray to hold multiple cores next to each other to make the alignment process faster.
 From there, the operator needs to navigate the camera to an in-focus position anywhere along the core and enter basic metadata such as sample ID.
@@ -373,30 +319,26 @@ Multiple cores can be put next to each other and added to a queue to be sequenti
   \label{fig:gui_figure}
 \end{figure}
 
-A button on the GUI \DIFdelbegin \DIFdel{will start }\DIFdelend \DIFaddbegin \DIFadd{starts }\DIFaddend the procedure to scan all of the samples that were added to the queue. The machine first moves to the position that was recorded when the operator added the sample. 
+A button on the GUI starts the procedure to scan all of the samples that were added to the queue. The machine first moves to the position that was recorded when the operator added the sample. 
 It then moves up the length of the core in the positive direction of the $Y$-axis, capturing overlapping images until the top edge of the core is captured. 
 TIM then returns back to the starting location, repeating the imaging procedure in the negative direction of the $Y$-axis until encountering the bottom edge of the core.
 
 The top and bottom edges of the core are detected by comparing the sharpness metric to a configurable threshold.
 When the camera moves past either edge of a core, there is no subject in the focused plane of the lens. These images are very blurry and the sharpness metric is at least an order of magnitude less than the images that are focused on the core. 
-If the Golden Section Search algorithm \DIFdelbegin \DIFdel{only finds images with a sharpness metric lower }\DIFdelend \DIFaddbegin \DIFadd{cannot find an image with a higher sharpness metric }\DIFaddend than this threshold, it is safe to assume the sample is no longer in the frame. \DIFdelbegin \DIFdel{The same threshold was used across all cores across 5 species that we have scanned, but tuning may be required to prevent false positives. 
-}\DIFdelend This technique reduces scanning setup time as the operator does not need to measure the length of each core when adding the sample into scanning queue.
-%DIF >  Clarification comments 6
-\DIFaddbegin \R{line_change_4}\DIFadd{Among the over two dozen species (gynosperms and angiosperms) that we have scanned, we found the sharpness metric did not vary significantly when in-focus, allowing multiple similar species to be scanned in the same batch.
-}\DIFaddend 
+If the Golden Section Search algorithm cannot find an image with a higher sharpness metric than this threshold, it is safe to assume the sample is no longer in the frame. This technique reduces scanning setup time as the operator does not need to measure the length of each core when adding the sample into scanning queue.
+% Clarification comments 6
+\R{line_change_4}Among the 20 species (gy\DIFaddbegin \DIFadd{m}\DIFaddend nosperms and angiosperms) that we have scanned, we found the sharpness metric did not vary significantly when in-focus, allowing multiple similar species to be scanned in the same batch.
 
-Golden Section Search autofocusing is robust, but takes up to 10 seconds to \DIFdelbegin \DIFdel{get }\DIFdelend \DIFaddbegin \DIFadd{obtain }\DIFaddend the most in-focus image \DIFaddbegin \DIFadd{(}\DIFaddend in our implementation\DIFaddbegin \DIFadd{)}\DIFaddend . When capturing tens or hundreds of images per sample, autofocusing time \DIFaddbegin \DIFadd{thus }\DIFaddend becomes significant.
+Golden Section Search autofocusing is robust, but takes up to 10 seconds to obtain the most in-focus image (in our implementation). When capturing tens or hundreds of images per sample, autofocusing time thus becomes significant.
 In the interest of minimizing scanning time per sample, we chose to only autofocus when necessary. Autofocusing occurs on the very first image to get a baseline sharpness metric. The machine then moves to capture the neighboring image.
-If the new image has at least a sharpness metric of 95\% of its previously imaged neighbor, we choose not to run the autofocusing \DIFdelbegin \DIFdel{loop}\DIFdelend \DIFaddbegin \DIFadd{procedure}\DIFaddend . If the prepared surface of the core is perfectly planar to the table that TIM is installed on, \DIFaddbegin \DIFadd{we have found that }\DIFaddend it is possible to only autofocus once for tens of images \DIFdelbegin \DIFdel{.
-With the samples we prepared , there usually needed to be an autofocusing procedure }\DIFdelend \DIFaddbegin \DIFadd{while maintaining high image sharpness (See Table \ref{tab:scans}).
-When TIM encounters a new image that has a focus metric lower than its previous neighbor, it runs the autofocusing procedure.
-%DIF > % Addressing reviewer comments 1 
-}\R{autofocusing_1}\DIFadd{This approach of auto-focusing only when deviations from the previous sharpness are found ensures that all neighboring images have functionally the same sharpness, while minimizing the time spent on autofocusing. 
-%DIF >  In the case that the sample is not aligned well to the camera, the autofocusing procedure runs more frequently. 
-While scanning well prepared samples, we generally saw an autofocusing routine }\DIFaddend for every 5-10 images. \DIFaddbegin \DIFadd{All of the images captured with this method maintained high image sharpness throughout the sample and were well suited for stitching. 
-This time saving feature can be tuned in the configuration file to have a more stringent or lenient sharpness threshold. 
-The autofocusing procedure will run more frequently when the sample is not aligned well to the camera and in cases where the sample is less even. However, samples that have visible scoring marks from sanding, noticeable non-planar surfaces, or other major surface irregularities will likely have difficulties scanning with or without adaptive autofocusing. We have found that such samples simply require more attentive sanding to ensure a blemish free, planar surface for successful and rapid scanning.}\R{autofocusing_2} %DIF > % End reviewer comments 1
-\DIFaddend 
+\DIFaddbegin \R{skip_rule}\DIFaddend If the new image has at least a sharpness metric of 95\% of its previously imaged neighbor, we choose not to run the autofocusing procedure. \DIFaddbegin \DIFadd{Otherwise the system autofocuses. }\DIFaddend If the prepared surface of the core is perfectly planar to the table that TIM is installed on, we have found that it is possible to only autofocus once for tens of images while maintaining high image sharpness (see Table \ref{tab:scans}).
+\DIFdelbegin \DIFdel{When TIM encounters a new image that has a focus metric lower than its previous neighbor, it runs the autofocusing procedure.
+}\DIFdelend %% Addressing reviewer comments 1 
+\R{autofocusing_1}This approach of auto-focusing only when deviations from the previous sharpness are found ensures that all neighboring images have functionally the same sharpness, while minimizing the time spent on autofocusing. 
+% In the case that the sample is not aligned well to the camera, the autofocusing procedure runs more frequently. 
+While scanning well prepared samples, we generally saw an autofocusing routine for every 5-10 images. All of the images captured with this method maintained high image sharpness throughout the sample and were well suited for stitching. 
+This time-saving feature can be tuned in the configuration file to have a more stringent or lenient sharpness threshold. 
+The autofocusing procedure will run more frequently when the sample is not aligned well to the camera and in cases where the sample is less even. However, samples that have visible scoring marks from sanding, noticeable non-planar surfaces, or other major surface irregularities will likely have difficulties scanning with or without adaptive autofocusing. We have found that such samples simply require more attentive sanding to ensure a blemish free, planar surface for successful and rapid scanning.\R{autofocusing_2} %% End reviewer comments 1
 
 \subsubsection{Accounting for Translation Error Between Core Samples}
 
@@ -425,8 +367,8 @@ Cookies can be both partially and completely scanned. Scanning entire cookies is
 Additionally, the operator must navigate the camera to the center of the cookie before adding the sample to the queue. A button called ``Test Cookie Boundaries" was made to trace the bounding box of the cookie for the operator
 to verify that the sample is truly within the bounds. These height and width bounds are used to calculate where the machine needs to move to achieve a set of partially overlapping images in both directions. 
 
-The file sizes of entire cookie scans can quickly become too large to analyze with commonly available software. A full resolution scan (21\DIFaddbegin \DIFadd{,}\DIFaddend 140 DPI) of a 10 cm x 10 cm cookie is multiple gigabytes in a lossless file format. 
-TIM can adjust the resolution of the final scan to be any percentage of the maximum DPI if needed. Whole cookie scans are interesting for archiving \DIFdelbegin \DIFdel{but will }\DIFdelend \DIFaddbegin \DIFadd{(though they will likely }\DIFaddend need special considerations for most samples at high resolution\DIFaddbegin \DIFadd{)}\DIFaddend . 
+The file sizes of entire cookie scans can quickly become too large to analyze with commonly available software. A full resolution scan (21,000 DPI) of a 10 cm x 10 cm cookie is multiple gigabytes in a lossless file format. 
+TIM can adjust the resolution of the final scan to be any percentage of the maximum DPI if needed. Whole cookie scans are interesting for archiving (though they will likely need special considerations for most samples at high resolution). 
 
 Portions of cookies can be scanned by treating them as if they were a core. This can be done by aligning the pith of the cookie's major or minor axis to the $Y$ axis and using the core scanning procedure. Any radius of the cookie can be scanned this way.
 
@@ -447,112 +389,99 @@ With the same images, multiple final stitched resolutions can be made.
 
 \subsection{Scanning Hard-to-Stitch Samples} 
 
-\DIFdelbegin \DIFdel{We found some samples were impossible to scan without additional preparation. The most common scenario leading to an incomplete scan was due to regions of the core having few distinguishable SIFT features. Samples often begin to lack features when focusing on lightly-colored sapwood, but this problem may also occur where there are sanding blemishes or other imperfections on the scanning surface. In }\DIFdelend %DIF >  Addressing reviewer comments 5
-\DIFaddbegin \R{particle_smearing_1}
-\DIFadd{We found a small number of samples were difficult to stitch and developed a method to aid stitching in these cases. These cases were rare and involved either cores from (1) species with very hard to distinguish and light-colored anatomy (e.g., }\emph{\DIFadd{Callitropsis nootkatensis}}\DIFadd{) that were not fixed with basic staining approaches, or (2) they retained scratches that we could not remove even with 1500 grit sanding. For }\DIFaddend such cases, we developed a particle smearing method \DIFdelbegin \DIFdel{which adds features to the sample, thus aiding the stitching process. }\DIFdelend \DIFaddbegin \DIFadd{(described below) that aided the stitching process. Particle smearing does not need to be done to every sample and is best reserved for samples that have proven difficult to stitch after first trying other approaches to adjust samples (e.g., staining or additional sanding). When needed though, we found this approach very successful and that it did not interfere with the measurements of annual growth rings. Measurement of other anatomical measurements such as vessel counting, however, may be affected depending on the size of particles relative to vessels. 
-}\R{particle_smearing_2}
-\DIFaddend 
+% Addressing reviewer comments 5
+\R{particle_smearing_1}
+We found a small number of samples were difficult to stitch and developed a method to aid stitching in these cases. These cases were rare and involved either cores from (1) species with very hard to distinguish and light-colored anatomy (e.g., \emph{\DIFdelbegin \DIFdel{Callitropsis }\DIFdelend \DIFaddbegin \DIFadd{Chamaecyparis }\DIFaddend nootkatensis}) that were not fixed with basic staining approaches, or (2) they retained scratches that we could not remove even with 1,500 grit sanding. For such cases, we developed a particle smearing method (described below) that aided the stitching process. Particle smearing does not need to be done to every sample and is best reserved for samples that have proven difficult to stitch after first trying other approaches to adjust samples (e.g., staining or additional sanding). When needed though, we found this approach very successful and that it did not interfere with the measurements of annual growth rings. Measurement of other anatomical measurements such as vessel counting, however, may be affected depending on the size of particles relative to vessels. 
+\R{particle_smearing_2}
 
 \subsubsection{Particle Smearing}
 
-\DIFdelbegin \DIFdel{The ideal method for adding }\DIFdelend %DIF >  emwAug18 - I made small edits here I would also ref in the letter as ways you adjusted for R1. 
-\DIFaddbegin \DIFadd{Particle smearing can be an effective technique for adding high contrast }\DIFaddend features to the \DIFdelbegin \DIFdel{sample is to smear small particles with contrasting color compared to }\DIFdelend \DIFaddbegin \DIFadd{prepared surface of a sample by embedding small particles into }\DIFaddend the surface of the sample. 
+% emwAug18 - I made small edits here I would also ref in the letter as ways you adjusted for R1. 
+Particle smearing can be an effective technique for adding high contrast features to the prepared surface of a sample by embedding small particles into the surface of the sample. 
 Our powder of choice was 600 mesh silicon carbide powder as it is inexpensive, available at pottery supply stores, has reliable grain sizes smaller than the finest sand paper we used, and provides good color contrast with most wood. 
-Additionally, silicon carbide is very hard so it will not be broken into smaller grains when \DIFdelbegin \DIFdel{smearing }\DIFdelend \DIFaddbegin \DIFadd{smeared }\DIFaddend into the surface of the sample. 
+Additionally, silicon carbide is very hard so it will not be broken into smaller grains when smeared into the surface of the sample. 
 
 No extra tools are needed for this method---a fingertip dipped in the powder is sufficient. The powder should be smeared across the sanded surface of the sample, smoothing any clumps of powder in the process. 
-When applied correctly, trace amounts of silicon carbide will be embedded in the surface roughness of the sample which cannot be seen without microscope magnification. Most of the silicon carbide can be removed after scanning is complete by blowing compressed air on the sample. Images of a core before and after powder smearing can be seen in Figure \ref{fig:core_smearing}. %DIF >  emwAug18 - nice ending here!
+When applied correctly, trace amounts of silicon carbide will be embedded in the surface roughness of the sample which cannot be seen without microscope magnification. Most of the silicon carbide can be removed after scanning is complete by blowing compressed air on the sample. Images of a core before and after powder smearing can be seen in Figure \ref{fig:core_smearing}. % emwAug18 - nice ending here!
 
 
 \begin{figure}
   \centering
   \begin{subfigure}{.5\textwidth}
     \centering
-    \DIFdelbeginFL %DIFDELCMD < \includegraphics[height=0.5\linewidth]{../diagrams/core_no_smearing.png}
-%DIFDELCMD <     %%%
-\DIFdelendFL \DIFaddbeginFL \includegraphics[height=0.5\linewidth]{../diagrams/core_no_smearing_scale.png}
-    \DIFaddendFL \caption{Without powder smearing}
+    \includegraphics[height=0.5\linewidth]{../diagrams/core_no_smearing_scale.png}
+    \caption{Without powder smearing}
     \label{fig:core_without_smearing}
   \end{subfigure}%
   \begin{subfigure}{.5\textwidth}
     \centering
-    \DIFdelbeginFL %DIFDELCMD < \includegraphics[height=0.5\linewidth]{../diagrams/core_with_smearing.png}
-%DIFDELCMD <     %%%
-\DIFdelendFL \DIFaddbeginFL \includegraphics[height=0.5\linewidth]{../diagrams/core_with_smearing_scale.png}
-    \DIFaddendFL \caption{With powder smearing}
+    \includegraphics[height=0.5\linewidth]{../diagrams/core_with_smearing_scale.png}
+    \caption{With powder smearing}
     \label{fig:core_with_smearing}
   \end{subfigure}
-  \caption{A hard-to-scan sample \DIFaddbeginFL \DIFaddFL{due significant scratches, }\DIFaddendFL with and without silicon carbide smeared on the surface of the core.}
+  \caption{A hard-to-scan sample due \DIFaddbeginFL \DIFaddFL{to }\DIFaddendFL significant scratches, with and without silicon carbide smeared on the surface of the core.}
   \label{fig:core_smearing}
 \end{figure}
 
-\subsubsection{LLM Statement} %DIF > Reviewer comments 7 
-\DIFaddbegin 
+\DIFdelbegin \subsubsection{\DIFdel{LLM Statement}} %DIFAUXCMD
+\addtocounter{subsubsection}{-1}%DIFAUXCMD
+%DIF < Reviewer comments 7 
+%DIFDELCMD < 
 
-\R{llm_rewording_1}\DIFaddend We wrote all the initial code for our first fully functioning prototype version of TIM, %DIF >  emwAug18 -- maybe give the years: We wrote all the initial code for our first fully functioning prototype version of TIM (in 2021-2022) or whatever they were...
-but used ChatGPT-4.0 to \DIFdelbegin \DIFdel{generate some
-code in improving several aspects}\DIFdelend \DIFaddbegin \DIFadd{aid in implementing several improvements}\DIFaddend .
-Code was generated to convert \DIFdelbegin \DIFdel{code to a new GUI }\DIFdelend \DIFaddbegin \DIFadd{our first GUI implementation to an alternative }\DIFaddend package when we faced \DIFdelbegin \DIFdel{package }\DIFdelend compatibility constraints. 
+%DIFDELCMD < \R{llm_rewording_1}%%%
+\DIFdel{We wrote all the initial code for our first fully functioning prototype version of TIM, %DIF <  emwAug18 -- maybe give the years: We wrote all the initial code for our first fully functioning prototype version of TIM (in 2021-2022) or whatever they were...
+but used ChatGPT-4.0 to aid in implementing several improvements.
+Code was generated to convert our first GUI implementation to an alternative package when we faced compatibility constraints. 
 Additionally, ChatGPT-4.0 helped quickly iterate on the tools used to manually calculate DPI using a microscope slide ruler and annotate images with guiding lines when defining ring boundaries. 
-Other small snippets of code were generated to select pixels in specific regions of images. \DIFdelbegin \DIFdel{All code that was generated was reviewed for functionality and correctness before codebase integration and is noted in the code with comments .
-}\DIFdelend \DIFaddbegin \DIFadd{We carefully reviewed all generated code for functionality, and note each use of it clearly with comments in the source files.}\R{llm_rewording_2}
-\DIFaddend 
+Other small snippets of code were generated to select pixels in specific regions of images. We carefully reviewed all generated code for functionality, and note each use of it clearly with comments in the source files.}%DIFDELCMD < \R{llm_rewording_2}
+%DIFDELCMD < 
 
-
-\section{Results \& Discussion} 
+%DIFDELCMD < %%%
+\DIFdelend \section{Results \& Discussion} 
 %emw9Mar: I wondered about this being Results & Discussion ... would MEE be okay with that? It would work better for the paper I think. What do the guidelines say on formatting for articles? 
 % MEE's guidelines have a distinct Results section from Discussion although maybe they're flexible on this? Conclusion is optional for MEE
 
-TIM is capable of producing extremely high resolution scans \DIFdelbegin \DIFdel{. }\DIFdelend \DIFaddbegin \DIFadd{across diverse species. }\R{usage_1}\DIFadd{To date, we have used TIM to scan over 1,300 cores and 80 cookies spanning 20 species (Table \ref{tab:species}).}\R{usage_2}
-\DIFaddend We calculated the maximum dots per inch (DPI) at 21\DIFdelbegin \DIFdel{500 }\DIFdelend \DIFaddbegin \DIFadd{,140 }\DIFaddend of individual images captured from the system using a microscopy slide scale (with 0.01 mm graduations, Figure \ref{fig:dpi_measurements}), and developed a Python tool to replicate this for varied lens focal lengths. When downscaling the final stitch, 
-DPI scales linearly with the downscale percentage defined in the machine parameters.
+TIM is capable of producing extremely high resolution scans across diverse species. \R{usage_1}To date, we have used TIM to scan over 1,300 cores and 80 cookies spanning 20 species (Table \ref{tab:species}).\R{usage_2}
+We calculated TIM can scan at least 21,000 dots per inch (DPI) by using a photo of a 1 mm stage micrometer with 0.01 mm graduations (Figure \ref{fig:dpi_measurements}) and a custom Python script. \DIFaddbegin \R{microns_10}\DIFadd{These same graduations indicate that we are able to optically distinguish features less than 10 microns. }\DIFaddend This resolution was measured with the lens' zoom dial configured at approximately half of what is available.\R{dpi_zoom} Further increases in resolution are possible with this lens at the expense of scanning time and file size. When downscaling the final stitch, DPI scales linearly with the downscale percentage defined in the machine parameters. % amfaug31 Check wording on this  
 
 Digitizing samples takes significantly longer for cookies than it does for cores (Figure \ref{fig:digitization_time}). This is due to the surface area of cookies requiring more images, as it has a squared relationship to sample radius.
 For large cookies, the operator can choose to selectively scan a radius of the cookie instead of the whole surface (as a single radius contains a portion of each ring) and/or scan at a lower DPI. Scanning complete cookies at maximum DPI is unrealistic as file size limits are quickly encountered with small diameter cookies. 
 
-To fit \DIFdelbegin \DIFdel{into the }\DIFdelend \DIFaddbegin \DIFadd{within the current }\DIFaddend maximum 2.5 GB limits of a TIFF file, the maximum diameter of a cookie scanned at 30\% of maximum resolution is limited to approximately 130 mm. 
-This maximum cookie diameter is significantly smaller than the maximum core sample length. \DIFdelbegin \DIFdel{At maximum resolution, the file size limit 
-constrains core samples to approximately 1 500 mm in length}\DIFdelend \DIFaddbegin \R{max_length}\DIFadd{TIM can scan cores up to 1.5 m in length, which is 50\% larger than the longest increment borer available on the market }\DIFaddend (though a larger ACRO frame than shown here would be needed to support \DIFdelbegin \DIFdel{this sample length).
-}\DIFdelend \DIFaddbegin \DIFadd{such longer sample lengths).
-%DIF > % End reviewer comments 3
-}
+To fit within the \DIFdelbegin \DIFdel{current maximum 2.5 }\DIFdelend \DIFaddbegin \DIFadd{maximum 4 }\DIFaddend GB limits of a TIFF file, the maximum diameter of a cookie scanned at 30\% of maximum resolution is limited to approximately 130 mm. 
+This maximum cookie diameter is significantly smaller than the maximum core sample length. \R{max_length}TIM can scan cores up to 1.5 m in length, which is 50\% larger than the longest increment borer available on the market (though a larger ACRO frame than shown here would be needed to support such longer sample lengths).
+%% End reviewer comments 3
 
-%DIF > % Addressing reviewer comments 4 
-\R{large_stitch}\DIFaddend Samples larger than this limit can still be scanned \DIFdelbegin \DIFdel{, }\DIFdelend \DIFaddbegin \DIFadd{and stitched }\DIFaddend but TIM saves \DIFdelbegin \DIFdel{them }\DIFdelend \DIFaddbegin \DIFadd{the final mosaic }\DIFaddend as an uncompressed binary NumPy memory-mapped array file. \DIFdelbegin \DIFdel{Currently, }\DIFdelend NumPy files are not supported by standard image viewers like ImageJ and require custom \DIFdelbegin \DIFdel{tools to work with}\DIFdelend \DIFaddbegin \DIFadd{Python scripts to open subsections of the image to view}\DIFaddend . %emw17Jan2026 -- any chance we can give an (e.g., THIS tool) to the end here? %amf28Jan2026 -- This would be some GUI wrapping NumPy functions which are made to edit the NumPy files. I'm certain this could be done but it doesn't really seem worth it. I imagine in order for it to actually be useful, it would need to offer complete annotation functionality for marking and be user friendly in a way that I wouldn't be able to churn out quickly. emwREPLY: Okay, we skip it then.
-%DIF > % End addressing reviewer comments 4
+%% Addressing reviewer comments 4 
+\R{large_stitch}Samples larger than this limit can still be scanned and stitched but TIM saves the final mosaic as \DIFdelbegin \DIFdel{an uncompressed binary NumPy memory-mapped array file. NumPy files are not supported by standard image viewers like ImageJ and require custom Python scripts to open subsections of the image to view}\DIFdelend \DIFaddbegin \DIFadd{a BigTIFF file. Large BigTIFF files can be opened in Python with packages such as tifffile}\DIFaddend . %emw17Jan2026 -- any chance we can give an (e.g., THIS tool) to the end here? %amf28Jan2026 -- This would be some GUI wrapping NumPy functions which are made to edit the NumPy files. I'm certain this could be done but it doesn't really seem worth it. I imagine in order for it to actually be useful, it would need to offer complete annotation functionality for marking and be user friendly in a way that I wouldn't be able to churn out quickly. emwREPLY: Okay, we skip it then.
+%% End addressing reviewer comments 4
 
-\DIFdelbegin %DIFDELCMD < \begin{figure}
-%DIFDELCMD <     %%%
-\DIFdelendFL \DIFaddbeginFL \begin{figure}[H]
-  \DIFaddendFL \centering
-  \DIFdelbeginFL %DIFDELCMD < \includegraphics[height=0.5\linewidth]{../../code/plots/time_and_area.png}
-%DIFDELCMD <     %%%
-\DIFdelendFL \DIFaddbeginFL \begin{subfigure}[t]{.48\textwidth}
+\begin{figure}[H]
+  \centering
+  \begin{subfigure}[t]{.48\textwidth}
     \centering
     \includegraphics[width=0.9\linewidth]{../graphs/core_scanning_time.png}
-    \DIFaddendFL \caption{\DIFaddbeginFL \DIFaddFL{Core Scanning }\DIFaddendFL Time\DIFdelbeginFL \DIFdelFL{to digitize a sample is dependent on the sample's surface area and the desired final resolution.
-    Cores benefit from linear surface area to sample length. The range of samples included span from a 3 mm x 220 mm core to a 75 mm x 56 mm cookie. The theoretical maximum sample dimensions are limited by the working plane of the machine, approximately 500 mm x 500 mm in our configuration. True sampling times are drastically influenced by configurable machine parameters such as percentage image overlap.}\DIFdelendFL }
-    \DIFaddbeginFL \label{fig:graph_time_core}
-  \end{subfigure}%DIF > 
+    \caption{Core Scanning Time}
+    \label{fig:graph_time_core}
+  \end{subfigure}%
   \hfill
   \begin{subfigure}[t]{.48\textwidth}
     \centering
     \includegraphics[width=0.9\linewidth]{../graphs/cookie_scanning_time.png}
-    \caption{\DIFaddFL{Cookie Scanning Time}}
+    \caption{Cookie Scanning Time}
     \label{fig:graph_time_cookie}
   \end{subfigure}
-  \caption{\DIFaddFL{Time to digitize a sample varies by sample type and scanning parameters such as percentage image overlap. Cores scan significantly faster than cookies as they do not need to take images beyond the samples edge. The range of samples included span from a 3 mm x 220 mm core to a 75 mm x 56 mm cookie. The theoretical maximum sample dimensions are limited by the working plane of the machine, approximately 500 mm x 500 mm in our configuration. True sampling times are drastically influenced by configurable machine parameters such as percentage image overlap.}}
-  \DIFaddendFL \label{fig:digitization_time}
+  \caption{Time to digitize a sample varies by sample type and scanning parameters such as percentage image overlap. Cores scan significantly faster than cookies as they do not need to take images beyond the samples edge. The \DIFdelbeginFL \DIFdelFL{range of }\DIFdelendFL samples included \DIFdelbeginFL \DIFdelFL{span from a 3 mm x 220 mm core to a 75 mm x 56 mm cookie}\DIFdelendFL \DIFaddbeginFL \DIFaddFL{in this data were scanned between 33 and 50 percent overlap}\DIFaddendFL .\DIFaddbeginFL \R{scanning_time_edits} \DIFaddendFL The theoretical maximum sample dimensions are limited by the working plane of the machine, approximately 500 mm x 500 mm in our configuration. \DIFdelbeginFL \DIFdelFL{True sampling }\DIFdelendFL \DIFaddbeginFL \DIFaddFL{Sampling }\DIFaddendFL times are drastically influenced by configurable machine parameters such as percentage image overlap.}
+  \label{fig:digitization_time}
 \end{figure}
 
 \subsection{Strengths and Opportunities} 
-TIM's design minimizes the barriers to build an affordable, efficient and high-resolution image capture system. \DIFdelbegin \DIFdel{TIM }\DIFdelend \DIFaddbegin \R{usage_2start}\DIFadd{We have used TIM across different operators for over two years and found it works well with intermittent or intensive. For example, we have used TIM to scan batches of 24 cores to be scanned a day over the course of three months, with many batches scanned overnight.}\R{usage_2end}
-\DIFadd{We have found that TIM }\DIFaddend does not compromise scan quality and can scan both cookies and cores. We have measured tree ring widths using the digitized samples from TIM using CooRecorder as well as ImageJ \citep{schneider_nih_2012}.
-%DIF > % Addressing reviewer comments 2
-%DIF >  emwAug18 - I would move the species list to the supp and just ref it above as suggested. 
-%DIF >  These samples included six different conifer species namely \emph{Pseudotsuga menziesii}, \emph{Tsuga heterophylla}, \emph{Tsuga mertensiana}, \emph{Abies amabilis}, \emph{Chamaecyparis nootkatensis} and \emph{Thuja plicata}. 
-%DIF >  We found that the Jetson computer would occasionally crash due to unexpected memory limits if not restarted once a day. This issue was resolved by restarting the computer before starting a large batch 
-%DIF > % End reviewer comments 2
+TIM's design minimizes the barriers to build an affordable, efficient and high-resolution image capture system. \R{usage_2start}We have used TIM across different operators \DIFdelbegin \DIFdel{for over two years and found it }\DIFdelend \DIFaddbegin \DIFadd{while upgrading software incrementally over the course of two years. We found TIM }\DIFaddend works well with intermittent or intensive use. For example, we have used TIM to scan batches of 24 cores \DIFaddbegin \DIFadd{multiple times }\DIFaddend a day over the course of three months, with many batches scanned overnight.\R{usage_2end}
+We have found that TIM does not compromise scan quality and can scan both cookies and cores. We have measured tree ring widths using the digitized samples from TIM using CooRecorder as well as ImageJ \citep{schneider_nih_2012}.
+%% Addressing reviewer comments 2
+% emwAug18 - I would move the species list to the supp and just ref it above as suggested. 
+% These samples included six different conifer species namely \emph{Pseudotsuga menziesii}, \emph{Tsuga heterophylla}, \emph{Tsuga mertensiana}, \emph{Abies amabilis}, \emph{Chamaecyparis nootkatensis} and \emph{Thuja plicata}. 
+% We found that the Jetson computer would occasionally crash due to unexpected memory limits if not restarted once a day. This issue was resolved by restarting the computer before starting a large batch 
+%% End reviewer comments 2
 
 The utility of digitized samples produced by TIM could be extended through new open-data approaches. 
 While most tree ring repositories \citep[e.g.,the International Tree-Ring Data Bank or TreeSource's Tree-Rings Database for Canadian sites][]{grissino-mayer_international_1997,girardin_national_2021} do not store the source images of samples currently, they provide rich metadata, which could be used to link to images stored on other more flexible repositories. 
@@ -561,10 +490,10 @@ Examples of such models exist and have the potential to significantly decrease t
 
 
 In its current state, TIM only provides scanned images and requires users to import them into other tools for additional visual analyses, such as measuring tree-ring widths or counting vessels.
-A useful addition to TIM would be to automatically detect tree-ring widths or other metrics while capturing images using computer vision models. We expect this may be possible as these methods improve in computational efficiency and accuracy. Currently, we found that tree-ring detection by a recent machine learning algorithm  \citep[R-CNN presented by][]{polacek_automation_2023} for a scanned core (\DIFdelbegin \DIFdel{23294 }\DIFdelend \DIFaddbegin \DIFadd{23,294 }\DIFaddend x 897 pixels) took 15 minutes on a high-performance cluster (UBC ARC Sockeye) and 3.5 hours on a smaller server (RTX A6000 GPU server). 
+A useful addition to TIM would be to automatically detect tree-ring widths or other metrics while capturing images using computer vision models. We expect this may be possible as these methods improve in computational efficiency and accuracy. Currently, we found that tree-ring detection by a recent machine learning algorithm  \citep[R-CNN presented by][]{polacek_automation_2023} for a scanned core (23,294 x 897 pixels) took 15 minutes on a high-performance cluster (UBC ARC Sockeye) and 3.5 hours on a smaller server (RTX A6000 GPU server). 
 Although the Jetson edge computer is not as powerful as these servers, running these models in parallel to the image capturing algorithms would further reduce manual data annotation of tree-rings, and thus could help scale-up data collection.
 
-TIM relies on purchasing a CNC machine kit from OpenBuilds which is subject to availability. \DIFdelbegin \DIFdel{Fortunately, our software}\DIFdelend \DIFaddbegin \DIFadd{Our software, however, }\DIFaddend is compatible with any cartesian CNC machine controlled by the Grbl software, a common and open-source CNC motion controller software.
+TIM relies on purchasing a CNC machine kit from OpenBuilds which is subject to availability. Our software, however, is compatible with any cartesian CNC machine controlled by the Grbl software, a common and open-source CNC motion controller software.
 Many alternative CNC kits are available but would require new adapters to be made to hold the lens, camera, and computer to the machine.
 % amf30dec I don't like this paragraph anymore.
 % An additional major frontier for machines such as TIM is integrating additional sensors. While much of the current imaging time of samples comes from taking a vertical stack of images to obtain one in-focus image, advanced microscopy applications have overcome similar challenges through supplemental sensors that measure the distance between the subject and lens.
@@ -578,54 +507,69 @@ Our design significantly increases the maximum sample length and maximum resolut
 In addition, TIM is intended to be readily replicated by labs without significant engineering capacity and equipment. 
 We hope that such an open-source device will facilitate the widespread sampling of tree rings across diverse ecosystems and reduce barriers for researchers with smaller budgets. 
 
-\DIFaddbegin \clearpage
-\DIFaddend \section{Supplemental Information}
+\DIFaddbegin \section{\DIFadd{LLM Statement}} %DIF > Reviewer comments 7 
 
+\R{llm_rewording_1}\DIFadd{We wrote all the initial code for our first fully functioning prototype version of TIM, %DIF >  emwAug18 -- maybe give the years: We wrote all the initial code for our first fully functioning prototype version of TIM (in 2021-2022) or whatever they were...
+but used ChatGPT-4.0 to aid in implementing several improvements.
+Code was generated to convert our first GUI implementation to an alternative package when we faced compatibility constraints. 
+Additionally, ChatGPT-4.0 helped quickly iterate on the tools used to manually calculate DPI using a microscope slide ruler and annotate images with guiding lines when defining ring boundaries. 
+Other small snippets of code were generated to select pixels in specific regions of images. We carefully reviewed all generated code for functionality, and note each use of it clearly with comments in the source files.}\R{llm_rewording_2}
 
-\DIFdelbegin %DIFDELCMD < {
-%DIFDELCMD < %%%
-\DIFdelend \renewcommand{\thefigure}{S\arabic{figure}}
+\DIFaddend \clearpage
+\section{Supplemental Information}
+
+\DIFaddbegin \subsection{\DIFadd{How to Build TIM}}
+
+\R{build_start}\DIFadd{TIM is intended to be operated and built by one person without having extensive machine building experience. To do this affordably, the camera and computer must attach to an off-the-shelf 3-axis CNC motion kit. Camera and computer adapters (\ref{fig:assembly_skeleton}) need to be designed uniquely for each motion kit which are subject to market availability. The overall price of TIM does not include the 3D printer we used to manufacture these adapters. Ordering parts to be printed can be done through online or university services. A complete list of components we used for our TIM implementation is detailed in Table \ref{tab:bom}. A simple schematic of the electronic components included in TIM is provided in Figure \ref{fig:electronic_components}. Images detailing how to connect the camera and computer adapters to the ACRO can be found on the project's GitHub. 
+}
+
+\DIFadd{We are open to answering inquiries to troubleshoot specific questions of the assembly process on TIM's GitHub Issues page. At the time of publication, an external lab group has successfully replicated the TIM implementation on an ACRO.}\R{build_end}
+
+\DIFaddend \renewcommand{\thefigure}{S\arabic{figure}}
 \setcounter{figure}{0}  % Start supplemental figures from S1
+
+\begin{figure}[htbp]
+  \centering
+    \DIFaddbeginFL \includegraphics[height=0.8\linewidth]{../diagrams/electronic_diagram.drawio.png}
+    \caption{\DIFaddFL{TIM is composed of electronic components common to many 3-axis CNC machines, with the addition of a camera, computer, and other common computer peripherals. The Jetson computer can be adapted to control any CNC motor controller running GRBL firmware by sending commands over a USB serial connection. CNC kits have their own wiring schematics specific to make and model. }}
+    \label{fig:electronic_components}
+\end{figure}
+
+\begin{figure}[htbp]
+  \centering
+    \includegraphics[height=0.6\linewidth]{../diagrams/assembly_front.png}
+    \caption{\DIFaddFL{The ACRO frame has camera and computer adapters mounted to it, rendered pink in this image.}}
+    \label{fig:assembly_skeleton}
+\end{figure}
 
 
 \begin{figure}[htbp]
   \centering
-  \DIFdelbeginFL %DIFDELCMD < \begin{subfigure}{.5\textwidth}
-%DIFDELCMD <     %%%
-\DIFdelendFL \DIFaddbeginFL \begin{subfigure}{.48\textwidth}
-    \DIFaddendFL \centering
-    \DIFdelbeginFL %DIFDELCMD < \includegraphics[height=0.5\linewidth]{../diagrams/dpi_measurement_whole.png}
-%DIFDELCMD <     %%%
-\DIFdelendFL \DIFaddbeginFL \includegraphics[height=0.4\linewidth]{../diagrams/dpi_measurement_cropped_1mm.png}
-    \DIFaddendFL \caption{Scale Bar for DPI measurements}
+  \DIFaddendFL \begin{subfigure}{.48\textwidth}
+    \centering
+    \includegraphics[height=0.4\linewidth]{../diagrams/dpi_measurement_cropped_1mm.png}
+    \caption{Scale Bar for DPI measurements}
     \label{fig:dpi_measurement_whole}
   \end{subfigure}%
-  \DIFdelbeginFL %DIFDELCMD < \begin{subfigure}{.5\textwidth}
-%DIFDELCMD <     %%%
-\DIFdelendFL \DIFaddbeginFL \DIFaddFL{\hspace{0.02\textwidth}
-  }\begin{subfigure}{.48\textwidth}
-    \DIFaddendFL \centering
-    \DIFdelbeginFL %DIFDELCMD < \includegraphics[height=0.5\linewidth]{../diagrams/dpi_measurement_zoomed_2.png}
-%DIFDELCMD <     %%%
-\DIFdelendFL \DIFaddbeginFL \includegraphics[height=0.4\linewidth]{../diagrams/dpi_measurement_center_graduation.png}
-    \DIFaddendFL \caption{Zoomed in Scale Bar}
+  \hspace{0.02\textwidth}
+  \begin{subfigure}{.48\textwidth}
+    \centering
+    \includegraphics[height=0.4\linewidth]{../diagrams/dpi_measurement_center_graduation.png}
+    \caption{Zoomed in Scale Bar}
     \label{fig:dpi_measurement_zoomed}
   \end{subfigure}
-  \caption{Example of a single DPI measurement using a \DIFaddbeginFL \DIFaddFL{1 mm stage micrometer with }\DIFaddendFL 0.01 mm \DIFdelbeginFL \DIFdelFL{slide scale}\DIFdelendFL \DIFaddbeginFL \DIFaddFL{graduations}\DIFaddendFL . We found the DPI measured at multiple locations in the field of view vertically and horizontally converged on the same value. \DIFaddbeginFL \DIFaddFL{The centerpoint of graduation marks used when taking this measurement.}\DIFaddendFL }
+  \caption{Example of a single DPI measurement using a 1 mm stage micrometer with 0.01 mm graduations. We found the DPI measured at multiple locations in the field of view vertically and horizontally converged on the same value. The centerpoint of graduation marks used when taking this measurement. DPI measurements are constant so long as the lens does not change zoom. Our scans are primarily imaged with the lens' zoom dial at 2.5x out of 4.5x, resulting in approximately 21,000 DPI. \DIFaddbeginFL \DIFaddFL{There are approximately four pixels between each graduation mark, indicating that features less than 10 microns are able to be distinguished.}\DIFaddendFL }
   \label{fig:dpi_measurements}
 \end{figure}
-\DIFdelbegin %DIFDELCMD < }
-%DIFDELCMD < %%%
-\DIFdelend 
 
 
 \renewcommand{\thetable}{S\arabic{table}}
-\DIFaddbegin \setcounter{table}{0}
-%DIF >  \renewcommand{\thetable}{S\arabic{table}}
+\setcounter{table}{0}
+\DIFaddbegin \include{components_list_table}
+\DIFaddend % \renewcommand{\thetable}{S\arabic{table}}
 \include{scanned_species_table}
-\DIFaddend \include{notation_glossary_table}
-\DIFaddbegin \include{example_scans_table}
-\DIFaddend 
+\include{notation_glossary_table}
+\include{example_scans_table}
 
 \bibliography{references}
 

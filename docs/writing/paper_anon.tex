@@ -17,6 +17,7 @@
 \usepackage{setspace}
 \usepackage{lineno}
 \usepackage{todonotes}
+\usepackage{tabularx}
 
 % Cross Referencing Line numbers
 \externaldocument{revletter_2}
@@ -335,7 +336,7 @@ When applied correctly, trace amounts of silicon carbide will be embedded in the
 % MEE's guidelines have a distinct Results section from Discussion although maybe they're flexible on this? Conclusion is optional for MEE
 
 TIM is capable of producing extremely high resolution scans across diverse species. \R{usage_1}To date, we have used TIM to scan over 1,300 cores and 80 cookies spanning 20 species (Table \ref{tab:species}).\R{usage_2}
-We calculated TIM can scan at least 21,000 dots per inch (DPI) by using a photo of a 1 mm stage micrometer with 0.01 mm graduations (Figure \ref{fig:dpi_measurements}) and a custom Python script. \R{microns_10}The graduations on the stage micrometer indicate that we are able to distinguish features that are less than 10 microns. This resolution was measured with the lens' zoom dial configured at approximately half of what is available.\R{dpi_zoom} Further increases in resolution are possible with this lens at the expense of scanning time and file size. When downscaling the final stitch, DPI scales linearly with the downscale percentage defined in the machine parameters. % amfaug31 Check wording on this  
+We calculated TIM can scan at least 21,000 dots per inch (DPI) by using a photo of a 1 mm stage micrometer with 0.01 mm graduations (Figure \ref{fig:dpi_measurements}) and a custom Python script. \R{microns_10}These same graduations indicate that we are able to optically distinguish features less than 10 microns. This resolution was measured with the lens' zoom dial configured at approximately half of what is available.\R{dpi_zoom} Further increases in resolution are possible with this lens at the expense of scanning time and file size. When downscaling the final stitch, DPI scales linearly with the downscale percentage defined in the machine parameters. % amfaug31 Check wording on this  
 
 Digitizing samples takes significantly longer for cookies than it does for cores (Figure \ref{fig:digitization_time}). This is due to the surface area of cookies requiring more images, as it has a squared relationship to sample radius.
 For large cookies, the operator can choose to selectively scan a radius of the cookie instead of the whole surface (as a single radius contains a portion of each ring) and/or scan at a lower DPI. Scanning complete cookies at maximum DPI is unrealistic as file size limits are quickly encountered with small diameter cookies. 
@@ -368,7 +369,7 @@ This maximum cookie diameter is significantly smaller than the maximum core samp
 \end{figure}
 
 \subsection{Strengths and Opportunities} 
-TIM's design minimizes the barriers to build an affordable, efficient and high-resolution image capture system. \R{usage_2start}We have used TIM across different operators for over two years and found it works well with intermittent or intensive use. For example, we have used TIM to scan batches of 24 cores a day over the course of three months, with many batches scanned overnight.\R{usage_2end}
+TIM's design minimizes the barriers to build an affordable, efficient and high-resolution image capture system. \R{usage_2start}We have used TIM across different operators while upgrading software incrementally over the course of two years. We found TIM works well with intermittent or intensive use. For example, we have used TIM to scan batches of 24 cores multiple times a day over the course of three months, with many batches scanned overnight.\R{usage_2end}
 We have found that TIM does not compromise scan quality and can scan both cookies and cores. We have measured tree ring widths using the digitized samples from TIM using CooRecorder as well as ImageJ \citep{schneider_nih_2012}.
 %% Addressing reviewer comments 2
 % emwAug18 - I would move the species list to the supp and just ref it above as suggested. 
@@ -411,9 +412,28 @@ Other small snippets of code were generated to select pixels in specific regions
 \clearpage
 \section{Supplemental Information}
 
+\subsection{How to Build TIM}
+
+\R{build_start}TIM is intended to be operated and built by one person without having extensive machine building experience. To do this affordably, the camera and computer must attach to an off-the-shelf 3-axis CNC motion kit. Camera and computer adapters (\ref{fig:assembly_skeleton}) need to be designed uniquely for each motion kit which are subject to market availability. The overall price of TIM does not include the 3D printer we used to manufacture these adapters. Ordering parts to be printed can be done through online or university services. A complete list of components we used for our TIM implementation is detailed in Table \ref{tab:bom}. A simple schematic of the electronic components included in TIM is provided in Figure \ref{fig:electronic_components}. Images detailing how to connect the camera and computer adapters to the ACRO can be found on the project's GitHub. 
+
+We are open to answering inquiries to troubleshoot specific questions of the assembly process on TIM's GitHub Issues page. At the time of publication, an external lab group has successfully replicated the TIM implementation on an ACRO.\R{build_end}
 
 \renewcommand{\thefigure}{S\arabic{figure}}
 \setcounter{figure}{0}  % Start supplemental figures from S1
+
+\begin{figure}[htbp]
+  \centering
+    \includegraphics[height=0.8\linewidth]{../diagrams/electronic_diagram.drawio.png}
+    \caption{TIM is composed of electronic components common to many 3-axis CNC machines, with the addition of a camera, computer, and other common computer peripherals. The Jetson computer can be adapted to control any CNC motor controller running GRBL firmware by sending commands over a USB serial connection. CNC kits have their own wiring schematics specific to make and model. }
+    \label{fig:electronic_components}
+\end{figure}
+
+\begin{figure}[htbp]
+  \centering
+    \includegraphics[height=0.6\linewidth]{../diagrams/assembly_front.png}
+    \caption{The ACRO frame has camera and computer adapters mounted to it, rendered pink in this image.}
+    \label{fig:assembly_skeleton}
+\end{figure}
 
 
 \begin{figure}[htbp]
@@ -431,13 +451,14 @@ Other small snippets of code were generated to select pixels in specific regions
     \caption{Zoomed in Scale Bar}
     \label{fig:dpi_measurement_zoomed}
   \end{subfigure}
-  \caption{Example of a single DPI measurement using a 1 mm stage micrometer with 0.01 mm graduations. We found the DPI measured at multiple locations in the field of view vertically and horizontally converged on the same value. The centerpoint of graduation marks used when taking this measurement. DPI measurements are constant so long as the lens does not change zoom. Our scans are primarily imaged with the lens' zoom dial at 2.5x out of 4.5x, resulting in approximately 21,000 DPI. \R{figure_max_optical}There are approximately four pixels between each graduation mark, indicating that features less than 10 microns are able to be captured.}
+  \caption{Example of a single DPI measurement using a 1 mm stage micrometer with 0.01 mm graduations. We found the DPI measured at multiple locations in the field of view vertically and horizontally converged on the same value. The centerpoint of graduation marks used when taking this measurement. DPI measurements are constant so long as the lens does not change zoom. Our scans are primarily imaged with the lens' zoom dial at 2.5x out of 4.5x, resulting in approximately 21,000 DPI. There are approximately four pixels between each graduation mark, indicating that features less than 10 microns are able to be distinguished.}
   \label{fig:dpi_measurements}
 \end{figure}
 
 
 \renewcommand{\thetable}{S\arabic{table}}
 \setcounter{table}{0}
+\include{components_list_table}
 % \renewcommand{\thetable}{S\arabic{table}}
 \include{scanned_species_table}
 \include{notation_glossary_table}
