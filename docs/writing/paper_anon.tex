@@ -44,7 +44,7 @@
 2.  Here we present the Tree Imaging Machine (TIM)---a do-it-yourself fully open scanning tool to digitize tree cookies and cores. TIM takes partially overlapping microscopic images of samples and stitches them together to form a mosaic, which can be zoomed in to visualize features on the scale of 0.01 mm. 
 We provide all instructions for the open-source hardware, using readily available parts, alongside the related software. % emwAug10 -- check my addition: correct? You could add the links here if you want 
 
-3. With scan resolution of at least 21,000 DPI (1.2 micron per pixel), TIM produces one of the highest resolution images among similar tools for less than \$3,000 USD. Operators can prepare multiple samples and let the machine work until the queue is finished. Given this batch approach and automatic stitching, TIM provides a major speed advance for high-resolution image capture of tree rings, and can rapidly digitize cores of over 50 cm and complete cookies. % amfJan25 -- Does this speed need to be quantified? Maybe even just an average time per scan from the metadata that was already collected. emwREPLY: I think it's fine to just say it's a speed-up 
+3. With scan resolution of at least 21,000 DPI (1.2 micron per pixel), TIM produces one of the highest resolution images among similar tools for less than \$3,500 CAD. Operators can prepare multiple samples and let the machine work until the queue is finished. Given this batch approach and automatic stitching, TIM provides a major speed advance for high-resolution image capture of tree rings, and can rapidly digitize cores of over 50 cm and complete cookies. % amfJan25 -- Does this speed need to be quantified? Maybe even just an average time per scan from the metadata that was already collected. emwREPLY: I think it's fine to just say it's a speed-up 
 
 4. TIM provides a new method to gather high quality tree ring images at larger sizes and dimensions, integrating higher scanning resolution, tree cookie sampling, and batch digitization in a single low-cost package. 
 Designed as completely open-source, we hope TIM will facilitate the widespread sampling of tree rings across diverse ecosystems and reduce barriers for researchers with smaller budgets. 
@@ -80,7 +80,7 @@ This assumption fundamentally restricts the digitization only to cores, as cooki
 To address some of the current limitations, while building upon the open-source and open-hardware philosophies of CaptuRING, we designed the Tree Imaging Machine (TIM).
 We added support to digitize both cookies and cores, increased the maximum sample length, perform image stitching directly without the need for manual file transfer, and capture batches of samples sequentially---all while minimizing cost.
 Our design requires the use of 3D printed components and common hand tools such as hex keys and wrenches. No specialized equipment or power tools are required beyond this. 
-Excluding 3D printed parts, the total cost of the machine is approximately \$2,200 USD \citep[compared to the \$70,000 USD of the Gigapixel,][]{griffin_gigapixel_2021}.
+Excluding 3D printed parts, the total cost of the machine is approximately \$3,500 CAD \citep[compared to the \$70,000 USD of the Gigapixel,][]{griffin_gigapixel_2021}. We include a table detailing the cost of each component in the supplemental (\ref{tab:bom}).
 We chose to use a Raspberry Pi HQ camera with a microscope lens to save on purchasing a professional camera with a macro lens. Professional camera setups are comparable in price to the entire cost of TIM.
 These savings combined with not needing to purchase a professional stitching software license (such as PTGui from New House Internet Services BV, Rotterdam, NL, which is the suggested software to use with CaptuRING) makes TIM a more economical option than most products currently available.\R{line_change_1}
 Additionally, the design is open-source and open-hardware allowing for contributors to add new sensors or alter the control methods. 
@@ -91,8 +91,8 @@ Additionally, the design is open-source and open-hardware allowing for contribut
 
 \begin{figure}
   \centering
-  \includegraphics[height=0.5\linewidth]{../content/tina.jpg} % There are a few limits which don't sound correct to me in this part (file size, machine design, quality sanding, etc.)
-  \caption{Complete assembly of TIM, shown with a few smaller cookies ready to be scanned.  All of the 3D printed parts are available for download on the NIH 3D printing repository (HYPERLINK REMOVED) and the software is  open source, with instructions to recreate this tool available on GitHub (HYPERLINK REMOVED). Links to images produced by TIM are provided in Table \ref{tab:scans}.} 
+  \includegraphics[height=0.5\linewidth]{../diagrams/assembly_front.png} % There are a few limits which don't sound correct to me in this part (file size, machine design, quality sanding, etc.)
+  \caption{Complete assembly of TIM. The ACRO kit is shown in gray. Camera and computer adapters are shown in purple. All of the 3D printed parts are available for download on the NIH 3D printing repository (HYPERLINK REMOVED) and the software is  open source, with instructions to recreate this tool available on GitHub (HYPERLINK REMOVED). Links to images produced by TIM are provided in Table \ref{tab:scans}.} 
   \label{fig:tim_assembled}
 \end{figure}
 
@@ -112,6 +112,30 @@ The Jetson is an edge computer which drives a monitor for a GUI, sends commands 
 \subsection{Preparing Cookies and Cores}
 TIM can scan both tree cookies and cores but they need to be well prepared before scanning. Samples that are not well sanded may not have enough detail when stitching images together into the complete mosaic. Thus, users of TIM should follow general guidelines for preparing cookies and cores---sanding samples with incrementally increasing sand paper grit. Samples must be uniformly sanded and have a planar surface for scanning \citep{speer_fundamentals_2010}.\R{line_change_2}
 We sanded samples using a 4 inch belt sander with lower grits between 120 and 240 for the bulk of the material removal, followed by sanding using an orbital sander with progressively finer grits between 240 and 400. We then used a microscope to visually inspect the quality of the sanding. Samples were considered to be sufficiently prepared when vessels were easily recognizable.
+
+\begin{figure}[h!]
+  \centering
+  \begin{subfigure}{.5\textwidth}
+    \centering
+    \includegraphics[height=0.5\linewidth]{../diagrams/gui_screenshot.png}
+    \caption{GUI}
+    \label{fig:gui}
+  \end{subfigure}%
+  \begin{subfigure}{.5\textwidth}
+    \centering
+    \includegraphics[height=0.5\linewidth]{../diagrams/add_sample_dialog.png}
+    \caption{`Add Sample' dialog}
+    \label{fig:add_sample}
+  \end{subfigure}
+  \begin{subfigure}{.5\textwidth}
+    \centering
+    \includegraphics[height=0.5\linewidth]{../diagrams/camera_viewer.png}
+    \caption{Live camera feed window}
+    \label{fig:live_feed}
+  \end{subfigure}
+  \caption{TIM is controlled using a GUI, popup windows, and a live camera feed.} 
+  \label{fig:gui_figure}
+\end{figure}
 
 TIM requires additional sanding considerations for each sample type.  For cookies, it is important to have the top and bottom surfaces nearly parallel. Small differences in plane angle can be corrected using the 3D printed leveling table we designed (Figure \ref{fig:ideal_levelling}). %\todo{Make figure appear after reference.}
 For cores, care should be taken to maximize the scanning surface. This means removing material to be coincident to the center of the cross section of the core. 
@@ -173,7 +197,7 @@ Variations of height across the length of a sanded sample result in images losin
 An autofocusing algorithm was implemented using a Golden Section Search method as described by \citet{gu_region_2015} to capture in-focus images.\R{line_change_3} In short, the camera's position is moved in the $Z$ axis and stops when it maximizes the sharpness metric of the image. 
 We found the variance of Laplacian sharpness metric to be easy to implement in Python and robust across samples \citep{pech-pacheco_diatom_2000}. 
 
-\begin{figure}
+\begin{figure}[h!]
   \centering
   \begin{subfigure}{.3\textwidth}
       \centering
@@ -203,30 +227,6 @@ We found the variance of Laplacian sharpness metric to be easy to implement in P
 Scanning a core starts with aligning the length of the sample to the $Y$-axis of the machine at any $X$ position. We 3D printed a tray to hold multiple cores next to each other to make the alignment process faster.
 From there, the operator needs to navigate the camera to an in-focus position anywhere along the core and enter basic metadata such as sample ID.
 Multiple cores can be put next to each other and added to a queue to be sequentially scanned for operational convenience. 
-
-\begin{figure}
-  \centering
-  \begin{subfigure}{.5\textwidth}
-    \centering
-    \includegraphics[height=0.5\linewidth]{../diagrams/gui_screenshot.png}
-    \caption{GUI}
-    \label{fig:gui}
-  \end{subfigure}%
-  \begin{subfigure}{.5\textwidth}
-    \centering
-    \includegraphics[height=0.5\linewidth]{../diagrams/add_sample_dialog.png}
-    \caption{`Add Sample' dialog}
-    \label{fig:add_sample}
-  \end{subfigure}
-  \begin{subfigure}{.5\textwidth}
-    \centering
-    \includegraphics[height=0.5\linewidth]{../diagrams/camera_viewer.png}
-    \caption{Live camera feed window}
-    \label{fig:live_feed}
-  \end{subfigure}
-  \caption{TIM is controlled using a GUI, popup windows, and a live camera feed.} 
-  \label{fig:gui_figure}
-\end{figure}
 
 A button on the GUI starts the procedure to scan all of the samples that were added to the queue. The machine first moves to the position that was recorded when the operator added the sample. 
 It then moves up the length of the core in the positive direction of the $Y$-axis, capturing overlapping images until the top edge of the core is captured. 
@@ -313,7 +313,7 @@ No extra tools are needed for this method---a fingertip dipped in the powder is 
 When applied correctly, trace amounts of silicon carbide will be embedded in the surface roughness of the sample which cannot be seen without microscope magnification. Most of the silicon carbide can be removed after scanning is complete by blowing compressed air on the sample. Images of a core before and after powder smearing can be seen in Figure \ref{fig:core_smearing}. % emwAug18 - nice ending here!
 
 
-\begin{figure}
+\begin{figure}[h!]
   \centering
   \begin{subfigure}{.5\textwidth}
     \centering
@@ -336,7 +336,7 @@ When applied correctly, trace amounts of silicon carbide will be embedded in the
 % MEE's guidelines have a distinct Results section from Discussion although maybe they're flexible on this? Conclusion is optional for MEE
 
 TIM is capable of producing extremely high resolution scans across diverse species. \R{usage_1}To date, we have used TIM to scan over 1,300 cores and 80 cookies spanning 20 species (Table \ref{tab:species}).\R{usage_2}
-We calculated TIM can scan at least 21,000 dots per inch (DPI) by using a photo of a 1 mm stage micrometer with 0.01 mm graduations (Figure \ref{fig:dpi_measurements}) and a custom Python script. \R{microns_10}These same graduations indicate that we are able to optically distinguish features less than 10 microns. This resolution was measured with the lens' zoom dial configured at approximately half of what is available.\R{dpi_zoom} Further increases in resolution are possible with this lens at the expense of scanning time and file size. When downscaling the final stitch, DPI scales linearly with the downscale percentage defined in the machine parameters. % amfaug31 Check wording on this  
+We calculated TIM can scan at least 21,000 dots per inch (DPI) by using a photo of a 1 mm stage micrometer with 0.01 mm graduations (Figure \ref{fig:dpi_measurements}) and a custom Python script. \R{microns_10}These same graduations indicate that we are able to optically distinguish features less than 10 microns. This resolution was measured with the lens' zoom dial configured at approximately half of what is available.\R{dpi_zoom} Further increases in resolution are possible with this lens at the expense of scanning time and file size. When downscaling the final stitch, DPI scales linearly with the downscale percentage defined in the machine parameters. We further validated the DPI measurements by marking two control points on samples with ultra-fine tipped felt pens. The distance between the points in pixels and physical distance were measured and these control point DPI measurements were comparable to the DPI measurement from the stage micrometer (Table \ref{tab:scans_control_points}).  
 
 Digitizing samples takes significantly longer for cookies than it does for cores (Figure \ref{fig:digitization_time}). This is due to the surface area of cookies requiring more images, as it has a squared relationship to sample radius.
 For large cookies, the operator can choose to selectively scan a radius of the cookie instead of the whole surface (as a single radius contains a portion of each ring) and/or scan at a lower DPI. Scanning complete cookies at maximum DPI is unrealistic as file size limits are quickly encountered with small diameter cookies. 
@@ -414,26 +414,12 @@ Other small snippets of code were generated to select pixels in specific regions
 
 \subsection{How to Build TIM}
 
-\R{build_start}TIM is intended to be operated and built by one person without having extensive machine building experience. To do this affordably, the camera and computer must attach to an off-the-shelf 3-axis CNC motion kit. Camera and computer adapters (\ref{fig:assembly_skeleton}) need to be designed uniquely for each motion kit (which are subject to market availability). The overall price of TIM does not include the 3D printer we used to manufacture these adapters. Ordering parts to be printed can be done through online or university services. A complete list of components we used for our TIM implementation is detailed in Table \ref{tab:bom}. A simple schematic of the electronic components included in TIM is provided in Figure \ref{fig:electronic_components}. Images detailing how to connect the camera and computer adapters to the ACRO can be found on the project's GitHub. 
+\R{build_start}TIM is intended to be operated and built by one person without having extensive machine building experience. To do this affordably, the camera and computer must attach to an off-the-shelf 3-axis CNC motion kit. Camera and computer adapters (\ref{fig:tim_assembled}) need to be designed uniquely for each motion kit (which are subject to market availability). The overall price of TIM does not include the 3D printer we used to manufacture these adapters. Ordering parts to be printed can be done through online or university services. A complete list of components we used for our TIM implementation is detailed in Table \ref{tab:bom}. A simple schematic of the electronic components included in TIM is provided in Figure \ref{fig:electronic_components}. Images detailing how to connect the camera and computer adapters to the ACRO can be found on the project's GitHub. 
 
 We are open to answering inquiries to troubleshoot specific questions of the assembly process on TIM's GitHub Issues page. At the time of publication, an external lab group has successfully replicated the TIM implementation on an ACRO.\R{build_end}
 
 \renewcommand{\thefigure}{S\arabic{figure}}
 \setcounter{figure}{0}  % Start supplemental figures from S1
-
-\begin{figure}[htbp]
-  \centering
-    \includegraphics[height=0.8\linewidth]{../diagrams/electronic_diagram.drawio.png}
-    \caption{TIM is composed of electronic components common to many 3-axis CNC machines, with the addition of a camera, computer, and other common computer peripherals. The Jetson computer can be adapted to control any CNC motor controller running GRBL firmware by sending commands over a USB serial connection. CNC kits have their own wiring schematics specific to make and model. }
-    \label{fig:electronic_components}
-\end{figure}
-
-\begin{figure}[htbp]
-  \centering
-    \includegraphics[height=0.6\linewidth]{../diagrams/assembly_front.png}
-    \caption{The ACRO frame has camera and computer adapters mounted to it, rendered purple in this image.}
-    \label{fig:assembly_skeleton}
-\end{figure}
 
 
 \begin{figure}[htbp]
@@ -456,6 +442,13 @@ We are open to answering inquiries to troubleshoot specific questions of the ass
 \end{figure}
 
 
+\begin{figure}[htbp]
+  \centering
+    \includegraphics[height=0.8\linewidth]{../diagrams/electronic_diagram.drawio.png}
+    \caption{TIM is composed of electronic components common to many 3-axis CNC machines, with the addition of a camera, computer, and other common computer peripherals. The Jetson computer can be adapted to control any CNC motor controller running GRBL firmware by sending commands over a USB serial connection. CNC kits have their own wiring schematics specific to make and model. }
+    \label{fig:electronic_components}
+\end{figure}
+
 \renewcommand{\thetable}{S\arabic{table}}
 \setcounter{table}{0}
 \include{components_list_table}
@@ -463,6 +456,7 @@ We are open to answering inquiries to troubleshoot specific questions of the ass
 \include{scanned_species_table}
 \include{notation_glossary_table}
 \include{example_scans_table}
+\include{example_scans_table_control_points}
 
 \bibliography{references}
 
