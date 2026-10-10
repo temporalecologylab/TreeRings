@@ -299,7 +299,7 @@ With the same images, multiple final stitched resolutions can be made.
 
 % Addressing reviewer comments 5
 \R{particle_smearing_1}
-We found a small number of samples were difficult to stitch and developed a method to aid stitching in these cases. These cases were rare and involved either cores from (1) species with very hard to distinguish and light-colored anatomy (e.g., \emph{Chamaecyparis nootkatensis}) that were not fixed with basic staining approaches, or (2) they retained scratches that we could not remove even with 1,500 grit sanding. For such cases, we developed a particle smearing method (described below) that aided the stitching process. Particle smearing does not need to be done to every sample and is best reserved for samples that have proven difficult to stitch after first trying other approaches to adjust samples (e.g., staining or additional sanding). When needed though, we found this approach very successful and that it did not interfere with the measurements of annual growth rings. Measurement of other anatomical measurements such as vessel counting, however, may be affected depending on the size of particles relative to vessels. 
+We found a small number of samples were difficult to stitch and developed a method to aid stitching in these cases. These cases were rare and involved either cores from (1) species with very hard to distinguish and light-colored anatomy (e.g., \emph{Callitropsis nootkatensis}) that were not fixed with basic staining approaches, or (2) they retained scratches that we could not remove even with 1,500 grit sanding. For such cases, we developed a particle smearing method (described below) that aided the stitching process. Particle smearing does not need to be done to every sample and is best reserved for samples that have proven difficult to stitch after first trying other approaches to adjust samples (e.g., staining or additional sanding). When needed though, we found this approach very successful and that it did not interfere with the measurements of annual growth rings. Measurement of other anatomical measurements such as vessel counting, however, may be affected depending on the size of particles relative to vessels. 
 \R{particle_smearing_2}
 
 \subsubsection{Particle Smearing}
@@ -364,7 +364,7 @@ This maximum cookie diameter is significantly smaller than the maximum core samp
     \caption{Cookie Scanning Time}
     \label{fig:graph_time_cookie}
   \end{subfigure}
-  \caption{Time to digitize a sample varies by sample type and scanning parameters such as percentage image overlap. Cores scan significantly faster than cookies as they do not need to take images beyond the samples edge. The samples included in this data were scanned between 33 and 50 percent overlap.\R{scanning_time_edits} The theoretical maximum sample dimensions are limited by the working plane of the machine, approximately 500 mm x 500 mm in our configuration. Sampling times are drastically influenced by configurable machine parameters such as percentage image overlap.}
+  \caption{Time to digitize a sample varies by sample type and scanning parameters such as percentage image overlap. Cores scan significantly faster than cookies as they do not need to take images beyond the samples edge. The samples included here were scanned between 33\% and 50\% overlap.\R{scanning_time_edits} The theoretical maximum sample dimensions are limited by the working plane of the machine (approximately 500 mm x 500 mm in our configuration). Sampling times are drastically influenced by configurable machine parameters such as percentage image overlap.}
   \label{fig:digitization_time}
 \end{figure}
 
@@ -373,7 +373,7 @@ TIM's design minimizes the barriers to build an affordable, efficient and high-r
 We have found that TIM does not compromise scan quality and can scan both cookies and cores. We have measured tree ring widths using the digitized samples from TIM using CooRecorder as well as ImageJ \citep{schneider_nih_2012}.
 %% Addressing reviewer comments 2
 % emwAug18 - I would move the species list to the supp and just ref it above as suggested. 
-% These samples included six different conifer species namely \emph{Pseudotsuga menziesii}, \emph{Tsuga heterophylla}, \emph{Tsuga mertensiana}, \emph{Abies amabilis}, \emph{Chamaecyparis nootkatensis} and \emph{Thuja plicata}. 
+% These samples included six different conifer species namely \emph{Pseudotsuga menziesii}, \emph{Tsuga heterophylla}, \emph{Tsuga mertensiana}, \emph{Abies amabilis}, \emph{Callitropsis nootkatensis} and \emph{Thuja plicata}. 
 % We found that the Jetson computer would occasionally crash due to unexpected memory limits if not restarted once a day. This issue was resolved by restarting the computer before starting a large batch 
 %% End reviewer comments 2
 
@@ -414,7 +414,7 @@ Other small snippets of code were generated to select pixels in specific regions
 
 \subsection{How to Build TIM}
 
-\R{build_start}TIM is intended to be operated and built by one person without having extensive machine building experience. To do this affordably, the camera and computer must attach to an off-the-shelf 3-axis CNC motion kit. Camera and computer adapters (\ref{fig:assembly_skeleton}) need to be designed uniquely for each motion kit which are subject to market availability. The overall price of TIM does not include the 3D printer we used to manufacture these adapters. Ordering parts to be printed can be done through online or university services. A complete list of components we used for our TIM implementation is detailed in Table \ref{tab:bom}. A simple schematic of the electronic components included in TIM is provided in Figure \ref{fig:electronic_components}. Images detailing how to connect the camera and computer adapters to the ACRO can be found on the project's GitHub. 
+\R{build_start}TIM is intended to be operated and built by one person without having extensive machine building experience. To do this affordably, the camera and computer must attach to an off-the-shelf 3-axis CNC motion kit. Camera and computer adapters (\ref{fig:assembly_skeleton}) need to be designed uniquely for each motion kit (which are subject to market availability). The overall price of TIM does not include the 3D printer we used to manufacture these adapters. Ordering parts to be printed can be done through online or university services. A complete list of components we used for our TIM implementation is detailed in Table \ref{tab:bom}. A simple schematic of the electronic components included in TIM is provided in Figure \ref{fig:electronic_components}. Images detailing how to connect the camera and computer adapters to the ACRO can be found on the project's GitHub. 
 
 We are open to answering inquiries to troubleshoot specific questions of the assembly process on TIM's GitHub Issues page. At the time of publication, an external lab group has successfully replicated the TIM implementation on an ACRO.\R{build_end}
 
@@ -431,7 +431,7 @@ We are open to answering inquiries to troubleshoot specific questions of the ass
 \begin{figure}[htbp]
   \centering
     \includegraphics[height=0.6\linewidth]{../diagrams/assembly_front.png}
-    \caption{The ACRO frame, in gray, has the camera and computer adapters mounted to it, rendered in pink.}
+    \caption{The ACRO frame has camera and computer adapters mounted to it, rendered purple in this image.}
     \label{fig:assembly_skeleton}
 \end{figure}
 
