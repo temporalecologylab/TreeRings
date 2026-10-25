@@ -1,0 +1,72 @@
+% !TeX root = ./minor_rev2_letter_2.tex
+\documentclass[12pt,a4paper]{article}
+
+\usepackage[top=1.00in, bottom=1.0in, left=1.1in, right=1.1in]{geometry}
+\usepackage{lineno}
+\usepackage{graphicx}
+\usepackage{natbib}
+\usepackage{amsmath}
+\usepackage{xr-hyper}
+\externaldocument{paper_anon}
+% \usepackage{hyperref}
+\usepackage{gensymb}
+\usepackage{todonotes}
+
+% Cross referencing items
+\newcommand{\R}[1]{\label{#1}\linelabel{#1}}
+\newcommand{\lr}[1]{line~\ref{#1}}
+
+\setlength\parindent{0pt}
+\setlength {\marginparwidth }{2cm}
+\begin{document}
+%\bibliographystyle{}
+
+% TO DO
+% TODO: update serpentine figure with a correct figure now
+
+% DISCUSS!
+
+\emph{Editor comments are in italics.} Our replies are in plain font.\\ 
+
+{\bf Editor -- comments:} \\
+
+\emph{Several comments from the previous revision stated as being adddressed seem to not be present in the documents of the paper (see also below the assesment of the Associate Editor), e.g. the BigTIFF path in the code, the taxonomic name in the Figure 5 caption and the data behind Figure 6. It would be critical to add this in the revision.} \\
+
+\emph{There are also few issues with the code, as its contains usernames plus a folder name that identifies the research group and line 356 of the manuscript names the computing cluster, breaking anonymity. Please remove these, together with .DS\_Store, pycache and notebook checkpoint files. }\\
+
+\emph{There are also few minor discrepancies, such the reported DPI values that seem to diverge across the code and sections of the paper with values ranging between 20,520.7 to at least 21,000 to 21,169, etc.} \\
+
+\emph{Also, as I understand it, the capture pipeline applies in-camera edge enhancement and a contrast adjustment and records 3840 x 2160 pixels, not the 12 MP stated.} \\
+
+\emph{The Figure S1 caption with about four pixels between graduations also differs with Table S5 implying about eight.} \\
+
+\emph{The step size is computed from the field-of-view entries in the GUI (5.0 x 3.0 mm by default), whereas the frame covers about 4.6 x 2.6 mm. The real overlap is therefore lower than the percentage entered. Is the 33 to 50\% reported in the paper nominal or measured?} \\
+
+\emph{The core CSV contains lengths up to 19,800 mm and the script keeps only 50 to 300 mm; what is the column holding as informatios and why is the csv filtered?} \\
+
+\emph{To help us reproduce the results and future users, it would also be good to include a small set of raw frames with the expected stitched output, so that the stitching step can be run without the hardware.} \\
+
+\emph{In addition, I could not find a power supply for the motion controller in Table S1 or the README. If it is really missing, please add it as well as as the wiring detail requested by the Associate Editor.} \\
+
+\emph{Table S2 lists Quercus alba as core only, whereas Table S4 includes a Quercus alba “cookie”. Please state what the cost figure covers, since the calibration slide is included and the sanding and inspection equipment is not.  Many thanks for your submission to our journal.} \\
+
+% Associate editor comments start
+{\bf Associate Editor -- comments:} \\
+
+\emph{1.      The manuscript still conflates pixel sampling with effective optical resolution. The reported 21,000 DPI, or approximately 1.2 µm per pixel, describes the object-space sampling density. Figure S1 demonstrates, at most, that graduations separated by 10 µm can be visually distinguished. It does not establish an effective optical resolution below 10 µm. The authors should either provide an appropriate optical-resolution assessment with a clearly defined criterion or revise the relevant statements throughout the manuscript to distinguish pixel sampling from effective optical resolution.} \\
+
+\emph{2.      Figure 1 has been substantially improved and now provides a useful full-system skeleton view. Table S1 and the repository README also add helpful information about the components and assembly process. However, Figure S2 remains a high-level block diagram rather than a detailed electronic or wiring diagram. The submitted materials still do not provide sufficiently detailed, self-contained instructions for assembling and connecting the tested implementation.} \\
+
+\emph{3.      The revision provides some additional information about the ring LED light and its mounting. However, the requested manufacturer information, including the manufacturer’s name, city and country, has not been provided consistently for the named equipment. Please add this information in accordance with journal style.} \\
+
+\emph{4.      Figure 6 has been revised to include additional cookie observations, with the area in the figure extending to approximately 11,000 mm². However, the only accompanying cookie CSV contains seven observations and has a maximum area of 1,600 mm². The associated script and PNG reproduce an older, smaller-range figure rather than Figure 6b. Please provide the exact dataset of the revised Figure 6.} \\
+
+\emph{5.      The grammatical error in the Figure 5 caption has been corrected. However, the caption uses Chamaecyparis nootkatensis, whereas the response letter states that the manuscript was standardized throughout to Callitropsis nootkatensis. Please select one taxonomic name and use it consistently in the main text, figure captions, tables and response letter.} \\
+
+\emph{6.      The BigTIFF issue is the most serious remaining concern. The authors state that the revised code can save images of up to 12 GB as BigTIFF files. However, the submitted code appears to write TIFF files only under smaller file-size conditions; larger outputs may remain as .dat files, and the configured maximum size is also inconsistent with the claimed 12 GB test. Consequently, the response letter, manuscript, README and submitted code do not currently describe the same implementation.} \\
+
+\emph{7.      The inclusion of the anonymized code resolves the previous problem that the software could not be evaluated during review. However, the reproducibility package remains incomplete. It should include an explicit software licence, basic tests, a minimal example dataset, a complete installation workflow and all documentation referenced by the README. A small end-to-end example with the expected output would substantially improve the usability and verifiability of the repository.} \\
+
+\emph{8.      The addition of Table S5 is a valuable improvement. The results indicate that scale is preserved over distances of approximately 101 mm, with errors below approximately 0.5\%. This provides useful support for the dimensional accuracy of the stitched mosaics. For clarity, however, the results should be reported directly as physical reference length versus digitally estimated length, together with the absolute error and relative error for each sample. This presentation would allow readers to evaluate measurement accuracy more readily than reporting only the corresponding DPI values.} \\
+
+\end{document}
