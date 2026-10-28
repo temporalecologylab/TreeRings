@@ -48,6 +48,8 @@ We thank the editor for noticing this discrepancy. We have updated the Figure S1
 
 \emph{The step size is computed from the field-of-view entries in the GUI (5.0 x 3.0 mm by default), whereas the frame covers about 4.6 x 2.6 mm. The real overlap is therefore lower than the percentage entered. Is the 33 to 50\% reported in the paper nominal or measured?} \\
 
+We appreciate the clarifying question regarding image overlap. The field-of-view entry defaults to 5.0 x 3.0 mm because our measurements used a millimetric ruler with relatively wide graduation marks in the preview frame while the zoom ring was configured at 2.5x. The reported overlap in the paper was nominal, based off of these assumptions. We have updated the code to default the GUI to 4.6 x 2.6 mm to remain consistent with pixel to distance conversion from DPI. Additionally, we have proportionally changed the stated percentage overlap to be 30 to 46\% as the overlap step distance had been jogging slightly further than expected.
+
 \emph{The core CSV contains lengths up to 19,800 mm and the script keeps only 50 to 300 mm; what is the column holding as informatios and why is the csv filtered?} \\
 
 \emph{To help us reproduce the results and future users, it would also be good to include a small set of raw frames with the expected stitched output, so that the stitching step can be run without the hardware.} \\

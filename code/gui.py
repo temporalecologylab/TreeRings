@@ -250,7 +250,7 @@ class App(Gtk.Window):
         label_height_img = Gtk.Label(label="Enter Image Height (mm):   ")
         box.pack_start(label_height_img, True, True, 0)
         self.entry_height_img = Gtk.Entry()
-        self.entry_height_img.set_text("{}".format(3.00))
+        self.entry_height_img.set_text("{}".format(self.config["gui"]["DEFAULT_IMAGE_HEIGHT_MM"]))
         box.pack_start(self.entry_height_img, True, True, 0)
         self.entry_height_img.connect('focus-out-event', self.print_img_height_entry)
 
@@ -258,7 +258,7 @@ class App(Gtk.Window):
         label_width_img = Gtk.Label(label="Enter Image Width (mm):   ")
         box.pack_start(label_width_img, True, True, 0)
         self.entry_width_img = Gtk.Entry()
-        self.entry_width_img.set_text("{}".format(5.0))
+        self.entry_width_img.set_text("{}".format(self.config["gui"]["DEFAULT_IMAGE_WIDTH_MM"]))
         box.pack_start(self.entry_width_img, True, True, 0)
         self.entry_width_img.connect('focus-out-event', self.print_img_width_entry)
 
