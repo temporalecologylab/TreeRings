@@ -199,7 +199,7 @@ class Stitcher:
         self.sample.set_stitch_width_pixels(shape[1])
         self.sample.set_stitch_depth(shape[2])
 
-        self.sample.to_json(path)
+        self.sample.to_json(path, resize=resize)
 
         # no need in writing a normal tiff if it's going to be greater than the maximum tiff filesize
         stitch = np.memmap(mosaic_dat_path, dtype='uint8', mode='r', shape=(shape[0], shape[1], shape[2]))
@@ -222,7 +222,7 @@ class Stitcher:
         # elif (shape[0] * shape[1] * shape[2]) / 1e6 > self._max_file_size: 
         #     raise MaxFileSizeException(self._max_file_size)
 
-        else:
+        #else:
             
 
 

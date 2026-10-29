@@ -147,8 +147,11 @@ class Sample:
             metadata["stitch_depth"] = self.stitch_depth
 
         if self.is_core:
-            metadata["approximate_sample_height_mm"] = self.stitch_height_pixels / self.dpi * 25.4 #self.rows * self.image_height_mm * self.percent_overlap / 100
-            metadata["approximate_sample_width_mm"] = self.stitch_width_pixels / self.dpi * 25.4 #self.image_width_mm
+        
+            if self.stitch_height_pixels is not None:
+                metadata["approximate_sample_height_mm"] = self.stitch_height_pixels / self.dpi * 25.4 #self.rows * self.image_height_mm * self.percent_overlap / 100
+            if self.stitch_width_pixels is not None:
+                metadata["approximate_sample_width_mm"] = self.stitch_width_pixels / self.dpi * 25.4 #self.image_width_mm
 
         if directory is None:
             self.write_metadata(metadata, self.directory, resize)
@@ -162,7 +165,7 @@ class Sample:
             with open(os.path.join(dir, '{}_{}_{}_metadata.json'.format(self.species, self.id1, self.id2)), 'w', encoding='utf-8') as f:
                 json.dump(metadata, f, ensure_ascii=False, indent=4)
         else:
-            with open(os.path.join(dir, '{}_{}_{}_{}metadata.json'.format(self.species, self.id1, self.id2, resize)), 'w', encoding='utf-8') as f:
+            with open(os.path.join(dir, '{}_{}_{}_{}per_metadata.json'.format(self.species, self.id1, self.id2, int(resize * 100))), 'w', encoding='utf-8') as f:
                 json.dump(metadata, f, ensure_ascii=False, indent=4)
     
     def set_dpi(self, resize, max_dpi):
