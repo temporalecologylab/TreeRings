@@ -121,7 +121,7 @@ class Camera:
                         break
             time.sleep(0.5)
 
-    def create_save_bin(self, path="./test.tiff"):
+    def create_save_bin(self, path="./test.tif"):
         #log.info("Creating save bin")
         bin_description = "queue name=q{} max-size-buffers=1 leaky=1 ! filesink name=filesink async=false location={}".format(path,path)
         save_bin = Gst.parse_bin_from_description(bin_description, True)

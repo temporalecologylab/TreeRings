@@ -117,7 +117,7 @@ class Controller:
 
     def get_focus_metric(self, position = None):
         """Capture image and compute focus metric."""
-        temp_file = "./temp_image.tiff"
+        temp_file = "./temp_image.tif"
         while True:
             try:
                 self.camera.save_frame(temp_file)
@@ -224,7 +224,7 @@ class Controller:
 
         while(watchdog_counter != max_iter):
             print("reading image from pipeline...")
-            temp_file = "./temp_image.tiff"
+            temp_file = "./temp_image.tif"
             img_array = []
             self.camera.save_frame(temp_file) 
             print("successfully saved frame from pipeline...")
@@ -341,7 +341,7 @@ class Controller:
                 previous_focus_metric = self.get_focus_metric() # store the value after autofocus
 
             # Save an image at the current position
-            file_location = f"{sample.directory}/frame_{img_num_top}_{0}.tiff"
+            file_location = f"{sample.directory}/frame_{img_num_top}_{0}.tif"
             self.camera.save_frame(file_location)
             img_num_top += 1
             counter += 1
@@ -383,7 +383,7 @@ class Controller:
                 previous_focus_metric = self.get_focus_metric() # store the value after autofocus
 
             # Save an image at the current position
-            file_location = f"{sample.directory}/frame_{img_num_bot}_{0}.tiff"
+            file_location = f"{sample.directory}/frame_{img_num_bot}_{0}.tif"
             self.camera.save_frame(file_location)
             img_num_bot -= 1
             sample.increment_image_count()
@@ -580,7 +580,7 @@ class Controller:
         sample.to_json()
         
     def save_active_frame(self, sample: sample.Sample):
-        file_location = f"{sample.directory}/frame_{sample.active_row}_{sample.active_col}.tiff"
+        file_location = f"{sample.directory}/frame_{sample.active_row}_{sample.active_col}.tif"
         self.camera.save_frame(file_location)
         sample.increment_image_count() 
 
@@ -806,7 +806,7 @@ class Controller:
             _type_: Returns the name of the file, helpful if name is default
         """
         if name is None:
-            name = "{}/image_{}.tiff".format(self.directory, datetime.now().strftime("%H_%M_%S_%f"))
+            name = "{}/image_{}.tif".format(self.directory, datetime.now().strftime("%H_%M_%S_%f"))
         self.camera.save_frame(name)
         log.info("Saving {}".format(name))
         return name

@@ -731,7 +731,7 @@ class App(Gtk.Window):
                 break
             
             print("reading image from pipeline...")
-            temp_file = "./temp_image.tiff"
+            temp_file = "./temp_image.tif"
             img_array = []
             self.controller.camera.save_frame(temp_file)    #CHANGE THIS
             print("successfully saved frame from pipeline...")

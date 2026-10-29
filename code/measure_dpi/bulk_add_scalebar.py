@@ -13,7 +13,7 @@ ROOT_DIR = Path(
 def main():
 
     tif_files = list(ROOT_DIR.rglob("*.tif"))
-    tif_files.extend(ROOT_DIR.rglob("*.tiff"))
+    tif_files.extend(ROOT_DIR.rglob("*.tif"))
 
     print(f"Found {len(tif_files)} TIFF files")
 

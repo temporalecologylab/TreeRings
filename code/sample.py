@@ -1,17 +1,11 @@
 # class description to abstract the storage of sample information necessary for running the robot 
-
-import cv2
-import time
 import numpy as np
 import math
 import utils
 from pathlib import Path
 from datetime import datetime
-
-
-
-    
-
+import json
+import os 
 
 class Sample:
     def __init__(self, sample_width_mm: int, sample_height_mm: int, species:str, id1:str, id2:str, notes:str, image_width_mm:float, image_height_mm:float, image_width_pixels:float, image_height_pixels:float, is_core:bool, percent_overlap:int = 50, is_vertical:bool = True, x:float = None, y:float = None, z:float = None, directory:str = None):
@@ -107,7 +101,7 @@ class Sample:
         """Increment the image counter when a good image is taken"""
         self.image_count += 1
         
-    def to_json(self, directory = None):
+    def to_json(self, directory = None, resize = None):
         metadata = {
             "species": self.species,
             "rows": self.rows,
@@ -153,14 +147,24 @@ class Sample:
             metadata["stitch_depth"] = self.stitch_depth
 
         if self.is_core:
-            metadata["approximate_sample_height_mm"] = self.rows * self.image_height_mm * self.percent_overlap / 100
-            metadata["approximate_sample_width_mm"] = self.image_width_mm
+            metadata["approximate_sample_height_mm"] = self.stitch_height_pixels / self.dpi * 25.4 #self.rows * self.image_height_mm * self.percent_overlap / 100
+            metadata["approximate_sample_width_mm"] = self.stitch_width_pixels / self.dpi * 25.4 #self.image_width_mm
 
         if directory is None:
-            utils.write_metadata(metadata, self.directory)
+            self.write_metadata(metadata, self.directory, resize)
         else:
-            utils.write_metadata(metadata, directory)
-            
+            self.write_metadata(metadata, directory, resize)
+
+    
+    def write_metadata(self, metadata, dir, resize = False):
+
+        if resize is None:
+            with open(os.path.join(dir, '{}_{}_{}_metadata.json'.format(self.species, self.id1, self.id2)), 'w', encoding='utf-8') as f:
+                json.dump(metadata, f, ensure_ascii=False, indent=4)
+        else:
+            with open(os.path.join(dir, '{}_{}_{}_{}metadata.json'.format(self.species, self.id1, self.id2, resize)), 'w', encoding='utf-8') as f:
+                json.dump(metadata, f, ensure_ascii=False, indent=4)
+    
     def set_dpi(self, resize, max_dpi):
         self.dpi = int(resize * max_dpi)
 

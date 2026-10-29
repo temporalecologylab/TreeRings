@@ -7,7 +7,7 @@ import math
 import imutils
 
 # --- EDIT HERE --- 
-IMAGE = cv2.imread("./test_dpi.tiff") # image which contains a known distance. Preferably a slide ruler.
+IMAGE = cv2.imread("./test_dpi.tif") # image which contains a known distance. Preferably a slide ruler.
 RESIZE_PERCENTAGE = 0.3 # percentage to resize the image. Needs to match what downscale applied to the samples. Check the scan metadata.json file if you are unsure.
 DISTANCE_MM = 0.5 # known distance that you will click in the image in millimeters
 # --- END EDIT HERE ---

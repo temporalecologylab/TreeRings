@@ -129,7 +129,7 @@ class Stitcher:
 
 
     def load_metadata(self):
-        metadata_path = os.path.join(self._frame_dir, "metadata.json")
+        metadata_path = os.path.join(self._frame_dir, "{}_{}_{}_metadata.json".format(self.sample.species, self.sample.id1, self.sample.id2))
         with open(metadata_path) as f:
             j = json.load(f)
             self._metadata = j
@@ -164,12 +164,16 @@ class Stitcher:
     def stitch(self, resize=None):
         start_time = time.time()
         self.sample.set_start_time_stitching(start_time)
+        self.resize = resize
         if resize is not None and resize < 1.0 and resize > 0:
             path = os.path.join(self._frame_dir, "{}per".format(int(resize * 100)))
-            mosaic_dat_path = os.path.join(path, "mosaic_{}per.dat".format(int(resize *100)))
+            # mosaic_dat_path = os.path.join(path, "mosaic_{}per.dat".format(int(resize *100)))
+            mosaic_dat_path = os.path.join(path, "{}_{}_{}_mosaic{}per.dat".format(self.sample.species, self.sample.id1, self.sample.id2, int(resize *100)))
         else:
             path = os.path.join(self._frame_dir, "100per")
-            mosaic_dat_path = os.path.join(path, "mosaic_100per.dat")
+            # mosaic_dat_path = os.path.join(path, "mosaic_100per.dat")
+            mosaic_dat_path = os.path.join(path, "{}_{}_{}_mosaic100per.dat".format(self.sample.species, self.sample.id1, self.sample.id2))
+
         
         self.dats_path = os.path.join(path, "dats")
         log.info("Writing dats with resize {}".format(resize))
