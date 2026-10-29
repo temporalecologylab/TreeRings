@@ -103,7 +103,7 @@ The machine kit includes extruded aluminum rails, carriages to slide along the r
 To fit on the end-effector plates of the ACRO system, we made an adapter to connect the linear actuator to the $X$ and $Y$ axis, thus creating motion in the $Z$ axis.
 The size of the work plane is ultimately up to the size of the ACRO kit that is purchased---allowing for more flexibility.
 Building on top of kits allowed for quick assembly with sound instructions and saved development time. 
-For the camera, we chose a 12MP Raspberry Pi HQ Camera equipped with a SEEED studio microscope lens with adjustable focal length resulting in up to 150x zoom. The focal length was adjusted to make the field of view approximately 3 mm by 5 mm height and width. \R{led_ring_light_1}The camera lens has three attachment points for a microscope ring light LED. We attached a generic, white light LED ring light similar to the AmScope LED-78.\R{led_ring_light_2} The camera was connected to the gantry machine using custom, 3D printed, adapters.
+For the camera, we chose a Raspberry Pi HQ Camera equipped with a SEEED studio microscope lens with adjustable focal length resulting in up to 150x zoom. \R{camera_driver}The camera driver on the Jetson did not offer full utilization of the camera's resolution and has dimensions of 3840 x 2160 pixels. The focal length was adjusted to make the field of view approximately 2.6 mm by 4.6 mm height and width. \R{led_ring_light_1}The camera lens has three attachment points for a microscope ring light LED. We attached a generic, white light LED ring light similar to the AmScope LED-78.\R{led_ring_light_2} The camera was connected to the gantry machine using custom, 3D printed, adapters.
 For the computer, we implemented all of the software control, image stitching, and graphical user interface (GUI) to run on an NVIDIA Jetson Orin Nano 8GB (Jetson edge computer), which also connects to the camera via a MIPI cable. % amf28jan2026 The Jetson Orin Nano 8GB is it's complete product name emwREPLY: okay, that's fine then!
 
 By choosing this combination, we were able to reduce the weight and cost of the camera significantly. This minimized the design challenges of stabilizing the movement of a heavier DSLR and allowed us to invest more in a powerful computer that can handle intensive image processing. 
@@ -165,26 +165,10 @@ Similarly to cookies, the scanning surface should be as close to parallel to the
 
 TIM can scan cores, cookies, and sections of cookies. Each one of these scans requires a slightly different process, which we describe in separate subsections.
 A few principles are common regardless of what is being scanned, and we describe these first. 
-% The subsystems of TIM can be best understood by following the process from sample setup through obtaining a stitched image. 
-% To achieve this with a fixed focus camera, the samples must be nearly orthogonal to the camera lens. 
-% Once the sample is level, the operator follows a procedure to inform TIM of where the sample is, and the its size using buttons on the GUI to navigate and focus the camera on the center of the sample. 
-% The sample height and width in the $X$ and $Y$ dimensions are then entered in the GUI to be saved. Finally, the user must click the `Add Sample' button which provides more fields to add sample identifiers and save the center coordinate.
-% This procedure can be repeated to create a queue of samples to digitize as a batch. One additional parameter that needs to be defined is the height and width of the field of view of one image from the camera. 
-% We adjusted the focal length of the camera using the zoom ring to have a constant field of view of approximately 3 mm x 5 mm when in-focus.  
-% The sample height and width, sample identifiers, sample type, sample center coordinate, and the height and width of an image provides sufficient information to digitize a sample.
-
-% \subsubsection{Exhaustive Cookie Traverse}  
-
-
-% The goal of this sample transverse is to obtain in-focus images that have a region of overlap with each of its neighbors---the basis of image stitching (Figure \ref{FIGURE LABEL}). 
-% The coordinates of each image-to-be-captured are derived from the sample's center coordinate, the height and width of the sample, the height and width of an image frame, and the user provided percentage overlap between images.  
-% Our design can capture cores by defining the sample width to be zero and the height of the core to be used. So long as the cores are aligned to be parallel to the Y axis, this minimizes imaging time as only one column of images is captured.
-% Digitizing cookies requires a rectangular grid of images to be taken in both the X and Y axes. 
-% The user provides enough information to find the X and Y coordinates of each image, but the Z coordinate must be found with an algorithmic focusing procedure. 
 
 \subsubsection{Regions of Overlap for Stitching}
 
-The individual images from TIM have a field of view of approximately 3 mm x 5 mm. Because cores and cookies can be many orders of magnitude larger than one of these images, the final scan of these samples will be the combination of many images stitched together.
+The individual images from TIM have a field of view of approximately 2.6 mm x 4.6 mm. Because cores and cookies can be many orders of magnitude larger than one of these images, the final scan of these samples will be the combination of many images stitched together.
 Stitching two images together requires both images to share a region of overlap in which the subject of the image is the same \citep{mohammadi_comparative_2024}.
 Unique features inside this region of overlap act as a map to connect the two images.
 By default TIM is set to have a 33\% overlap with its neighbor but this can be adjusted easily while adding a sample in the GUI. The imaging process of a cookie is shown in Figure \ref{fig:cookie_overlap}.
