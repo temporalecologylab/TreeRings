@@ -1,16 +1,16 @@
 \begin{table}[htbp]
     \centering
-    \begin{tabular}{ |p{3.5cm}||p{3.0cm}|p{2.5cm}|p{1.5cm}|p{2.5cm}| }
+    \begin{tabular}{ |p{2.8cm}||p{2.5cm}|p{1.8cm}|p{2.0cm}|p{1.8cm}|p{1.6cm}|p{1.6cm}|}
         \hline
         \hline
-        Filename & Species & Control Points DPI & Control Points (mm) & Control Point Distance (Pixels) \\
+        Filename & Species & Physically Measured Distance (mm) & Digitally Measured Distance (pixels) & Digitally Estimated Length (mm) & Absolute Error (mm) & Relative Error (\%) \\
         \hline
-        core-scan-ac-sa-scalebar.tif & \textit{Acer saccharum} & 21,145 & 101.3 & 84,332.1 \\ % 84332.13 pixels or 21145 DPI
-        core-scan-be-ni-scalebar.tif & \textit{Betula nigra} &  21,108 & 100.8 & 83,769.9 \\ % 83769.86 pixels or 21108 DPI
-        core-scan-ps-me-scalebar.tif & \textit{Pseudotsuga menziesii} &  21,100 & 101.13 & 84,011.1 \\ % 84011.05 or 21100 DPI
-        core-scan-qu-ru-scalebar.tif & \textit{Quercus rubra} &  21,169 & 101.03 & 84,200.1 \\ % 84200.08 or 21168.8
-        core-scan-ts-me-scalebar.tif & \textit{Tsuga mertensiana}  & 21,097 & 101.14 & 83,998.1 \\ % 83998.05 or 21097.1
-        stage-micrometer-21080.tif & N/A & 21,080 & 1.0 & 829.9 \\
+        core-scan-ac-sa-scalebar.tif & \textit{Acer saccharum} & 101.30 & 84,332.1 & 101.62 & 0.32 & 0.31 \\ % 84332.13 pixels or 21145 DPI
+        core-scan-be-ni-scalebar.tif & \textit{Betula nigra} &  100.80 & 83,769.9 & 100.94 & 0.14 & 0.14 \\ % 83769.86 pixels or 21108 DPI
+        core-scan-ps-me-scalebar.tif & \textit{Pseudotsuga menziesii} &  101.13 & 84,011.1 & 101.23 & 0.10 & 0.10 \\ % 84011.05 or 21100 DPI
+        core-scan-qu-ru-scalebar.tif & \textit{Quercus rubra} &  101.03 & 84,200.1 & 101.46 & 0.43 & 0.42\\ % 84200.08 or 21168.8
+        core-scan-ts-me-scalebar.tif & \textit{Tsuga mertensiana}  & 101.14 & 83,998.1 & 101.21 & 0.07 & 0.07 \\ % 83998.05 or 21097.1
+        stage-micrometer-21080.tif & N/A & 1.0 & 829.9 & 1.0 & 0 & 0\\
         \hline
     \end{tabular}
     \caption{Two control points were added to these scans at approximately the same distance with an ultra-fine tipped felt pen. The distance between the two points can be measured physically with digital calipers and digitally with an image annotation tool. The DPI measurements are similar to performing the same measurements on a stage micrometer at the same lens zoom. The scans are stored in a Zenodo repository (https://doi.org/10.5281/zenodo.23287846).} %TODO
