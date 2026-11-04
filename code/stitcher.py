@@ -254,7 +254,7 @@ if __name__ == "__main__":
     tile_path = "./no_hardware_stitching_example"
     
     # Manually adding sample as this is done automatically in various parts of the system but this overrides it
-    sample = sample.Sample(0, 0, "no", "hardware", "example", "notes", 4.6, 2.6, 3840, 2160, True, 33.0, x=0, y=0, z=0, directory=tile_path, directory_override = True)
+    sample = sample.Sample(0, 0, "no", "hardware", "example", "notes", 4.6, 2.6, 3840, 2160, False, 33.0, x=0, y=0, z=0, directory=tile_path, directory_override = True)
 
     stitch_multiple_sizes(sample, sizes, max_dpi)
 
