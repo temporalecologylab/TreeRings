@@ -17,13 +17,13 @@ plt.rcParams.update({
 # Read data
 # --------------------------
 
-df = pd.read_csv("core_scanning_time_data.csv")
+df = pd.read_csv("core_scanning_times_2.csv")
 
-df = df[df["sample_length_mm"] < 300] 
-df = df[df["sample_length_mm"] > 50] 
+# df = df[df["sample_length_mm"] > 50] 
 
-df["stitching_time_min"] = df["stitching_time_sec"] / 60
-df["scanning_time_min"] = df["scanning_time_sec"] / 60
+
+df["stitching_time_min"] = df["stitching_time_s"] / 60
+df["scanning_time_min"] = df["scanning_time_s"] / 60
 
 # Calculate total time
 df["total_time_min"] = (
@@ -31,8 +31,6 @@ df["total_time_min"] = (
     df["stitching_time_min"]
 )
 
-# Sort by sample length
-df = df.sort_values("sample_length_mm")
 
 # --------------------------
 # Plot
@@ -40,19 +38,21 @@ df = df.sort_values("sample_length_mm")
 
 fig, ax = plt.subplots(figsize=(8, 6))
 
-ax.plot(
-    df["sample_length_mm"],
-    df["total_time_min"],
-    marker="o",
-    linewidth=2.5,
-    markersize=8,
-    color="black"
-)
+sc = ax.scatter(
+    x = df["sample_length_dpi_conversion_mm"],
+    y = df["total_time_min"],
+    c=df["percent_overlap"],
+    cmap = "viridis",
+    vmin = 30,
+    vmax = 90,
+    s= 15)
 
 ax.set_xlabel("Sample Length (mm)")
 ax.set_ylabel("Digitization Time (min)")
 
 ax.grid(True, alpha=0.3)
+cbar = plt.colorbar(sc, ax=ax)
+cbar.set_label("Percent Overlap (%)")
 
 plt.tight_layout()
 

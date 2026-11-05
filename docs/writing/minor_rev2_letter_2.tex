@@ -61,13 +61,21 @@ We appreciate the clarifying question regarding image overlap. The field-of-view
 
 \emph{The core CSV contains lengths up to 19,800 mm and the script keeps only 50 to 300 mm; what is the column holding as information and why is the csv filtered?} \\
 
+We apologize for this. In gathering data for this figure, we pulled all cores and cookies run in the lab, aggregating across various MSc and PhD student projects that are still in the middle of data collection and processing. As such, some of the core metadata we received was erroneous and we filtered it out to the maximum sample length we could verify in the lab, 300 mm. After further investigating the metadata, it was apparent that certain versions of the code used different methods to calculate the sample length value. Instead of using the data directly on the metadata, we have calculated sample length by converting the final stitched image's pixel dimensions and the DPI value to derive sample length. We have also updated the code to be consistent with this method. \\
+
+A new scatter plot figure has been made to show the full range of sample lengths, and colored the datapoints by their percentage overlap. \\
+
 \emph{To help us reproduce the results and future users, it would also be good to include a small set of raw frames with the expected stitched output, so that the stitching step can be run without the hardware.} \\
 
 We have added a new stiching example to the code, along with a README on how to run the example on Windows. The README provides guidelines to install Python 3.15.2, create a virtual environment, install the dependencies, and stitch 9 images in a 3 x 3 grid. The images are located in ./code/no\_hardware\_stitching\_example and the instructions are provided in ./code/no\_hardware\_stitching\_example/README.md. \\
 
 \emph{In addition, I could not find a power supply for the motion controller in Table S1 or the README. If it is really missing, please add it as well as as the wiring detail requested by the Associate Editor.} \\
 
+We apologize for not including the power supply in the previous submission. We have added the two power supplies to Table S1 and the README. We have added the wiring detail in the code submission under ./docs/kicad/tim_wiring.pdf.
+
 \emph{Table S2 lists Quercus alba as core only, whereas Table S4 includes a Quercus alba “cookie”.} \\
+
+We have updated Table S4 to clarify Quercus alba has been scanned as both a core and a cookie. \\
 
 \emph{Please state what the cost figure covers, since the calibration slide is included and the sanding and inspection equipment is not.  Many thanks for your submission to our journal.} \\
 
