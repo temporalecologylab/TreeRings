@@ -19,6 +19,7 @@ import sys
 import time
 import utils
 import math
+import traceback 
 
 log.basicConfig(format='%(process)d-%(levelname)s-%(message)s', level=log.INFO)
 
@@ -30,15 +31,18 @@ class MaxFileSizeException(Exception):
         super().__init__(message)
 
 class Stitcher:
-    def __init__(self, sample: sample.Sample):
-        config = utils.load_config()
+    def __init__(self, sample: sample.Sample, directory_override = None):
+        # config = utils.load_config()
         self.sample = sample
         self._memmaps = []
         self._tiles = []
         self._mosaic = None
-        self._frame_dir = sample.directory
+        if directory_override is None:
+            self._frame_dir = sample.directory
+        else:
+            self._frame_dir = directory_override
         self._metadata = None
-        self._max_file_size = config["stitcher"]["MAX_FILE_SIZE_GB"] * 1000 # GBs
+        # self._max_file_size = config["stitcher"]["MAX_FILE_SIZE_GB"] * 1000 # GBs
 
         self.load_metadata()
         
@@ -64,8 +68,9 @@ class Stitcher:
                 if first:
                     memmap_path = os.path.join(dats_path, "placeholder_memmap_array.dat")
                     memmap_array = np.memmap(memmap_path, dtype = dataset.dtypes[0], mode='w+', shape=(data.shape[0], data.shape[1], data.shape[2]))
-                    data = np.full((data.shape[0], data.shape[1], data.shape[2]), 0, dataset.dtypes[0])
-                    memmap_array[:] = data[:]
+                    # data = np.full((data.shape[0], data.shape[1], data.shape[2]), 0, dataset.dtypes[0])
+                    # memmap_array[:] = data[:]
+                    memmap_array[:] = 0
                     memmap_array.flush()
                     del memmap_array
                     first = False
@@ -227,28 +232,31 @@ class Stitcher:
 
 
 if __name__ == "__main__":
-    def stitch_multiple_sizes(path, sizes):
+    def stitch_multiple_sizes(sample, sizes, max_dpi):
         for size in sizes:
-            st = Stitcher(path)
+            sample.set_dpi(size, max_dpi)
+            st = Stitcher(sample, directory_override = tile_path)
             try:
                 st.stitch(resize = size)
-            except MaxFileSizeException:
-                print("Max file size met, no longer trying to stitch")
-                break
             except Exception as e:
                 print(e)
+                traceback.print_exc()
                 print("Cannot align with this resize value.")
             finally:
                 st.delete_dats()
 
                 del st
 
-    # sizes = [0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
-    sizes = [0.3]
-    tile_path = "C:\\Users\\honey\\OneDrive\\Desktop\\TOSTITCH"
-    stitch_multiple_sizes(tile_path, sizes)
-    # tile_path = "C:\\Users\\honey\\Downloads\\BETPOP_WM8_P16_22_55_11_good"
+    # Edit list of sizes for different downscales
+    sizes = [0.3, 1.0]
+    max_dpi = 21080
+    # sizes = [0.3]
+    tile_path = "./no_hardware_stitching_example"
+    
+    # Manually adding sample as this is done automatically in various parts of the system but this overrides it
+    sample = sample.Sample(0, 0, "no", "hardware", "example", "notes", 4.6, 2.6, 3840, 2160, False, 33.0, x=0, y=0, z=0, directory=tile_path, directory_override = True)
+
+    stitch_multiple_sizes(sample, sizes, max_dpi)
 
 
 
-    # stitch.run("C:\\Users\\chloe\\wolkovich_s24\\TreeRings\\code\\image_stitch_testing\\ashlar\\20per_zoomout_correctdims", "frame_{row:01}_{col:01}_1.jpg", 0.20, 0.78)

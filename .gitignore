@@ -1,6 +1,6 @@
 code/focus_stacking_testing
 .venv
-*.tif
+.venv*
 *.tiff
 *.jpeg
 *.dat

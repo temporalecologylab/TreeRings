@@ -8,7 +8,7 @@ import json
 import os 
 
 class Sample:
-    def __init__(self, sample_width_mm: int, sample_height_mm: int, species:str, id1:str, id2:str, notes:str, image_width_mm:float, image_height_mm:float, image_width_pixels:float, image_height_pixels:float, is_core:bool, percent_overlap:int = 50, is_vertical:bool = True, x:float = None, y:float = None, z:float = None, directory:str = None):
+    def __init__(self, sample_width_mm: int, sample_height_mm: int, species:str, id1:str, id2:str, notes:str, image_width_mm:float, image_height_mm:float, image_width_pixels:float, image_height_pixels:float, is_core:bool, percent_overlap:int = 50, is_vertical:bool = True, x:float = None, y:float = None, z:float = None, directory:str = None, directory_override = None):
         """Class which contains the necessary information for each sample that needs to be digitized. Data comes from user inputs from GUI. Data is saved in metadata.json files alongside stitched images
 
         Args:
@@ -29,6 +29,7 @@ class Sample:
             y (float, optional): Y position of the center of the sample in the gantry coordinate system. Defaults to None.
             z (float, optional): Z position of the center of the sample in the gantry coordinate system. Defaults to None.
             directory (str): Directory to save sample data
+            directory_override (bool, optional): If True, it will not save the generated directory. Only for use with manual stitching.
         """
         self.width = sample_width_mm
         self.height = sample_height_mm
@@ -59,7 +60,10 @@ class Sample:
             d = "./{}_{}_{}_{}".format(species, id1, id2, dirtime)
         else:
             d = "{}/{}_{}_{}_{}".format(directory, species, id1, id2, dirtime)
-        Path(d).mkdir()
+
+        if directory_override is None:
+            Path(d).mkdir()
+            
         self.directory = d
 
         self.image_width_mm = image_width_mm

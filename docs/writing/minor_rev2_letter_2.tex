@@ -59,9 +59,11 @@ We thank the editor for noticing this discrepancy. We have updated the Figure S1
 
 We appreciate the clarifying question regarding image overlap. The field-of-view entry defaults to 5.0 x 3.0 mm because our measurements used a millimetric ruler with relatively wide graduation marks in the preview frame while the zoom ring was configured at 2.5x. The reported overlap in the paper was nominal, based off of these assumptions. We have updated the code to default the GUI to 4.6 x 2.6 mm to remain consistent with pixel to distance conversion from DPI. Additionally, we have proportionally changed the stated percentage overlap to be 30 to 46\% as the overlap step distance had been jogging slightly further than expected. \\
 
-\emph{The core CSV contains lengths up to 19,800 mm and the script keeps only 50 to 300 mm; what is the column holding as informatios and why is the csv filtered?} \\
+\emph{The core CSV contains lengths up to 19,800 mm and the script keeps only 50 to 300 mm; what is the column holding as information and why is the csv filtered?} \\
 
 \emph{To help us reproduce the results and future users, it would also be good to include a small set of raw frames with the expected stitched output, so that the stitching step can be run without the hardware.} \\
+
+We have added a new stiching example to the code, along with a README on how to run the example on Windows. The README provides guidelines to install Python 3.15.2, create a virtual environment, install the dependencies, and stitch 9 images in a 3 x 3 grid. The images are located in ./code/no\_hardware\_stitching\_example and the instructions are provided in ./code/no\_hardware\_stitching\_example/README.md. \\
 
 \emph{In addition, I could not find a power supply for the motion controller in Table S1 or the README. If it is really missing, please add it as well as as the wiring detail requested by the Associate Editor.} \\
 
