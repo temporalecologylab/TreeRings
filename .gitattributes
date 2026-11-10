@@ -1,0 +1,5 @@
+# Always check out these files with Unix (LF) line endings, so they run on the Jetson
+*.sh        text eol=lf
+Dockerfile* text eol=lf
+*.yml       text eol=lf
+*.yaml      text eol=lf
