@@ -162,17 +162,13 @@ All the added weight from the computer, camera, lens, and the linear actuator it
 ## Installing Jetson Linux 36.3.0 on Jetson Orin Nano Developer Kit
 
 1. Download 'Driver Package (BSP)' and 'Sample Root Filesystem' for [Jetson Linux 36.3.0](https://developer.nvidia.com/embedded/jetson-linux-r363) onto an x86 Ubuntu 22.04 or Ubuntu 20.04 computer.
-2. Follow the [NVIDIA Quick Start Guide](https://docs.nvidia.com/jetson/archives/r36.3/DeveloperGuide/IN/QuickStart.html), set environment variables for the Driver Package and Root Filesystem to point to your exact filenames. For example:
-```
-export L4T_RELEASE_PACKAGE=jetson_linux_r36.3.0_aarch64.tbz2
-export SAMPLE_FS_PACKAGE=tegra_linux_sample-root-filesystem_r36.3.0_aarch64.tbz2
-```
-2. Complete first-boot setup, then confirm the version in the terminal:
+2. Follow the [NVIDIA Quick Start Guide](https://docs.nvidia.com/jetson/archives/r36.3/DeveloperGuide/IN/QuickStart.html) and make sure to set environment variables for the Driver Package and Root Filesystem to point to your exact file paths.
+3. Complete first-boot setup, then confirm the version in the terminal:
 ```
 cat /etc/nv_tegra_release
 ```
 
-You should see printed in the terminal
+You should see the following printed in the terminal indicating Version 36.3 has been installed.
 
 ```
 # R36 (release), REVISION:3.0, ...
