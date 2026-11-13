@@ -159,46 +159,56 @@ Now that the Z axis has been added to the ACRO, add the camera with lens attache
 
 All the added weight from the computer, camera, lens, and the linear actuator itself results in a bit of torsional deflection on the ACRO gantry. It is extremely important to have the camera as parallel to the table it's sitting on to take good images. To counteract any deflection on the beam, the torsional correction system can add or remove shims which will adjust the angle of the linear actuator in relation to the table. Use a lightweight bullet level to verify if the system is level.
 
+## Installing Jetson Linux 36.3.0 on Jetson Orin Nano Developer Kit
 
-## Step 8. Jetson Orin Nano Setup
+1. Download 'Driver Package (BSP)' and 'Sample Root Filesystem' for [Jetson Linux 36.3.0](https://developer.nvidia.com/embedded/jetson-linux-r363) onto an x86 Ubuntu 22.04 or Ubuntu 20.04 computer.
+2. Follow the [NVIDIA Quick Start Guide](https://docs.nvidia.com/jetson/archives/r36.3/DeveloperGuide/IN/QuickStart.html), set environment variables for the Driver Package and Root Filesystem to point to your exact filenames. For example:
+```
+export L4T_RELEASE_PACKAGE=jetson_linux_r36.3.0_aarch64.tbz2
+export SAMPLE_FS_PACKAGE=tegra_linux_sample-root-filesystem_r36.3.0_aarch64.tbz2
+```
+2. Complete first-boot setup, then confirm the version in the terminal:
+```
+cat /etc/nv_tegra_release
+```
 
-Roughly:
+You should see printed in the terminal
 
-1. Install SSD
-2. Follow [NVIDIA's setup guide for the Jetson Orin Nano Dev Kit](https://developer.nvidia.com/embedded/learn/get-started-jetson-orin-nano-devkit)
-    - NOTE: Make sure to select to install DeepStream in the Additional SDK Section of the JetPack Installer. Note that this image is not up to date with versions although the SDK looks very similar.
-    - ![DeepStream Select](image.png)
-    - Once finished, the Jetson Orin Nano is effectively the same as using a normal Ubuntu Linux distribution
-3. Get the control Python software on the device: <!--At some point it would be nice to not need wifi so we could just load a docker container instead.... NICE TO HAVE -->
-    - connect to your internet
-    - Git clone the TreeRings repo to your device
-    - [Install Docker](https://jetsonhacks.com/2025/02/24/docker-setup-on-jetpack-6-jetson-orin/) if it is not already installed.
-4. Open your terminal and navigate to the directory you want to save the repo in. Then, enter the following commands.
+```
+# R36 (release), REVISION:3.0, ...
+```
 
-  ``` bash
-  ANONYMIZED
-  ```
+## Download GitHub Repo
 
-5. Build the Dockerfile.
+1. Log into the Jetson and connect to internet using WiFi or ethernet
+2. Clone the repository
 
-  ``` bash
-    chmod +x ./build.sh ./launch.sh ./entrypoint.sh
-    ./build.sh
-  ```
+```
+git clone https://github.com/ANONYMIZED/REPO
+cd REPO
+```
+3. Install Dependencies with Docker
 
-6. Launch the Docker container.
-  
-  ``` bash
-    ./launch.sh
-  ```
+```
+chmod +x build.sh launch.sh entrypoint.sh
 
-- everything should be ready to go - refer to the [operation manual](./docs/writing/operation_manual.pdf)  
-<!-- 4. If NOT connecting to internet:
-    - git clone the TreeRings repo to a different device that does have internet access
-    - copy the TreeRings/code folder onto a flash drive or other mode of memory transfer
-    - connect the flash drive to the Jetson
-    - copy the TreeRings/code folder from the flash drive to the Jetson's desktop  -->
+# The build bash script may take a few minutes to install everything
+./build.sh
 
+# The launch bash script will instantiate a new Docker container running the built dependencies from the previous command. The terminal will change environments
+./launch.sh
+
+# Start the Python gui.py script after the Docker container launches
+python gui.py
+```
+
+Another way to see that the Docker container is active is to open a new terminal tab (do NOT close the terminal which you used ./launch.sh) and run the following command to see a list of the active containers. 
+
+```
+sudo docker ps
+```
+
+Everything should be ready to go - refer to the [operation manual](./docs/writing/operation_manual.pdf)  
 
 ## Using Universal G-Code Sender (UGS)
 
